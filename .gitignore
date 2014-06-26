@@ -1,3 +1,6 @@
 /.project
 
 /.pydevproject
+/tika.egg-info
+/build
+/dist
