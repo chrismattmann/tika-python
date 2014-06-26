@@ -3,12 +3,12 @@ import sys
 from jcc import cpp
 
 options = {
-    'include': ('lib/tika-app-1.6-SNAPSHOT.jar'),
+    'include': ('lib/tika-app-1.6-SNAPSHOT.jar','lib/org.eclipse.osgi.jar','lib/log4j.properties.jar'),
     'jar': ('lib/tika-parsers-1.6-SNAPSHOT.jar', 'lib/tika-core-1.6-SNAPSHOT.jar', 'lib/tika-translate-1.6-SNAPSHOT.jar'),
     'package': ('org.xml.sax',),
     'python': 'tika',
     'version': '1.6-SNAPSHOT',
-    'module': 'translate',
+    #'module': 'translate',
     'reserved': ('asm',),
     'classes': ('java.io.File', 'java.io.FileInputStream', 'java.io.ByteArrayInputStream'),
 }
