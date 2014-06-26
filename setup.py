@@ -4,7 +4,7 @@ from jcc import cpp
 
 options = {
     'include': ('lib/tika-app-1.6-SNAPSHOT.jar'),
-    'jar': ('lib/tika-parsers-1.6-SNAPSHOT.jar', 'lib/tika-core-1.6-SNAPSHOT.jar',),
+    'jar': ('lib/tika-parsers-1.6-SNAPSHOT.jar', 'lib/tika-core-1.6-SNAPSHOT.jar', 'lib/tika-translate-1.6-SNAPSHOT.jar'),
     'package': ('org.xml.sax',),
     'python': 'tika',
     'version': '1.6-SNAPSHOT',
