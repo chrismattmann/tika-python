@@ -8,7 +8,7 @@ options = {
     'package': ('org.xml.sax', 'java.lang', 'java.util', 'java.text', 'java.io'),
     'python': 'tika',
     'version': '1.6-SNAPSHOT',
-    'module': 'translate',
+    'module': 'parser',
     'reserved': ('asm',),
     'classes': ('java.io.File', 'java.io.FileInputStream', 'java.io.ByteArrayInputStream', 'java.lang.System','java.lang.Runtime','java.util.Arrays','java.util.Collections','java.util.HashMap','java.util.HashSet','java.util.TreeSet','java.lang.IllegalStateException','java.lang.IndexOutOfBoundsException','java.util.NoSuchElementException','java.text.SimpleDateFormat','java.text.DecimalFormat','java.text.Collator','java.io.StringReader','java.io.DataInputStream'),
 }
