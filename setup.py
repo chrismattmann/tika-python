@@ -3,7 +3,7 @@ import sys
 from jcc import cpp
 
 options = {
-    'include': ('lib/tika-app-1.6-SNAPSHOT.jar','lib/org.eclipse.osgi.jar','lib/log4j.properties.jar', 'lib/translator.microsoft.properties.jar', 'lib/microsoft-translator-java-api-0.6.2.jar', 'lib/json-simple-1.1.jar'),
+    'include': ('lib/tika-app-1.6-SNAPSHOT.jar','lib/org.eclipse.osgi.jar','lib/log4j.properties.jar', 'lib/microsoft-translator-java-api-0.6.2.jar', 'lib/json-simple-1.1.jar'),
     'jar': ('lib/tika-parsers-1.6-SNAPSHOT.jar', 'lib/tika-core-1.6-SNAPSHOT.jar', 'lib/tika-translate-1.6-SNAPSHOT.jar'),
     'package': ('org.xml.sax', 'java.lang', 'java.util', 'java.text', 'java.io'),
     'python': 'tika',
