@@ -24,7 +24,8 @@ So, we need to set up a virtual environment and alternate python install where w
 1. cd /where/to/install/buildout  
 2. `git clone git@github.com:collective/buildout.python.git`  
 3. `cd buildout.python`  
-4. Create a the file `local.cfg` with the following contents, then edit `/some/directory` at the bottom to be the directory you
+4. `python bootstrap.py`
+5. Create a the file `local.cfg` with the following contents, then edit `/some/directory` at the bottom to be the directory you
 want to house your new python installation.  
 
 ```
