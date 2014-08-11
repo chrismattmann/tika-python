@@ -13,7 +13,7 @@ def from_buffer(string):
 def __parse(stream):
     parsed = {}
     parser = tika.AutoDetectParser()
-    content = tika.BodyContentHandler()
+    content = tika.BodyContentHandler(-1)
     metadata = tika.Metadata()
     context = tika.ParseContext()
     parser.parse(stream, content, metadata, context)
