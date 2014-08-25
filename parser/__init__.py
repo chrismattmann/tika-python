@@ -10,6 +10,22 @@ def from_buffer(string):
     stream = tika.ByteArrayInputStream(tika.JArray_byte(string))
     return __parse(stream)
 
+def to_xml_from_file(filename):
+    stream = tika.FileInputStream(tika.File(filename))
+    return __handler(stream)
+
+def to_xml_from_string(string):
+    stream =  stream = tika.ByteArrayInputStream(tika.JArray_byte(string))
+    return __handler(stream)
+
+def __handler(stream):
+    handler = tika.toHTMLContentHandler()
+    met = tika.Metadata()
+    pc = tika.ParseContext()
+    parser = tika.AutoDetectParser()
+    parser.parse(stream, handler, met, pc)
+    return handler.toString()
+
 def __parse(stream):
     parsed = {}
     parser = tika.AutoDetectParser()
