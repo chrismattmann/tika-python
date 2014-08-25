@@ -19,7 +19,7 @@ def to_xml_from_string(string):
     return __handler(stream)
 
 def __handler(stream):
-    handler = tika.toHTMLContentHandler()
+    handler = tika.ToHTMLContentHandler()
     met = tika.Metadata()
     pc = tika.ParseContext()
     parser = tika.AutoDetectParser()
