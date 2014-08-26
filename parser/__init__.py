@@ -11,10 +11,12 @@ def from_buffer(string):
     return __parse(stream)
 
 def to_xml_from_file(filename):
+    """Parse content from a file and return back XHTML representation"""
     stream = tika.FileInputStream(tika.File(filename))
     return __handler(stream)
 
 def to_xml_from_string(string):
+    """Parse content from a string and return back XHTML representation"""
     stream =  stream = tika.ByteArrayInputStream(tika.JArray_byte(string))
     return __handler(stream)
 
