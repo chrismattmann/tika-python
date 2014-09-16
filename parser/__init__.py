@@ -17,7 +17,7 @@ def to_xml_from_file(filename):
 
 def to_xml_from_string(string):
     """Parse content from a string and return back XHTML representation"""
-    stream =  stream = tika.ByteArrayInputStream(tika.JArray_byte(string))
+    stream = tika.ByteArrayInputStream(tika.JArray_byte(string))
     return __handler(stream)
 
 def __handler(stream):
