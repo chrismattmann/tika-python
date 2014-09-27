@@ -68,7 +68,7 @@ for help.
 8. cd /some/directory/src  
 9. curl -L 'https://pypi.python.org/packages/source/J/JCC/JCC-2.19.tar.gz' | tar xzf -  
 10. cd JCC-2.19  
-11. curl -O https://gist.githubusercontent.com/nutjob4life/c38fb0cba8f3c714636c/raw/2894e7004278252664148712ba88290fb0774a71/gistfile1.diff  
+11. curl -O https://gist.githubusercontent.com/nutjob4life/4c9e23d9ba599d8731d9/raw/d818d270097ac523318703143ed9ca5dbe1f2137/gistfile1.diff  
 12. patch -p0 < *.diff  
 13. ../../bin/python2.7 setup.py build  
 14. ../../bin/python2.7 setup.py install  
