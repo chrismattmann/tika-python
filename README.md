@@ -63,11 +63,12 @@ for help.
 
 4. env MACOSX_DEPLOYMENT_TARGET=10.9 bin/buildout -c local.cfg  
 5. env MACOSX_DEPLOYMENT_TARGET=10.9 bin/buildout -c local.cfg install install-links  
-6. mkdir /some/directory/src  
-7. cd /some/directory/src  
-8. curl -L 'https://pypi.python.org/packages/source/J/JCC/JCC-2.19.tar.gz' | tar xzf -  
-9. cd JCC-2.19  
-10. curl -O https://gist.githubusercontent.com/nutjob4life/c38fb0cba8f3c714636c/raw/2894e7004278252664148712ba88290fb0774a71/gistfile1.diff  
-11. patch -p0 < *.diff  
-12. ../../bin/python2.7 setup.py build  
-13. ../../bin/python2.7 setup.py install  
+6. ./bin/install-links
+7. mkdir /some/directory/src  
+8. cd /some/directory/src  
+9. curl -L 'https://pypi.python.org/packages/source/J/JCC/JCC-2.19.tar.gz' | tar xzf -  
+10. cd JCC-2.19  
+11. curl -O https://gist.githubusercontent.com/nutjob4life/c38fb0cba8f3c714636c/raw/2894e7004278252664148712ba88290fb0774a71/gistfile1.diff  
+12. patch -p0 < *.diff  
+13. ../../bin/python2.7 setup.py build  
+14. ../../bin/python2.7 setup.py install  
