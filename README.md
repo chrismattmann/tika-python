@@ -71,4 +71,5 @@ for help.
 11. curl -O https://gist.githubusercontent.com/nutjob4life/4c9e23d9ba599d8731d9/raw/d818d270097ac523318703143ed9ca5dbe1f2137/gistfile1.diff  
 12. patch -p0 < *.diff  
 13. ../../bin/python2.7 setup.py build  
+13.1 If you get errors related to [linking](http://mail-archives.apache.org/mod_mbox/lucene-pylucene-dev/201403.mbox/%3C7B668B6A-9161-4CC8-9782-8FF1D1BDB628@runbox.com%3E) then you may need to try installing your own custom gcc via `brew install gcc`. If you have to install your own gcc, then before running setup.py build again, set the environment variable `CC=/path/to/brew/gcc`
 14. ../../bin/python2.7 setup.py install  
