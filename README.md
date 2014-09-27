@@ -57,6 +57,10 @@ prefix = /some/directory
 
 If you're running a different version of OS X, change the targets below (e.g. 10.8).
 
+*Note* if you are running 10.9 and you get weird Python errors building collective.python
+mentioning pip lacks HTTPS support, read [this article](https://gist.github.com/armw4/8027632) 
+for help.
+
 4. env MACOSX_DEPLOYMENT_TARGET=10.9 bin/buildout -c local.cfg  
 5. env MACOSX_DEPLOYMENT_TARGET=10.9 bin/buildout -c local.cfg install install-links  
 6. mkdir /some/directory/src  
