@@ -73,3 +73,15 @@ for help.
 13. ../../bin/python2.7 setup.py build  
 10.1 If you get errors related to [linking](http://mail-archives.apache.org/mod_mbox/lucene-pylucene-dev/201403.mbox/%3C7B668B6A-9161-4CC8-9782-8FF1D1BDB628@runbox.com%3E) then you may need to try installing your own custom gcc via `brew install gcc`. If you have to install your own gcc, then before running setup.py build again, set the environment variable `CC=/path/to/brew/gcc`
 14. ../../bin/python2.7 setup.py install  
+
+Testing it out
+==============
+```
+#!/usr/bin/env python2.7
+import tika
+tika.initVM()
+from tika import parser
+parsed = parser.from_file('/path/to/file')
+print parsed["metadata"]
+print parsed["content"]
+```
