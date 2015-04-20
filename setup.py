@@ -1,108 +1,94 @@
-import sys
+#!/usr/bin/env python
+# encoding: utf-8
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# 
+# $Id$
 
-from jcc import cpp
-
-options = {
-    'include': ('lib/tika-app-1.6.jar','lib/org.eclipse.osgi.jar','lib/log4j.properties.jar', 'lib/microsoft-translator-java-api-0.6.2.jar', 'lib/json-simple-1.1.jar', 'lib/jackson-databind-2.4.0.jar', 'lib/cxf-rt-frontend-jaxrs-2.7.8.jar', 'lib/cxf-api-2.7.8.jar'),
-    'jar': ('lib/tika-parsers-1.6.jar', 'lib/tika-core-1.6.jar', 'lib/tika-translate-1.6.jar'),
-    'package': ('org.xml.sax', 'java.lang', 'java.util', 'java.text', 'java.io'),
-    'python': 'tika',
-    'version': '1.6',
-    'module': 'parser',
-    'reserved': ('asm',),
-    'classes': ('java.io.File', 'java.io.FileInputStream', 'java.io.ByteArrayInputStream', 'java.lang.System','java.lang.Runtime','java.util.Arrays','java.util.Collections','java.util.HashMap','java.util.HashSet','java.util.TreeSet','java.lang.IllegalStateException','java.lang.IndexOutOfBoundsException','java.util.NoSuchElementException','java.text.SimpleDateFormat','java.text.DecimalFormat','java.text.Collator','java.io.StringReader','java.io.DataInputStream'),
-}
-
-import sys
 import os.path
 
-jcc_args = []
+try:
+    from ez_setup import use_setuptools
+    use_setuptools()
+except ImportError:
+    pass
 
-for dir in sys.path:
-    probe_dir = os.path.join(dir, 'jcc')
-    if os.path.exists(probe_dir):
-        print "Found jcc library at: %s" % probe_dir
-        jcc_args = [os.path.join(probe_dir, 'nonexistent-argv-0')]
-        break
+try:
+    from setuptools import setup, find_packages
+except ImportError:
+    from distutils.core import setup, find_packages
 
-if not jcc_args:
-    raise Exception("tika library not found in sys.path: %s" % sys.path)
+version = '1.7'
 
-for k, v in options.iteritems():
-    if k == 'classes':
-        jcc_args.extend(v)
-    elif hasattr(v, '__iter__'):
-        for value in v:
-            jcc_args.append('--%s' % k)
-            jcc_args.append(value)
-    else:
-        jcc_args.append('--%s' % k)
-        jcc_args.append(v)
+_descr = u'''**********
+tika
+***************
 
-setup_args = []
-egg_info_mode = False
-maxheap = '64m'
+.. contents::
+Tika python pure REST based library.
+'''
+_keywords = 'tika digital babel fish apache'
+_classifiers = [
+    'Development Status :: 3 - Alpha',
+    'Environment :: Console',
+    'Intended Audience :: Developers',
+    'Intended Audience :: Information Technology',
+    'Intended Audience :: Science/Research',
+    'License :: OSI Approved :: Apache Software License',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python',
+    'Topic :: Database :: Front-Ends',
+    'Topic :: Scientific/Engineering',
+    'Topic :: Software Development :: Libraries :: Python Modules',
+]
 
-i = 1
+def read(*rnames):
+    return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
-while i < len(sys.argv):
-    arg = sys.argv[i]
+long_description = _descr 
 
-    if arg == 'install':
-        jcc_args.append('--install')
-    elif arg == 'build':
-        jcc_args.append('--build')
-    elif arg == '-c':
-        # forwarded_args.append(arg)
-        pass
-    elif arg == 'egg_info':
-        jcc_args.append('--egg-info')
-    elif arg == '--vmarg':
-        jcc_args.append(arg)
-        i += 1
-        jcc_args.append(sys.argv[i])
-    elif arg == '--maxheap':
-        i += 1
-        maxheap = sys.argv[i]
-    else:
-        setup_args.append(arg)
-    """
-    elif arg == '--single-version-externally-managed':
-        forwarded_args.append(arg)
-    elif arg == '--egg-base' or arg == '--record':
-        forwarded_args.append(arg)
-        forward_next_arg = True
-    else:
-        raise NotImplementedError("Unknown argument: %s" % arg)
-    """
-
-    i += 1
-    
-for extra_arg in setup_args:
-    jcc_args.append('--extra-setup-arg')
-    jcc_args.append(extra_arg)
-
-jcc_args.extend(['--maxheap', maxheap])
-
-# monkey patch to send extra args to distutils
-# import setuptools
-# old_setup = setuptools.setup
-"""
-from distutils.core import setup as old_setup
-def new_setup(**attrs):
-attrs['script_args'].extend(forwarded_args)
-print "running setup %s" % attrs['script_args']
-old_setup(**attrs)
-
-def new_compile(**kwargs):
-    print "changing jccPath from %s to %s" % (kwargs['jccPath'],
-        jcc.__path__)
-    kwargs['jccPath'] = jcc.__path__
-    kwargs['setup_func'] = new_setup
-    from jcc.python import compile
-    compile(**kwargs, new_setup)
-"""
-
-print "jcc_args = %s" % jcc_args
-
-cpp.jcc(jcc_args)
+setup(
+    name='tika',
+    version=version,
+    description='Apache Tika Python library',
+    long_description=long_description,
+    classifiers=_classifiers,
+    keywords=_keywords,
+    author='Chris Mattmann',
+    author_email='chris.a.mttmnn@nasa.gov',
+    url='http://github.com/chrismattmann/tika-python',
+    download_url='http://github.com/chrismattmann/tika-python',
+    license=read('docs', 'LICENSE.txt'),
+    packages=find_packages(exclude=['ez_setup']),
+    namespace_packages=['tika'],
+    include_package_data=True,
+    zip_safe=True,
+    test_suite='tika.tests',
+    entry_points={
+        'console_scripts': [
+            'tika = tika.tika:main'
+        ],
+    }, 
+    package_data = {
+        # And include any *.conf files found in the 'conf' subdirectory
+        # for the package
+    },
+    install_requires=[
+        'setuptools'
+    ], 
+    extras_require={
+    },
+)
