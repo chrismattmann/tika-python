@@ -72,7 +72,7 @@ def parse(option, path, serverEndpoint=ServerEndpoint, verbose=Verbose, response
     try:
         if service == '/tika': responseMimeType = 'text/plain'
         resp = requests.put(serverEndpoint + service, data=open(path, 'r'),headers={'Accept': responseMimeType})
-        requests.post(serverEndpoint + service, data=open(path, 'r'), headers={'Connection':'close'})
+        #requests.post(serverEndpoint + service, data=open(path, 'r'), headers={'Connection':'close'})
         return resp.content
     except requests.exceptions.ConnectionError as e:
         print e 
@@ -87,8 +87,8 @@ def getConfig(option, serverEndpoint=ServerEndpoint, verbose=Verbose, responseMi
     if option not in services:
         die('config option must be one of mime-types, detectors, or parsers')
     service = services[option]
-    resp = requests.get(serverEndpoint + service, headers={'Accept': responseMimeType})
-    requests.post(serverEndpoint + service, headers={'Connection':'close'})
+    resp = requests.put(serverEndpoint + service, headers={'Accept': responseMimeType})
+    #requests.post(serverEndpoint + service, headers={'Connection':'close'})
     if resp.status_code != 200:
         if verbose: print sys.stderr, resp.headers
         warn('Tika server returned status:', resp.status_code)
