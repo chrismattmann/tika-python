@@ -36,14 +36,14 @@ Example usage as python client:
 
 """
 
-import sys, os, getopt
+import sys, os, getopt, time
 from urllib import urlretrieve
 from urlparse import urlparse
 import requests
 import subprocess
 
 TikaServerJar  = "http://repo1.maven.org/maven2/org/apache/tika/tika-server/1.7/tika-server-1.7.jar"
-StartServerCmd = "java -jar %s >& " + os.path.join(sys.path[0], 'tika-server.log') + " &"
+StartServerCmd = "java -jar %s >& /tmp/tika-server.log &"
 ServerEndpoint = "http://localhost:9998"
 
 Verbose = 1
@@ -69,13 +69,17 @@ def parse(option, path, serverEndpoint=ServerEndpoint, verbose=Verbose, response
           services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta'}):
     """Parse the object and return extracted metadata and/or text in JSON format."""
     service = services.get(option, services['all'])
-    if service == '/tika': responseMimeType = 'text/plain'
-    resp = requests.put(serverEndpoint + service, data=open(path, 'r'),headers={'Accept': responseMimeType})
-    requests.post(serverEndpoint + service, data=open(path, 'r'), headers={'Connection':'close'})
-    if resp.status_code != 200:
+    try:
+        if service == '/tika': responseMimeType = 'text/plain'
+        resp = requests.put(serverEndpoint + service, data=open(path, 'r'),headers={'Accept': responseMimeType})
+        requests.post(serverEndpoint + service, data=open(path, 'r'), headers={'Connection':'close'})
+        return resp.content
+    except requests.exceptions.ConnectionError as e:
+        print e 
+    '''if resp.status_code != 200:
         if verbose: print sys.stderr, resp.headers
-        warn('Tika server returned status:', resp.status_code)
-    return resp.content
+        warn('Tika server returned status:', resp.status_code)'''
+    
 
 def getConfig(option, serverEndpoint=ServerEndpoint, verbose=Verbose, responseMimeType='application/json',
               services={'mime-types': '/mime-types', 'detectors': '/detectors', 'parsers': '/parsers/details'}):
@@ -94,13 +98,13 @@ def getConfig(option, serverEndpoint=ServerEndpoint, verbose=Verbose, responseMi
 def checkTikaServer(serverEndpoint=ServerEndpoint, tikaServerJar=TikaServerJar):
     """Check that tika-server is running.  If not, download JAR file and start it up."""
     urlp = urlparse(tikaServerJar)
-    jarPath = os.path.join(sys.path[0], 'tika-server.jar')
-    logPath = os.path.join(sys.path[0], 'tika-server.log')
+    jarPath = os.path.join('/tmp', 'tika-server.jar')
+    logPath = os.path.join('/tmp', 'tika-server.log')
     if 'localhost' in serverEndpoint:
         if not os.path.isfile(jarPath) and urlp.scheme != '':
             tikaServerJar = getRemoteFile(tikaServerJar, jarPath) 
-        #if not os.path.isfile(logPath): #if no log file, Tika server probably not running
-        startServer(jarPath)    # if start server twice, 2nd one just bombs
+        if not os.path.isfile(logPath): #if no log file, Tika server probably not running
+            startServer(jarPath)    # if start server twice, 2nd one just bombs
     return serverEndpoint
 
 
@@ -109,6 +113,7 @@ def startServer(tikaServerJar, cmd=StartServerCmd):
     try: 
         echo2('Executing: %s' %cmd)
         p = os.system(cmd)
+        time.sleep(5)
     except requests.exceptions.ConnectionError as e:
         p.kill()
 
