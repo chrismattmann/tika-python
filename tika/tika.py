@@ -44,8 +44,10 @@ import subprocess
 import socket
 
 TikaServerJar  = "http://repo1.maven.org/maven2/org/apache/tika/tika-server/1.7/tika-server-1.7.jar"
-StartServerCmd = "java -jar %s >& "+ sys.path[0] +"/tika-server.log &"
-ServerEndpoint = "http://localhost:9998"
+StartServerCmd = "java -jar %s --port %s >& "+ sys.path[0] +"/tika-server.log &"
+ServerHost = "http://localhost"
+Port = "9990"
+ServerEndpoint = ServerHost + ':' + Port
 
 Verbose = 1
 def echo2(*s): sys.stderr.write(' '.join(map(str, s)) + '\n')
@@ -53,14 +55,10 @@ def warn(*s):  echo2('tika.py:', *s)
 def die(*s):   warn('Error:',  *s); echo2(USAGE); sys.exit()
 
 
-def runCommand(cmd, option, urlOrPath, serverEndpoint=ServerEndpoint, tikaServerJar=TikaServerJar, verbose=Verbose):
+def runCommand(cmd, option, urlOrPath, serverHost=ServerHost, port = Port, tikaServerJar=TikaServerJar, verbose=Verbose):
     """Run the Tika command by calling the Tika server and return results in JSON format (or plain text)."""
     #import pdb; pdb.set_trace()
-    if urlOrPath == None:
-        echo2(USAGE)
-        sys.exit()
-        
-    serverEndpoint = checkTikaServer(serverEndpoint, tikaServerJar)
+    serverEndpoint = checkTikaServer(serverHost, port, tikaServerJar)
     if cmd == 'parse':
         path = getRemoteFile(urlOrPath, '.')
         return parse(option, path, serverEndpoint, verbose) 
@@ -70,7 +68,7 @@ def runCommand(cmd, option, urlOrPath, serverEndpoint=ServerEndpoint, tikaServer
         die('Bad args')
 
 
-def parse(option, path, serverEndpoint=ServerEndpoint, verbose=Verbose, responseMimeType='application/json',
+def parse(option, path, serverEndpoint= ServerEndpoint, verbose=Verbose, responseMimeType='application/json',
           services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta'}):
     """Parse the object and return extracted metadata and/or text in JSON format."""
     service = services.get(option, services['all'])
@@ -88,35 +86,41 @@ def parse(option, path, serverEndpoint=ServerEndpoint, verbose=Verbose, response
 def getConfig(option, serverEndpoint=ServerEndpoint, verbose=Verbose, responseMimeType='application/json',
               services={'mime-types': '/mime-types', 'detectors': '/detectors', 'parsers': '/parsers/details'}):
     """Get the configuration of the Tika Server (parsers, detectors, etc.) and return it in JSON format."""
-    if option not in services:
-        die('config option must be one of mime-types, detectors, or parsers')
-    service = services[option]
-    resp = requests.put(serverEndpoint + service, headers={'Accept': responseMimeType})
-    if resp.status_code != 200:
+    try:
+        if option not in services:
+            die('config option must be one of mime-types, detectors, or parsers')
+        service = services[option]
+        resp = requests.get(serverEndpoint + service, headers={'Accept': responseMimeType})
+        return resp.content
+    except requests.exceptions.ConnectionError as e:
+        print e
+    #requests.get(serverEndpoint + service, headers={'Connection':'close'})
+    '''if resp.status_code != 200:
         if verbose: print sys.stderr, resp.headers
-        warn('Tika server returned status:', resp.status_code)
-    return resp.content
+        warn('Tika server returned status:', resp.status_code)'''
+    
 
 
-def checkTikaServer(serverEndpoint=ServerEndpoint, tikaServerJar=TikaServerJar):
+def checkTikaServer(serverHost=ServerHost, port = Port, tikaServerJar=TikaServerJar):
     """Check that tika-server is running.  If not, download JAR file and start it up."""
     urlp = urlparse(tikaServerJar)
     #import pdb; pdb.set_trace()
+    serverEndpoint = serverHost +':' + port
     jarPath = os.path.join(sys.path[0], 'tika-server.jar')
     logPath = os.path.join(sys.path[0], 'tika-server.log')
-    if 'localhost' in serverEndpoint:
+    if 'localhost' in serverHost:
         if not os.path.isfile(jarPath) and urlp.scheme != '':
             tikaServerJar = getRemoteFile(tikaServerJar, jarPath) 
-        if not checkPortIsOpen(serverEndpoint): #if no log file, Tika server probably not running
-            startServer(jarPath)    # if start server twice, 2nd one just bombs
+        if not checkPortIsOpen(serverHost, port): #if no log file, Tika server probably not running
+            startServer(jarPath, serverHost, port)    # if start server twice, 2nd one just bombs
     return serverEndpoint
 
 
-def startServer(tikaServerJar, cmd=StartServerCmd):
-    cmd = cmd % tikaServerJar
+def startServer(tikaServerJar, serverHost = ServerHost, port = Port, cmd=StartServerCmd):
+    cmd = cmd % (tikaServerJar, port)
     echo2('Starting tika service: %s' %cmd)
     os.system(cmd)
-    time.sleep(2)
+    time.sleep(5)
 
 def getRemoteFile(urlOrPath, destPath):
     """Fetch URL to local path or just return absolute path."""
@@ -128,12 +132,9 @@ def getRemoteFile(urlOrPath, destPath):
         urlretrieve(urlOrPath, destPath)
         return destPath
 
-def checkPortIsOpen(remoteServer):
-
-    serverName = remoteServer.rsplit(':',1)
-    port = serverName[1]
-    remoteServer = serverName[0].split('//',1)[1]
-
+def checkPortIsOpen(remoteServerHost=ServerHost, port = Port):
+    #import pdb; pdb.set_trace()
+    remoteServer = remoteServerHost.split('//',1)[1]
     remoteServerIP  = socket.gethostbyname(remoteServer)
 
     try:
@@ -164,17 +165,19 @@ def main(argv):
     global Verbose   
     if len(argv) < 3: die('Bad args')
     try:
-        opts, argv = getopt.getopt(argv[1:], 'hs:i:v',
-          ['help', 'install=', 'server=', 'verbose'])
+        opts, argv = getopt.getopt(argv[1:], 'hi:s:p:v',
+          ['help', 'install=', 'server=', 'port=', 'verbose'])
     except getopt.GetoptError, (msg, bad_opt):
         die("%s error: Bad option: %s, %s" % (argv[0], bad_opt, msg))
         
     tikaServerJar = TikaServerJar
     serverEndpoint = ServerEndpoint
+    port = Port
     for opt, val in opts:
         if opt   in ('-h', '--help'):    echo2(USAGE); sys.exit()
         elif opt in ('--server'):        serverEndpoint = val
         elif opt in ('--install'):       tikaServerJar = val
+        elif opt in ('--port'):          port = str(val)
         elif opt in ('-v', '--verbose'): Verbose = 1
         else: die(USAGE)
 
@@ -184,8 +187,8 @@ def main(argv):
         path = argv[2]
     except:
         path = None
-    #import pdb; pdb.set_trace()
-    return runCommand(cmd, option, path, serverEndpoint=serverEndpoint, tikaServerJar=tikaServerJar, verbose=Verbose)
+
+    return runCommand(cmd, option, path, serverHost= ServerHost, port = Port, tikaServerJar=tikaServerJar, verbose=Verbose)
 
 
 if __name__ == '__main__':
