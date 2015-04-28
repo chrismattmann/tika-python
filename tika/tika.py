@@ -58,6 +58,8 @@ def die(*s):   warn('Error:',  *s); echo2(USAGE); sys.exit()
 def runCommand(cmd, option, urlOrPath, serverHost=ServerHost, port = Port, tikaServerJar=TikaServerJar, verbose=Verbose):
     """Run the Tika command by calling the Tika server and return results in JSON format (or plain text)."""
     #import pdb; pdb.set_trace()
+    if option == 'parse' and urlOrPath == None:
+        die('No URLs/paths specified.')
     serverEndpoint = checkTikaServer(serverHost, port, tikaServerJar)
     if cmd == 'parse':
         path = getRemoteFile(urlOrPath, '.')
