@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python2.7
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -49,7 +48,7 @@ Switches:
 Example usage as python client:
 -- from tika import runCommand, parse1
 -- jsonOutput = runCommand('parse', 'all', filename)
- or
+or
 -- jsonOutput = parse1('all', filename)
 
 """
