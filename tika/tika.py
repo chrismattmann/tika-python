@@ -46,7 +46,7 @@ import socket
 TikaServerJar  = "http://repo1.maven.org/maven2/org/apache/tika/tika-server/1.7/tika-server-1.7.jar"
 StartServerCmd = "java -jar %s --port %s >& "+ sys.path[0] +"/tika-server.log &"
 ServerHost = "http://localhost"
-Port = "9990"
+Port = "9998"
 ServerEndpoint = ServerHost + ':' + Port
 
 Verbose = 1
@@ -55,7 +55,7 @@ def warn(*s):  echo2('tika.py:', *s)
 def die(*s):   warn('Error:',  *s); echo2(USAGE); sys.exit()
 
 
-def runCommand(cmd, option, urlOrPath, serverHost=ServerHost, port = Port, tikaServerJar=TikaServerJar, verbose=Verbose):
+def runCommand(cmd, option, urlOrPath, port, serverHost=ServerHost, tikaServerJar=TikaServerJar, verbose=Verbose):
     """Run the Tika command by calling the Tika server and return results in JSON format (or plain text)."""
     #import pdb; pdb.set_trace()
     if option == 'parse' and urlOrPath == None:
@@ -106,7 +106,6 @@ def getConfig(option, serverEndpoint=ServerEndpoint, verbose=Verbose, responseMi
 def checkTikaServer(serverHost=ServerHost, port = Port, tikaServerJar=TikaServerJar):
     """Check that tika-server is running.  If not, download JAR file and start it up."""
     urlp = urlparse(tikaServerJar)
-    #import pdb; pdb.set_trace()
     serverEndpoint = serverHost +':' + port
     jarPath = os.path.join(sys.path[0], 'tika-server.jar')
     logPath = os.path.join(sys.path[0], 'tika-server.log')
@@ -173,13 +172,13 @@ def main(argv):
         die("%s error: Bad option: %s, %s" % (argv[0], bad_opt, msg))
         
     tikaServerJar = TikaServerJar
-    serverEndpoint = ServerEndpoint
+    serverHost = ServerHost
     port = Port
     for opt, val in opts:
         if opt   in ('-h', '--help'):    echo2(USAGE); sys.exit()
-        elif opt in ('--server'):        serverEndpoint = val
+        elif opt in ('--server'):        serverHost = val
         elif opt in ('--install'):       tikaServerJar = val
-        elif opt in ('--port'):          port = str(val)
+        elif opt in ('--port'):          port = val
         elif opt in ('-v', '--verbose'): Verbose = 1
         else: die(USAGE)
 
@@ -190,7 +189,7 @@ def main(argv):
     except:
         path = None
 
-    return runCommand(cmd, option, path, serverHost= ServerHost, port = Port, tikaServerJar=tikaServerJar, verbose=Verbose)
+    return runCommand(cmd, option, path, port, serverHost= ServerHost, tikaServerJar=tikaServerJar, verbose=Verbose)
 
 
 if __name__ == '__main__':
