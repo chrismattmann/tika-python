@@ -59,7 +59,7 @@ from urlparse import urlparse
 import requests
 import socket 
 
-TikaServerJar  = "http://search.maven.org/remotecontent?filepath=org/apache/tika/tika-server/1.7/tika-server-1.7.jar"
+TikaServerJar  = "http://search.maven.org/remotecontent?filepath=org/apache/tika/tika-server/1.8/tika-server-1.8.jar"
 StartServerCmd = "java -jar %s --port %s >& "+ sys.path[0] +"/tika-server.log &"
 ServerHost = "http://localhost"
 Port = "9998"
