@@ -42,7 +42,7 @@ from urlparse import urlparse
 import requests
 import subprocess
 
-TikaServerJar  = "http://repo1.maven.org/maven2/org/apache/tika/tika-server/1.7/tika-server-1.7.jar"
+TikaServerJar  = "http://repo1.maven.org/maven2/org/apache/tika/tika-server/1.8/tika-server-1.8.jar"
 StartServerCmd = "java -jar %s >& /tmp/tika-server.log &"
 ServerEndpoint = "http://localhost:9998"
 
