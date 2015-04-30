@@ -186,7 +186,7 @@ def checkTikaServer(serverHost=ServerHost, port = Port, tikaServerJar=TikaServer
     logPath = os.path.join(sys.path[0], 'tika-server.log')
     if 'localhost' in serverEndpoint:
         if not os.path.isfile(jarPath) and urlp.scheme != '':
-            tikaServerJar = getRemoteFile(tikaServerJar, jarPath) 
+            tikaServerJar = getRemoteJar(tikaServerJar, jarPath) 
         if not checkPortIsOpen(serverHost, port): #if no log file, Tika server probably not running
             startServer(jarPath, serverHost, port)# if start server twice, 2nd one just bombs
     return serverEndpoint
@@ -205,10 +205,18 @@ def getRemoteFile(urlOrPath, destPath):
     if urlp.scheme == '':
         return (os.path.abspath(urlOrPath), 'local')
     else:
-        if not os.path.isfile(destPath):
-            filename = urlOrPath.rsplit('/',1)[1]
-            destPath = destPath + '/' +filename
-            
+        filename = urlOrPath.rsplit('/',1)[1]
+        destPath = destPath + '/' +filename
+        echo2('Retrieving %s to %s.' % (urlOrPath, destPath))
+        urlretrieve(urlOrPath, destPath)
+        return (destPath, 'remote')
+def getRemoteJar(urlOrPath, destPath):
+    """Fetch URL to local path or just return absolute path."""
+    #import pdb; pdb.set_trace()
+    urlp = urlparse(urlOrPath)
+    if urlp.scheme == '':
+        return (os.path.abspath(urlOrPath), 'local')
+    else:
         echo2('Retrieving %s to %s.' % (urlOrPath, destPath))
         urlretrieve(urlOrPath, destPath)
         return (destPath, 'remote')
