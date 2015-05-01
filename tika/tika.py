@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python2.7
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -48,7 +49,7 @@ Switches:
 Example usage as python client:
 -- from tika import runCommand, parse1
 -- jsonOutput = runCommand('parse', 'all', filename)
-or
+ or
 -- jsonOutput = parse1('all', filename)
 
 """
@@ -73,8 +74,8 @@ def die(*s):   warn('Error:',  *s); echo2(USAGE); sys.exit()
 
 def runCommand(cmd, option, urlOrPaths, port, outDir=None, serverHost=ServerHost, tikaServerJar=TikaServerJar, verbose=Verbose):
     """Run the Tika command by calling the Tika server and return results in JSON format (or plain text)."""
-#    import pdb; pdb.set_trace()
-    if (option in 'parse' or option in 'detect') and (urlOrPaths == [] or urlOrPaths == None):
+   # import pdb; pdb.set_trace()
+    if (cmd in 'parse' or cmd in 'detect') and (urlOrPaths == [] or urlOrPaths == None):
         die('No URLs/paths specified.')
     serverEndpoint = checkTikaServer(serverHost, port, tikaServerJar)
     if cmd == 'parse':
@@ -122,7 +123,6 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose,
           responseMimeType='application/json',
           services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta'}):
     """Parse the object and return extracted metadata and/or text in JSON format."""
-    #import pdb; pdb.set_trace()
     path, type = getRemoteFile(urlOrPath, '/tmp')
     if option not in services:
         warn('config option must be one of meta, text, or all; using all.')
@@ -186,7 +186,7 @@ def checkTikaServer(serverHost=ServerHost, port = Port, tikaServerJar=TikaServer
     logPath = os.path.join(sys.path[0], 'tika-server.log')
     if 'localhost' in serverEndpoint:
         if not os.path.isfile(jarPath) and urlp.scheme != '':
-            tikaServerJar = getRemoteFile(tikaServerJar, jarPath) 
+            tikaServerJar = getRemoteJar(tikaServerJar, jarPath) 
         if not checkPortIsOpen(serverHost, port): #if no log file, Tika server probably not running
             startServer(jarPath, serverHost, port)# if start server twice, 2nd one just bombs
     return serverEndpoint
@@ -200,6 +200,19 @@ def startServer(tikaServerJar, serverHost = ServerHost, port = Port, cmd=StartSe
 
 def getRemoteFile(urlOrPath, destPath):
     """Fetch URL to local path or just return absolute path."""
+    #import pdb; pdb.set_trace()
+    urlp = urlparse(urlOrPath)
+    if urlp.scheme == '':
+        return (os.path.abspath(urlOrPath), 'local')
+    else:
+        filename = urlOrPath.rsplit('/',1)[1]
+        destPath = destPath + '/' +filename
+        echo2('Retrieving %s to %s.' % (urlOrPath, destPath))
+        urlretrieve(urlOrPath, destPath)
+        return (destPath, 'remote')
+def getRemoteJar(urlOrPath, destPath):
+    """Fetch URL to local path or just return absolute path."""
+    #import pdb; pdb.set_trace()
     urlp = urlparse(urlOrPath)
     if urlp.scheme == '':
         return (os.path.abspath(urlOrPath), 'local')
