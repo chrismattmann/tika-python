@@ -17,7 +17,8 @@ Installation
 Testing it out
 ==============
 
-h2. Parser Interface (backwards compat prior to REST)
+Parser Interface (backwards compat prior to REST)
+-------------------------------------------------
 ```
 #!/usr/bin/env python2.7
 import tika
@@ -28,7 +29,8 @@ print parsed["metadata"]
 print parsed["content"]
 ```
 
-h2. Parser Interface (new)
+Parser Interface (new)
+----------------------
 ```
 #!/usr/bin/env python2.7
 import tika
@@ -38,7 +40,8 @@ print parsed["metadata"]
 print parsed["content"]
 ```
 
-h2. Detect Interface (new)
+Detect Interface (new)
+----------------------
 ```
 #!/usr/bin/env python2.7
 import tika
@@ -46,7 +49,8 @@ from tika import detector
 print detector.from_file('/path/to/file')
 ```
 
-h3. Config Interface (new)
+Config Interface (new)
+----------------------
 ```
 #!/usr/bin/env python2.7
 import tika
@@ -56,11 +60,60 @@ print config.getMimeTypes()
 print config.getDetectors()
 ```
 
+Using a Buffer
+--------------
 Note you can also use a Parser and Detector
 .from_buffer(string) method to dynamically parser
 a string buffer in Python and/or detect its MIME
 type. This is useful if you've already loaded 
 the content into memory.
+
+New Command Line Client Tool
+============================
+When you install Tika-Python you also get a new command
+line client tool, `tika-python` installed in your /path/to/python/bin
+directory.
+
+The options and help for the command line tool can be seen by typing
+`tika-python` without any arguments. This will also download a copy of
+the tika-server jar and start it if you haven't done so already.
+
+```
+tika.py [-v] [-o <outputDir>] [--server <TikaServerEndpoint>] [--install <UrlToTikaServerJar>] [--port <portNumber>] <command> <option> <urlOrPathToFile>
+
+tika.py parse all test.pdf | python -mjson.tool        (pretty print Tika JSON output)
+tika.py detect type test.pdf                           (returns mime-type as text/plain)
+tika.py config mime-types                              (see what mime-types the Tika Server can handle)
+
+A simple python and command-line client for Tika using the standalone Tika server (JAR file).
+All commands return results in JSON format by default (except text in text/plain).
+
+To parse docs, use:
+tika.py parse <meta | text | all> <path>
+
+To check the configuration of the Tika server, use:
+tika.py config <mime-types | detectors | parsers>
+
+Commands:
+  parse  = parse the input file and return a JSON doc containing the extracted metadata, text, or both
+  detect type = parse the stream and 'detect' the MIME/media type, return in text/plain
+  config = return a JSON doc describing the configuration of the Tika server (i.e. mime-types it
+             can handle, or installed detectors or parsers)
+
+Arguments:
+  urlOrPathToFile = file to be parsed, if URL it will first be retrieved and then passed to Tika
+  
+Switches:
+  --verbose, -v                  = verbose mode
+  --server <TikaServerEndpoint>  = use a remote Tika Server at this endpoint, otherwise use local server
+  --install <UrlToTikaServerJar> = download and exec Tika Server (JAR file), starting server on default port 9998
+
+Example usage as python client:
+-- from tika import runCommand, parse1
+-- jsonOutput = runCommand('parse', 'all', filename)
+ or
+-- jsonOutput = parse1('all', filename)
+```
 
 Questions, comments?
 ===================
