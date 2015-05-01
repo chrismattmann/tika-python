@@ -1,81 +1,24 @@
 tika-python
 ===========
-A [JCC](http://lucene.apache.org/jcc/) based version of 
-[Apache Tika](http://tika.apache.org/) that makes Tika available as a Python 
-library, installable via Setuptools and Easy Install.
+A Python port of the [Apache Tika](http://tika.apache.org/)
+library that makes Tika available using the 
+[Tika REST Server](http://wiki.apache.org/tika/TikaJAXRS).
+
+This makes Apahce Tika available as a Python 
+library, installable via Setuptools, Pip and Easy Install.
 
 Inspired by [Aptivate Tika](https://github.com/aptivate/python-tika).
 
 Installation
 ----------------
-1. Install JCC (see below).  
-2. `python setup.py build`  
-3. `python setup.py install`  
-
-Briefly test out the installation by running `python`, then `import tika`. If you need to install a virtual environment,
-like below, you must use `python2.7` in `/some/directory/bin`, since that is the only one with JCC installed.
-
-###Installing JCC
-If you're lucky, a simple `pip install jcc` will do the trick.
-
-But, if you get compiler and linker issues on a Mac, python and jcc were probably built with different compilers.
-So, we need to set up a virtual environment and alternate python install where we can install JCC.
-
-1. cd /where/to/install/buildout  
-2. `git clone git@github.com:collective/buildout.python.git`  
-3. `cd buildout.python`  
-4. `python bootstrap.py`
-5. Create a the file `local.cfg` with the following contents, then edit `/some/directory` at the bottom to be the directory you
-want to house your new python installation.  
-
-```
-[buildout]
-extends =
-    src/base.cfg
-    src/readline.cfg
-    src/libjpeg.cfg
-    src/python27.cfg
-    src/links.cfg
-    src/pdbtextmate.cfg
-parts =
-    ${buildout:base-parts}
-    ${buildout:readline-parts}
-    ${buildout:libjpeg-parts}
-    ${buildout:python27-parts}
-    ${buildout:links-parts}
-    python-2.7-pdbtextmate
-
-python-buildout-root = ${buildout:directory}/src
-
-# we want our own eggs directory and nothing shared from a
-# ~/.buildout/default.cfg to prevent any errors and interference
-eggs-directory = eggs
-
-[install-links]
-prefix = /some/directory
-```
-
-If you're running a different version of OS X, change the targets below (e.g. 10.8).
-
-*Note* if you are running 10.9 and you get weird Python errors building collective.python
-mentioning pip lacks HTTPS support, read [this article](https://gist.github.com/armw4/8027632) 
-for help.
-
-4. env MACOSX_DEPLOYMENT_TARGET=10.9 bin/buildout -c local.cfg  
-5. env MACOSX_DEPLOYMENT_TARGET=10.9 bin/buildout -c local.cfg install install-links  
-6. ./bin/install-links
-7. mkdir /some/directory/src  
-8. cd /some/directory/src  
-9. curl -L 'https://pypi.python.org/packages/source/J/JCC/JCC-2.19.tar.gz' | tar xzf -  
-10. cd JCC-2.19  
-11. curl -O https://gist.githubusercontent.com/nutjob4life/4c9e23d9ba599d8731d9/raw/d818d270097ac523318703143ed9ca5dbe1f2137/gistfile1.diff  
-12. patch -p0 < *.diff  
-13. ../../bin/python2.7 setup.py build  
-10.1 If you get errors related to [linking](http://mail-archives.apache.org/mod_mbox/lucene-pylucene-dev/201403.mbox/%3C7B668B6A-9161-4CC8-9782-8FF1D1BDB628@runbox.com%3E) then you may need to try installing your own custom gcc via `brew install gcc`. If you have to install your own gcc, then before running setup.py build again, set the environment variable `CC=/path/to/brew/gcc`
-14. ../../bin/python2.7 setup.py install  
+1. `python setup.py build`  
+2. `python setup.py install`  
 
 Testing it out
 ==============
+
+Parser Interface (backwards compat prior to REST)
+-------------------------------------------------
 ```
 #!/usr/bin/env python2.7
 import tika
@@ -85,3 +28,103 @@ parsed = parser.from_file('/path/to/file')
 print parsed["metadata"]
 print parsed["content"]
 ```
+
+Parser Interface (new)
+----------------------
+```
+#!/usr/bin/env python2.7
+import tika
+from tika import parser
+parsed = parser.from_file('/path/to/file')
+print parsed["metadata"]
+print parsed["content"]
+```
+
+Detect Interface (new)
+----------------------
+```
+#!/usr/bin/env python2.7
+import tika
+from tika import detector
+print detector.from_file('/path/to/file')
+```
+
+Config Interface (new)
+----------------------
+```
+#!/usr/bin/env python2.7
+import tika
+from tika import config
+print config.getParsers()
+print config.getMimeTypes()
+print config.getDetectors()
+```
+
+Using a Buffer
+--------------
+Note you can also use a Parser and Detector
+.from_buffer(string) method to dynamically parser
+a string buffer in Python and/or detect its MIME
+type. This is useful if you've already loaded 
+the content into memory.
+
+New Command Line Client Tool
+============================
+When you install Tika-Python you also get a new command
+line client tool, `tika-python` installed in your /path/to/python/bin
+directory.
+
+The options and help for the command line tool can be seen by typing
+`tika-python` without any arguments. This will also download a copy of
+the tika-server jar and start it if you haven't done so already.
+
+```
+tika.py [-v] [-o <outputDir>] [--server <TikaServerEndpoint>] [--install <UrlToTikaServerJar>] [--port <portNumber>] <command> <option> <urlOrPathToFile>
+
+tika.py parse all test.pdf | python -mjson.tool        (pretty print Tika JSON output)
+tika.py detect type test.pdf                           (returns mime-type as text/plain)
+tika.py config mime-types                              (see what mime-types the Tika Server can handle)
+
+A simple python and command-line client for Tika using the standalone Tika server (JAR file).
+All commands return results in JSON format by default (except text in text/plain).
+
+To parse docs, use:
+tika.py parse <meta | text | all> <path>
+
+To check the configuration of the Tika server, use:
+tika.py config <mime-types | detectors | parsers>
+
+Commands:
+  parse  = parse the input file and return a JSON doc containing the extracted metadata, text, or both
+  detect type = parse the stream and 'detect' the MIME/media type, return in text/plain
+  config = return a JSON doc describing the configuration of the Tika server (i.e. mime-types it
+             can handle, or installed detectors or parsers)
+
+Arguments:
+  urlOrPathToFile = file to be parsed, if URL it will first be retrieved and then passed to Tika
+  
+Switches:
+  --verbose, -v                  = verbose mode
+  --server <TikaServerEndpoint>  = use a remote Tika Server at this endpoint, otherwise use local server
+  --install <UrlToTikaServerJar> = download and exec Tika Server (JAR file), starting server on default port 9998
+
+Example usage as python client:
+-- from tika import runCommand, parse1
+-- jsonOutput = runCommand('parse', 'all', filename)
+ or
+-- jsonOutput = parse1('all', filename)
+```
+
+Questions, comments?
+===================
+Send them to [Chris A. Mattmann](mailto:chris.a.mattmann@jpl.nasa.gov).
+
+Contributors
+============
+* Chris A. Mattmann, JPL
+* Brian D. Wilson, JPL
+* Dongni Zhao, USC
+
+License
+=======
+[Apache License, version 2](http://www.apache.org/licenses/LICENSE-2.0)
