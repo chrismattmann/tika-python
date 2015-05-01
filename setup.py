@@ -31,7 +31,7 @@ try:
 except ImportError:
     from distutils.core import setup, find_packages
 
-version = '1.7'
+version = '1.8'
 
 _descr = u'''**********
 tika
@@ -71,7 +71,7 @@ setup(
     author_email='chris.a.mttmnn@nasa.gov',
     url='http://github.com/chrismattmann/tika-python',
     download_url='http://github.com/chrismattmann/tika-python',
-    license=read('docs', 'LICENSE.txt'),
+    license=read('LICENSE.txt'),
     packages=find_packages(exclude=['ez_setup']),
     namespace_packages=['tika'],
     include_package_data=True,
@@ -79,7 +79,7 @@ setup(
     test_suite='tika.tests',
     entry_points={
         'console_scripts': [
-            'tika = tika.tika:main'
+            'tika-python = tika.tika:main'
         ],
     }, 
     package_data = {

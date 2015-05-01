@@ -16,25 +16,31 @@
 # limitations under the License.
 # 
 
-from tika import parse1
+from tika import parse1, callServer, ServerEndpoint
 import os
 import json
 
-def from_file(filename):    
+def from_file(filename, force_images=False):
     jsonOutput = parse1('all', filename)
-    parsed = {}
+    return _parse(jsonOutput)
+
+def from_buffer(string):
+    status, response = callServer('put', ServerEndpoint + '/rmeta', string,
+            {'Accept': 'application/json'}, False)
+    return _parse((status,response))
+
+def _parse(jsonOutput):
+    parsed={}
+    if not jsonOutput:
+        return parsed
     realJson = json.loads(jsonOutput[1])[0]
-    parsed["content"] = realJson["X-TIKA:content"]
+
+    if "X-TIKA: content" in realJson:
+        parsed["content"] = realJson["X-TIKA:content"]
+    else:
+        parsed["content"] = None
     parsed["metadata"] = {}
     for n in realJson:
         if n != "X-TIKA:content":
             parsed["metadata"][n] = realJson[n]
     return parsed
-
-def from_buffer(string):
-    if os.path.exists('/tmp/tika.buffer'):
-        os.path.delete('/tmp/tika.buffer')
-
-    with open('/tmp/tika.buffer', 'w') as f:
-        print >>f, string
-        return from_file('/tmp/tika.buffer')
