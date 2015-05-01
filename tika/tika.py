@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+# encoding: utf-8
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -70,7 +71,6 @@ def echo2(*s): sys.stderr.write('tika.py: ' + ' '.join(map(str, s)) + '\n')
 def warn(*s):  echo2('Warn:', *s)
 def die(*s):   warn('Error:',  *s); echo2(USAGE); sys.exit()
 
-
 def runCommand(cmd, option, urlOrPaths, port, outDir=None, serverHost=ServerHost, tikaServerJar=TikaServerJar, verbose=Verbose):
     """Run the Tika command by calling the Tika server and return results in JSON format (or plain text)."""
    # import pdb; pdb.set_trace()
@@ -140,20 +140,22 @@ def callServer(verb, serviceUrl, data, headers, verbose=Verbose,
         die('Tika Server call must be one of %s' % str(httpVerbs.keys()))
     verbFn = httpVerbs[verb]
     resp = verbFn(serviceUrl, data=data, headers=headers)
+    if verbose: 
+        print sys.stderr, "Request headers: ", headers
+        print sys.stderr, "Response headers: ", resp.headers
     if resp.status_code != 200:
-        if verbose: print sys.stderr, resp.headers
         warn('Tika server returned status:', resp.status_code)
     return (resp.status_code, resp.content)
 
 
-def detectType(option, urlOrPaths, serverEndpoint, verbose=Verbose,
+def detectType(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbose,
                responseMimeType='text/plain',
                services={'type': '/detect/stream'}):
     """Detect the MIME/media type of the stream and return it in text/plain."""
     return [detectType1(option, path, serverEndpoint, verbose, responseMimeType, services)
              for path in urlOrPaths]
 
-def detectType1(option, urlOrPath, serverEndpoint, verbose=Verbose,
+def detectType1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose,
                responseMimeType='text/plain',
                services={'type': '/detect/stream'}):
     """Detect the MIME/media type of the stream and return it in text/plain."""
@@ -162,7 +164,7 @@ def detectType1(option, urlOrPath, serverEndpoint, verbose=Verbose,
         die('Detect option must be one of %s' % str(services.keys()))
     service = services[option]
     status, response = callServer('put', serverEndpoint + service, open(path, 'r'),
-            {'Accept': responseMimeType, 'Content-Disposition': 'attachment; filename=%s' % path},
+            {'Accept': responseMimeType, 'Content-Disposition': 'attachment; filename=%s' % os.path.basename(path)},
             verbose)
     return (status, response)
 
@@ -221,7 +223,6 @@ def getRemoteJar(urlOrPath, destPath):
         return (destPath, 'remote')
     
 def checkPortIsOpen(remoteServerHost=ServerHost, port = Port):
-    #import pdb; pdb.set_trace()
     remoteServer = remoteServerHost.split('//',1)[1]
     remoteServerIP  = socket.gethostbyname(remoteServer)
 
@@ -246,9 +247,12 @@ def checkPortIsOpen(remoteServerHost=ServerHost, port = Port):
         print "Couldn't connect to server"
         sys.exit()
 
-def main(argv):
+def main(argv=None):
     """Run Tika from command line according to USAGE."""
-    global Verbose   
+    global Verbose
+    if argv is None:
+        argv = sys.argv
+
     if len(argv) < 3: die('Bad args')
     try:
         opts, argv = getopt.getopt(argv[1:], 'hi:s:o:p:v',
