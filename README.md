@@ -12,6 +12,7 @@ Inspired by [Aptivate Tika](https://github.com/aptivate/python-tika).
 Prerequisite
 ----------------
 requests module
+
 `pip install requests`  
 
 Installation
