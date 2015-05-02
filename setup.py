@@ -34,7 +34,7 @@ except ImportError:
 version = '1.8'
 
 _descr = u'''**********
-tika
+tika-python
 ***************
 
 .. contents::
@@ -61,7 +61,7 @@ def read(*rnames):
 long_description = _descr 
 
 setup(
-    name='tika',
+    name='tika-python',
     version=version,
     description='Apache Tika Python library',
     long_description=long_description,
