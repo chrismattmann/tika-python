@@ -9,6 +9,11 @@ library, installable via Setuptools, Pip and Easy Install.
 
 Inspired by [Aptivate Tika](https://github.com/aptivate/python-tika).
 
+Prerequisite
+----------------
+requests module
+`pip install requests`  
+
 Installation
 ----------------
 1. `python setup.py build`  
