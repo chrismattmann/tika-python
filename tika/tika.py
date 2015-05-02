@@ -76,7 +76,7 @@ def runCommand(cmd, option, urlOrPaths, port, outDir=None, serverHost=ServerHost
    # import pdb; pdb.set_trace()
     if (cmd in 'parse' or cmd in 'detect') and (urlOrPaths == [] or urlOrPaths == None):
         die('No URLs/paths specified.')
-    serverEndpoint = checkTikaServer(serverHost, port, tikaServerJar)
+    serverEndpoint = serverHost + ':' + port
     if cmd == 'parse':
         if len(urlOrPaths) == 1:
             status, resp = parse1(option, urlOrPaths[0], serverEndpoint, verbose)
