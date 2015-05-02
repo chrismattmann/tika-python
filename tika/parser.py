@@ -20,7 +20,7 @@ from tika import parse1, callServer, ServerEndpoint
 import os
 import json
 
-def from_file(filename, force_images=False):
+def from_file(filename):
     jsonOutput = parse1('all', filename)
     return _parse(jsonOutput)
 
@@ -35,7 +35,7 @@ def _parse(jsonOutput):
         return parsed
     realJson = json.loads(jsonOutput[1])[0]
 
-    if "X-TIKA: content" in realJson:
+    if "X-TIKA:content" in realJson:
         parsed["content"] = realJson["X-TIKA:content"]
     else:
         parsed["content"] = None
