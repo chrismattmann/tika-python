@@ -61,7 +61,7 @@ import requests
 import socket 
 
 TikaServerJar  = "http://search.maven.org/remotecontent?filepath=org/apache/tika/tika-server/1.8/tika-server-1.8.jar"
-StartServerCmd = "java -jar %s --port %s >& "+ sys.path[0] +"/tika-server.log &"
+StartServerCmd = "java -jar %s --port %s >& "+ sys.path[0] +"tika-server.log &"
 ServerHost = "http://localhost"
 Port = "9998"
 ServerEndpoint = ServerHost + ':' + Port
@@ -76,7 +76,7 @@ def runCommand(cmd, option, urlOrPaths, port, outDir=None, serverHost=ServerHost
    # import pdb; pdb.set_trace()
     if (cmd in 'parse' or cmd in 'detect') and (urlOrPaths == [] or urlOrPaths == None):
         die('No URLs/paths specified.')
-    serverEndpoint = checkTikaServer(serverHost, port, tikaServerJar)
+    serverEndpoint = serverHost + ':' + port
     if cmd == 'parse':
         if len(urlOrPaths) == 1:
             status, resp = parse1(option, urlOrPaths[0], serverEndpoint, verbose)
@@ -96,7 +96,7 @@ def parseAndSave(option, urlOrPaths, outDir=None, serverEndpoint=ServerEndpoint,
                  responseMimeType='application/json', metaExtension='_meta.json',
                  services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta'}):
     """Parse the objects and write extracted metadata and/or text in JSON format to matching
-filename with an extension of '_meta.json'."""
+    filename with an extension of '_meta.json'."""
     metaPaths = []
     for path in urlOrPaths:
          if outDir is None:
@@ -127,15 +127,20 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose,
         warn('config option must be one of meta, text, or all; using all.')
     service = services.get(option, services['all'])
     if service == '/tika': responseMimeType = 'text/plain'
-    status, response = callServer('put', serverEndpoint + service, open(path, 'r'),
+    status, response = callServer('put', serverEndpoint, service, open(path, 'r'),
                                   {'Accept': responseMimeType}, verbose)
     if type == 'remote': os.unlink(path)
     return (status, response)
 
 
-def callServer(verb, serviceUrl, data, headers, verbose=Verbose,
+def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose,
                httpVerbs={'get': requests.get, 'put': requests.put, 'post': requests.post}):
     """Call the Tika Server, do some error checking, and return the response."""
+    serverHost = serverEndpoint.rsplit(':',1)[0]
+    port = serverEndpoint.rsplit(':',1)[1]
+    serverEndpoint = checkTikaServer(serverHost, port)
+
+    serviceUrl  = serverEndpoint + service
     if verb not in httpVerbs:
         die('Tika Server call must be one of %s' % str(httpVerbs.keys()))
     verbFn = httpVerbs[verb]
@@ -163,7 +168,7 @@ def detectType1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbos
     if option not in services:
         die('Detect option must be one of %s' % str(services.keys()))
     service = services[option]
-    status, response = callServer('put', serverEndpoint + service, open(path, 'r'),
+    status, response = callServer('put', serverEndpoint, service, open(path, 'r'),
             {'Accept': responseMimeType, 'Content-Disposition': 'attachment; filename=%s' % os.path.basename(path)},
             verbose)
     return (status, response)
@@ -175,7 +180,7 @@ def getConfig(option, serverEndpoint=ServerEndpoint, verbose=Verbose, responseMi
     if option not in services:
         die('config option must be one of mime-types, detectors, or parsers')
     service = services[option]
-    status, response = callServer('get', serverEndpoint + service, None, {'Accept': responseMimeType})
+    status, response = callServer('get', serverEndpoint, service, None, {'Accept': responseMimeType})
     return (status, response)
 
 
@@ -188,8 +193,8 @@ def checkTikaServer(serverHost=ServerHost, port = Port, tikaServerJar=TikaServer
     if 'localhost' in serverEndpoint:
         if not os.path.isfile(jarPath) and urlp.scheme != '':
             tikaServerJar = getRemoteJar(tikaServerJar, jarPath) 
-        if not checkPortIsOpen(serverHost, port): #if no log file, Tika server probably not running
-            startServer(jarPath, serverHost, port)# if start server twice, 2nd one just bombs
+        if not checkPortIsOpen(serverHost, port):
+            startServer(jarPath, serverHost, port)
     return serverEndpoint
 
 
@@ -211,6 +216,7 @@ def getRemoteFile(urlOrPath, destPath):
         echo2('Retrieving %s to %s.' % (urlOrPath, destPath))
         urlretrieve(urlOrPath, destPath)
         return (destPath, 'remote')
+
 def getRemoteJar(urlOrPath, destPath):
     """Fetch URL to local path or just return absolute path."""
     #import pdb; pdb.set_trace()
