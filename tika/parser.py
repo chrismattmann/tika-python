@@ -33,14 +33,25 @@ def _parse(jsonOutput):
     parsed={}
     if not jsonOutput:
         return parsed
-    realJson = json.loads(jsonOutput[1])[0]
+    realJson = json.loads(jsonOutput[1])
 
-    if "X-TIKA:content" in realJson:
-        parsed["content"] = realJson["X-TIKA:content"]
-    else:
-        parsed["content"] = None
+    content = ""
+    for js in realJson:
+        if "X-TIKA:content" in js:
+            content += js["X-TIKA:content"]
+    
+    if content == "":
+        content = None
+
+    parsed["content"] = content
     parsed["metadata"] = {}
-    for n in realJson:
-        if n != "X-TIKA:content":
-            parsed["metadata"][n] = realJson[n]
+
+    for js in realJson:
+        for n in js:
+            if n != "X-TIKA:content":
+                if n in parsed["metadata"]:
+                    parsed["metadata"][n].append(js[n])
+                else:
+                    parsed["metadata"][n] = [js[n]]
+
     return parsed
