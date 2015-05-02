@@ -127,19 +127,20 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose,
         warn('config option must be one of meta, text, or all; using all.')
     service = services.get(option, services['all'])
     if service == '/tika': responseMimeType = 'text/plain'
-    status, response = callServer('put', serverEndpoint + service, serverEndpoint, open(path, 'r'),
+    status, response = callServer('put', serverEndpoint, service, open(path, 'r'),
                                   {'Accept': responseMimeType}, verbose)
     if type == 'remote': os.unlink(path)
     return (status, response)
 
 
-def callServer(verb, serviceUrl, serverEndpoint, data, headers, verbose=Verbose,
+def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose,
                httpVerbs={'get': requests.get, 'put': requests.put, 'post': requests.post}):
     """Call the Tika Server, do some error checking, and return the response."""
-
     serverHost = serverEndpoint.rsplit(':',1)[0]
     port = serverEndpoint.rsplit(':',1)[1]
     serverEndpoint = checkTikaServer(serverHost, port)
+
+    serviceUrl  = serverEndpoint + service
     if verb not in httpVerbs:
         die('Tika Server call must be one of %s' % str(httpVerbs.keys()))
     verbFn = httpVerbs[verb]
@@ -167,7 +168,7 @@ def detectType1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbos
     if option not in services:
         die('Detect option must be one of %s' % str(services.keys()))
     service = services[option]
-    status, response = callServer('put', serverEndpoint + service, serverEndpoint, open(path, 'r'),
+    status, response = callServer('put', serverEndpoint, service, open(path, 'r'),
             {'Accept': responseMimeType, 'Content-Disposition': 'attachment; filename=%s' % os.path.basename(path)},
             verbose)
     return (status, response)
@@ -179,7 +180,7 @@ def getConfig(option, serverEndpoint=ServerEndpoint, verbose=Verbose, responseMi
     if option not in services:
         die('config option must be one of mime-types, detectors, or parsers')
     service = services[option]
-    status, response = callServer('get', serverEndpoint + service, serverEndpoint, None, {'Accept': responseMimeType})
+    status, response = callServer('get', serverEndpoint, service, None, {'Accept': responseMimeType})
     return (status, response)
 
 
