@@ -123,6 +123,7 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose,
           services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta'}):
     """Parse the object and return extracted metadata and/or text in JSON format."""
     path, type = getRemoteFile(urlOrPath, '/tmp')
+    serverEndpoint = checkTikaServer()
     if option not in services:
         warn('config option must be one of meta, text, or all; using all.')
     service = services.get(option, services['all'])
@@ -160,6 +161,7 @@ def detectType1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbos
                services={'type': '/detect/stream'}):
     """Detect the MIME/media type of the stream and return it in text/plain."""
     path, mode = getRemoteFile(urlOrPath, '/tmp')
+    serverEndpoint = checkTikaServer()
     if option not in services:
         die('Detect option must be one of %s' % str(services.keys()))
     service = services[option]
@@ -172,6 +174,7 @@ def detectType1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbos
 def getConfig(option, serverEndpoint=ServerEndpoint, verbose=Verbose, responseMimeType='application/json',
               services={'mime-types': '/mime-types', 'detectors': '/detectors', 'parsers': '/parsers/details'}):
     """Get the configuration of the Tika Server (parsers, detectors, etc.) and return it in JSON format."""
+    serverEndpoint = checkTikaServer()
     if option not in services:
         die('config option must be one of mime-types, detectors, or parsers')
     service = services[option]
@@ -188,8 +191,8 @@ def checkTikaServer(serverHost=ServerHost, port = Port, tikaServerJar=TikaServer
     if 'localhost' in serverEndpoint:
         if not os.path.isfile(jarPath) and urlp.scheme != '':
             tikaServerJar = getRemoteJar(tikaServerJar, jarPath) 
-        if not checkPortIsOpen(serverHost, port): #if no log file, Tika server probably not running
-            startServer(jarPath, serverHost, port)# if start server twice, 2nd one just bombs
+        if not checkPortIsOpen(serverHost, port): 
+            startServer(jarPath, serverHost, port)
     return serverEndpoint
 
 
