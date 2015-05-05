@@ -60,6 +60,14 @@ print config.getMimeTypes()
 print config.getDetectors()
 ```
 
+Language Detection Interface (new)
+---------------------------------
+```
+#!/usr/bin/env python2.7
+from tika import language
+print language.from_file('/path/to/file')
+```
+
 Using a Buffer
 --------------
 Note you can also use a Parser and Detector
@@ -83,6 +91,7 @@ tika.py [-v] [-o <outputDir>] [--server <TikaServerEndpoint>] [--install <UrlToT
 
 tika.py parse all test.pdf | python -mjson.tool        (pretty print Tika JSON output)
 tika.py detect type test.pdf                           (returns mime-type as text/plain)
+tika.py language file french.txt                       (returns language e.g., fr as text/plain)
 tika.py config mime-types                              (see what mime-types the Tika Server can handle)
 
 A simple python and command-line client for Tika using the standalone Tika server (JAR file).
@@ -97,6 +106,7 @@ tika.py config <mime-types | detectors | parsers>
 Commands:
   parse  = parse the input file and return a JSON doc containing the extracted metadata, text, or both
   detect type = parse the stream and 'detect' the MIME/media type, return in text/plain
+  language file = parse the file stream and identify the language of the text, return its 2 character code in text/plain
   config = return a JSON doc describing the configuration of the Tika server (i.e. mime-types it
              can handle, or installed detectors or parsers)
 
