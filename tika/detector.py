@@ -23,6 +23,6 @@ def from_file(filename):
     return jsonOutput[1]
 
 def from_buffer(string):
-    status, response = callServer('put', ServerEndpoint + '/detect/stream', string,
+    status, response = callServer('put', ServerEndpoint, '/detect/stream', string,
                                   {'Accept': 'text/plain'}, False)
     return response
