@@ -25,7 +25,7 @@ def from_file(filename):
     return _parse(jsonOutput)
 
 def from_buffer(string):
-    status, response = callServer('put', ServerEndpoint + '/rmeta', string,
+    status, response = callServer('put', ServerEndpoint, '/rmeta', string,
             {'Accept': 'application/json'}, False)
     return _parse((status,response))
 
