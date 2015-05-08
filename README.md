@@ -100,6 +100,7 @@ tika.py [-v] [-o <outputDir>] [--server <TikaServerEndpoint>] [--install <UrlToT
 tika.py parse all test.pdf | python -mjson.tool        (pretty print Tika JSON output)
 tika.py detect type test.pdf                           (returns mime-type as text/plain)
 tika.py language file french.txt                       (returns language e.g., fr as text/plain)
+tika.py translate fr:en french.txt                     (translates the file french.txt from french to english)
 tika.py config mime-types                              (see what mime-types the Tika Server can handle)
 
 A simple python and command-line client for Tika using the standalone Tika server (JAR file).
@@ -115,6 +116,7 @@ Commands:
   parse  = parse the input file and return a JSON doc containing the extracted metadata, text, or both
   detect type = parse the stream and 'detect' the MIME/media type, return in text/plain
   language file = parse the file stream and identify the language of the text, return its 2 character code in text/plain
+  translate src:dest = parse and extract text and then translate the text from source language to destination language
   config = return a JSON doc describing the configuration of the Tika server (i.e. mime-types it
              can handle, or installed detectors or parsers)
 
