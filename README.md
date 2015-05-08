@@ -68,6 +68,14 @@ from tika import language
 print language.from_file('/path/to/file')
 ```
 
+Translate Interface (new)
+------------------------
+```
+#!/usr/bin/env python2.7
+from tika import translate
+print translate.from_file('/path/to/spanish', 'es', 'en')
+```
+
 Using a Buffer
 --------------
 Note you can also use a Parser and Detector
