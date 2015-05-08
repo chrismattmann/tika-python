@@ -14,18 +14,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# 
+#
 
 from tika import parse1, callServer, ServerEndpoint
 import os
 import json
 
-def from_file(filename):
-    jsonOutput = parse1('all', filename)
+def from_file(filename, serverEndpoint=ServerEndpoint):
+    jsonOutput = parse1('all', filename, serverEndpoint)
     return _parse(jsonOutput)
 
-def from_buffer(string):
-    status, response = callServer('put', ServerEndpoint, '/rmeta', string,
+def from_buffer(string, serverEndpoint=ServerEndpoint):
+    status, response = callServer('put', serverEndpoint, '/rmeta', string,
             {'Accept': 'application/json'}, False)
     return _parse((status,response))
 
@@ -39,7 +39,7 @@ def _parse(jsonOutput):
     for js in realJson:
         if "X-TIKA:content" in js:
             content += js["X-TIKA:content"]
-    
+
     if content == "":
         content = None
 
