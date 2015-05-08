@@ -22,6 +22,7 @@ tika.py [-v] [-o <outputDir>] [--server <TikaServerEndpoint>] [--install <UrlToT
 tika.py parse all test.pdf | python -mjson.tool        (pretty print Tika JSON output)
 tika.py detect type test.pdf                           (returns mime-type as text/plain)
 tika.py language file french.txt                       (returns language e.g., fr as text/plain)
+tika.py translate fr:en french.txt                     (translates the file french.txt from french to english)
 tika.py config mime-types                              (see what mime-types the Tika Server can handle)
 
 A simple python and command-line client for Tika using the standalone Tika server (JAR file).
@@ -37,6 +38,7 @@ Commands:
   parse  = parse the input file and return a JSON doc containing the extracted metadata, text, or both
   detect type = parse the stream and 'detect' the MIME/media type, return in text/plain
   language file = parse the file stream and identify the language of the text, return its 2 character code in text/plain
+  translate src:dest = parse and extract text and then translate the text from source language to destination language
   config = return a JSON doc describing the configuration of the Tika server (i.e. mime-types it
              can handle, or installed detectors or parsers)
 
@@ -69,11 +71,13 @@ StartServerCmd = "java -jar %s --port %s >& "+ TikaJarPath +"/tika-server.log &"
 ServerHost = "localhost"
 Port = "9998"
 ServerEndpoint = 'http://' + ServerHost + ':' + Port
+Translator = "org.apache.tika.language.translate.Lingo24Translator"
 
 Verbose = 0
 def echo2(*s): sys.stderr.write('tika.py: ' + ' '.join(map(str, s)) + '\n')
 def warn(*s):  echo2('Warn:', *s)
 def die(*s):   warn('Error:',  *s); echo2(USAGE); sys.exit()
+def setTranslator(translator): Translator = translator
 
 def runCommand(cmd, option, urlOrPaths, port, outDir=None, serverHost=ServerHost, tikaServerJar=TikaServerJar, verbose=Verbose):
     """Run the Tika command by calling the Tika server and return results in JSON format (or plain text)."""
@@ -91,6 +95,8 @@ def runCommand(cmd, option, urlOrPaths, port, outDir=None, serverHost=ServerHost
         return detectType(option, urlOrPaths, serverEndpoint, verbose, tikaServerJar)
     elif cmd == "language":
         return detectLang(option, urlOrPaths, serverEndpoint, verbose, tikaServerJar)
+    elif cmd == "translate":
+        return doTranslate(option, urlOrPaths, serverEndpoint, verbose, tikaServerJar)        
     elif cmd == "config":
         status, resp = getConfig(option, serverEndpoint, verbose, tikaServerJar)
         return resp
@@ -138,28 +144,6 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
     if type == 'remote': os.unlink(path)
     return (status, response)
 
-
-def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, tikaServerJar=TikaServerJar, 
-               httpVerbs={'get': requests.get, 'put': requests.put, 'post': requests.post}):
-    """Call the Tika Server, do some error checking, and return the response."""
-    parsedUrl = urlparse(serverEndpoint) 
-    serverHost = parsedUrl.hostname
-    port = parsedUrl.port
-    serverEndpoint = checkTikaServer(serverHost, port, tikaServerJar)
-
-    serviceUrl  = serverEndpoint + service
-    if verb not in httpVerbs:
-        die('Tika Server call must be one of %s' % str(httpVerbs.keys()))
-    verbFn = httpVerbs[verb]
-    resp = verbFn(serviceUrl, data=data, headers=headers)
-    if verbose: 
-        print sys.stderr, "Request headers: ", headers
-        print sys.stderr, "Response headers: ", resp.headers
-    if resp.status_code != 200:
-        warn('Tika server returned status:', resp.status_code)
-    return (resp.status_code, resp.content)
-
-
 def detectLang(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar,
                 responseMimeType='text/plain',
                 services={'file' : '/language/stream'}):
@@ -178,8 +162,39 @@ def detectLang1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbos
     status, response = callServer('put', serverEndpoint, service, open(path, 'r'),
             {'Accept': responseMimeType}, verbose, tikaServerJar)
     return (status, response)
-    
 
+def doTranslate(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar, 
+                responseMimeType='text/plain',
+                services={'all': '/translate/all'}):
+    """Translate the file from source language to destination language."""
+    return [doTranslate1(option, path, serverEndpoint, verbose, tikaServerJar, responseMimeType, services)
+            for path in urlOrPaths]
+    
+def doTranslate1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar,
+                 responseMimeType='text/plain', 
+                 services={'all': '/translate/all'}):
+    path, mode = getRemoteFile(urlOrPath, '/tmp')
+    srcLang = ""
+    destLang = ""
+    
+    if ":" in option:
+        options = option.rsplit(':')
+        srcLang = options[0]
+        destLang = options[1]
+        if len(options) != 2:
+            die('Translate options are specified as srcLang:destLang or as destLang') 
+    else:
+        destLang = option
+          
+    if srcLang != "" and destLang != "":
+        service = services["all"] + "/" + Translator + "/" + srcLang + "/" + destLang
+    else:
+        service = services["all"] + "/" + Translator + "/" + destLang  
+    status, response = callServer('put', serverEndpoint, service, open(path, 'r'),
+                                  {'Accept' : responseMimeType},
+                                  verbose, tikaServerJar)
+    return (status, response)
+                       
 def detectType(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar, 
                responseMimeType='text/plain',
                services={'type': '/detect/stream'}):
@@ -209,6 +224,27 @@ def getConfig(option, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServer
     service = services[option]
     status, response = callServer('get', serverEndpoint, service, None, {'Accept': responseMimeType}, verbose, tikaServerJar)
     return (status, response)
+
+
+def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, tikaServerJar=TikaServerJar, 
+               httpVerbs={'get': requests.get, 'put': requests.put, 'post': requests.post}):
+    """Call the Tika Server, do some error checking, and return the response."""
+    parsedUrl = urlparse(serverEndpoint) 
+    serverHost = parsedUrl.hostname
+    port = parsedUrl.port
+    serverEndpoint = checkTikaServer(serverHost, port, tikaServerJar)
+
+    serviceUrl  = serverEndpoint + service
+    if verb not in httpVerbs:
+        die('Tika Server call must be one of %s' % str(httpVerbs.keys()))
+    verbFn = httpVerbs[verb]
+    resp = verbFn(serviceUrl, data=data, headers=headers)
+    if verbose: 
+        print sys.stderr, "Request headers: ", headers
+        print sys.stderr, "Response headers: ", resp.headers
+    if resp.status_code != 200:
+        warn('Tika server returned status:', resp.status_code)
+    return (resp.status_code, resp.content)
 
 
 def checkTikaServer(serverHost=ServerHost, port = Port, tikaServerJar=TikaServerJar):
