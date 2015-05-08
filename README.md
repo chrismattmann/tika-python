@@ -1,10 +1,10 @@
 tika-python
 ===========
 A Python port of the [Apache Tika](http://tika.apache.org/)
-library that makes Tika available using the 
+library that makes Tika available using the
 [Tika REST Server](http://wiki.apache.org/tika/TikaJAXRS).
 
-This makes Apahce Tika available as a Python 
+This makes Apahce Tika available as a Python
 library, installable via Setuptools, Pip and Easy Install.
 
 Inspired by [Aptivate Tika](https://github.com/aptivate/python-tika).
@@ -38,6 +38,11 @@ from tika import parser
 parsed = parser.from_file('/path/to/file')
 print parsed["metadata"]
 print parsed["content"]
+
+# Optionally, you can pass Tika server URL along with the call
+# what's useful for multi-instance execution or when Tika is dockerzed/linked
+parsed = parser.from_file('/path/to/file', 'http://tika:9998/tika')
+string_parsed = parser.from_buffer('Good evening, Dave', 'http://tika:9998/tika')
 ```
 
 Detect Interface (new)
@@ -81,7 +86,7 @@ Using a Buffer
 Note you can also use a Parser and Detector
 .from_buffer(string) method to dynamically parser
 a string buffer in Python and/or detect its MIME
-type. This is useful if you've already loaded 
+type. This is useful if you've already loaded
 the content into memory.
 
 New Command Line Client Tool
@@ -122,7 +127,7 @@ Commands:
 
 Arguments:
   urlOrPathToFile = file to be parsed, if URL it will first be retrieved and then passed to Tika
-  
+
 Switches:
   --verbose, -v                  = verbose mode
   --server <TikaServerEndpoint>  = use a remote Tika Server at this endpoint, otherwise use local server

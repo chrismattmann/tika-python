@@ -15,7 +15,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# 
+#
 # $Id$
 
 import os.path
@@ -58,7 +58,7 @@ _classifiers = [
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
-long_description = _descr 
+long_description = _descr
 
 setup(
     name='tika',
@@ -81,7 +81,7 @@ setup(
         'console_scripts': [
             'tika-python = tika.tika:main'
         ],
-    }, 
+    },
     package_data = {
         # And include any *.conf files found in the 'conf' subdirectory
         # for the package
@@ -89,7 +89,7 @@ setup(
     install_requires=[
         'setuptools',
         'requests'
-    ], 
+    ],
     extras_require={
     },
 )
