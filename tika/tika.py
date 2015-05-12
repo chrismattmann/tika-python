@@ -273,6 +273,8 @@ def getRemoteFile(urlOrPath, destPath):
     urlp = urlparse(urlOrPath)
     if urlp.scheme == '':
         return (os.path.abspath(urlOrPath), 'local')
+    elif urlp.scheme not in ('http', 'https'):
+        return (urlOrPath, 'local')
     else:
         filename = urlOrPath.rsplit('/',1)[1]
         destPath = destPath + '/' +filename
