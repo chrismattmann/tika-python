@@ -1,0 +1,89 @@
+Tika
+Tika supports dozens of document types. Each should be tested when extended
+Client applications manage event streams, so test stream type/doc type combinations
+ 
+Document types
+pdf - http://www.fns.usda.gov/sites/default/files/snap/2014-SNAP-Retailer-Management-Annual-Report.pdf
+pdf - http://dcra.dc.gov/sites/default/files/dc/sites/dcra/publication/attachments/ai_NuisanceAbatement.pdf
+
+#SSL Certificate Fails for Rank_Gender_Race
+xls - http://www.dmdc.osd.mil/Rank_Gender_Race.xls
+
+#Succeds
+xls - https://catalog.data.gov/dataset/free-application-for-federal-student-aid-201213/resource/f2437ade-d39f-40fb-9dba-19c3b26a8662
+
+doc - https://studentaid.ed.gov/sites/default/files/fsawg/datacenter/library/FAFSAReportDefinitions.doc
+
+ppt - http://open.defense.gov/Portals/23/Documents/FOIA_WebsiteCompliance.ppt
+
+image
+jpg - http://www.ars.usda.gov/is/graphics/photos/k5299-1.jpg
+
+http://www.defense.gov/multimedia/web_graphics/
+ps - http://www.defense.gov/multimedia/web_graphics/natguard/Air%20National%20Guard%20Emblem.ps
+
+Coast Guard C
+eps - http://www.defense.gov/multimedia/web_graphics/coastgrd/USCGc1.eps
+jpg - http://www.defense.gov/multimedia/web_graphics/coastgrd/USCGc.jpg
+wmf - http://www.defense.gov/multimedia/web_graphics/coastgrd/USCGc.wmf
+gif - http://www.defense.gov/multimedia/web_graphics/coastgrd/USCGc.gif
+
+Coast Guard B
+jpg - http://www.defense.gov/multimedia/web_graphics/coastgrd/USCGb.jpg
+eps - http://www.defense.gov/multimedia/web_graphics/coastgrd/USCGb1.eps
+wmf - http://www.defense.gov/multimedia/web_graphics/coastgrd/USCGb.wmf
+gif - http://www.defense.gov/multimedia/web_graphics/coastgrd/USCGb.gif
+
+
+audio
+mp3 - http://downloads.bbc.co.uk/podcasts/worldservice/6min_vocab/6min_vocab_20150511-1134a.mp3
+mp4 - http://www.ars.usda.gov/is/podcasts/tomatoes.mp4
+wmv - http://www.ars.usda.gov/is/podcasts/tomatoes.wmv
+
+video
+mp4 - http://media.ars.usda.gov/is/mp4/freezeplants.mp4
+wmv - http://www.ars.usda.gov/is/video/asx/freeze.asx
+
+compressed
+#https://catalog.data.gov/dataset/geologic-map-of-the-state-of-hawaii
+zip - http://pubs.usgs.gov/of/2007/1089/Haw_St_tabfiles.zip
+
+
+csv - http://data.octo.dc.gov/Attachment.aspx?where=Citywide&area=&what=CSV&date=Issueddate&from=4/12/2015%2012:00:00%20AM&to=4/19/2015%2010:00:00%20PM&dataset=DCRA_PERMIT&datasetid=5&whereInd=0&areaInd=0&whatInd=0&dateInd=0&whenInd=0
+csv - http://data.octo.dc.gov/Attachment.aspx?where=Citywide&area=&what=CSV&date=Issueddate&from=4/20/2015%2012:00:00%20AM&to=4/23/2015%2010:00:00%20PM&dataset=DCRA_PERMIT&datasetid=5&whereInd=0&areaInd=0&whatInd=0&dateInd=0&whenInd=0
+csv - http://data.octo.dc.gov/Attachment.aspx?where=Citywide&area=&what=CSV&date=Issueddate&from=4/24/2015%2012:00:00%20AM&to=4/30/2015%201:00:00%20AM&dataset=DCRA_PERMIT&datasetid=5&whereInd=0&areaInd=0&whatInd=0&dateInd=0&whenInd=0
+csv - http://data.octo.dc.gov/Attachment.aspx?where=Citywide&area=&what=CSV&date=Issueddate&from=5/1/2015%2012:00:00%20AM&to=5/7/2015%2010:00:00%20PM&dataset=DCRA_PERMIT&datasetid=5&whereInd=0&areaInd=0&whatInd=0&dateInd=0&whenInd=0
+csv - http://data.octo.dc.gov/Attachment.aspx?where=Citywide&area=&what=CSV&date=Issueddate&from=5/8/2015%2012:00:00%20AM&to=5/10/2015%2010:00:00%20PM&dataset=DCRA_PERMIT&datasetid=5&whereInd=0&areaInd=0&whatInd=0&dateInd=0&whenInd=0
+
+Language
+Persian
+pdf - https://sllc.umd.edu/sites/sllc.umd.edu/files/mehregan.pdf
+
+Nepali
+http://www.hamrosandesh.com/
+
+Document metadata
+Document content
+
+Streaming
+Transfer Protocols
+
+Text encoding
+Language detection
+
+
+Document Types
+https://tika.apache.org/1.8/formats.html
+
+Online
+http://webapps.achd.net/Restaurant/RestaurantSearch.aspx
+http://appsrv.achd.net/reports/rwservlet?food_rep_insp&P_ENCOUNTER=201502090012
+http://appsrv.achd.net/reports/rwservlet?food_rep_insp&P_ENCOUNTER=201308220023
+
+http://www.phila.gov/health/foodprotection/FoodSafetyReports.html
+http://philadelphia.pa.gegov.com/_templates/551/RetailFood/_report_full.cfm?inspectionID=8B2C8CA4-8039-EC2C-F94DBD247613E5CC&domainID=551&userID=0
+
+
+
+Document metadata
+Document content
