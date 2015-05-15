@@ -149,6 +149,11 @@ Contributors
 * Chris A. Mattmann, JPL
 * Brian D. Wilson, JPL
 * Dongni Zhao, USC
+* Kenneth Durri, University of Maryland
+* Tyler Palsulich, New York University & Google
+* Joe Germuska, Northwestern University
+* Vlad Shvedov, Profinda.com
+* Diogo Vieira, Globo.com
 
 License
 =======
