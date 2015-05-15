@@ -18,9 +18,7 @@
 #python -m unittest tests.tests
 
 import unittest
-#import tika
 import tika.parser
-#import tika.tika
 
 
 class CreateTest(unittest.TestCase):
