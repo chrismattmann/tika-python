@@ -6,4 +6,5 @@
 *.log
 /.settings/
 /tika/*.pyc
+/tika/*/*.pyc
 .DS_Store
