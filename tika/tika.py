@@ -70,7 +70,6 @@ from subprocess import STDOUT
 
 TikaJarPath = tempfile.gettempdir()
 TikaServerJar  = "http://search.maven.org/remotecontent?filepath=org/apache/tika/tika-server/1.8/tika-server-1.8.jar"
-#StartServerCmd = Popen(['java', '-jar', TikaJarPath + '%s --port %s', ], stdout=PIPE, stderr=STDOUT)
 ServerHost = "localhost"
 Port = "9998"
 ServerEndpoint = 'http://' + ServerHost + ':' + Port
@@ -265,7 +264,7 @@ def checkTikaServer(serverHost=ServerHost, port = Port, tikaServerJar=TikaServer
 
 
 def startServer(tikaServerJar, serverHost = ServerHost, port = Port):
-    cmd = Popen(['java', '-jar', tikaServerJar, '--port', str(port)], stdout= PIPE)
+    cmd = Popen('java -jar '+tikaServerJar+' --port '+str(port) +' &' , stdout= PIPE, stderr = STDOUT, shell =True)
     time.sleep(5) 
 
 def getRemoteFile(urlOrPath, destPath):
