@@ -264,7 +264,8 @@ def checkTikaServer(serverHost=ServerHost, port = Port, tikaServerJar=TikaServer
 
 
 def startServer(tikaServerJar, serverHost = ServerHost, port = Port):
-    cmd = Popen('java -jar '+tikaServerJar+' --port '+str(port) +' &' , stdout= PIPE, stderr = STDOUT, shell =True)
+    logFile = open(os.path.join(TikaJarPath, 'tika-server.log'), 'w')
+    cmd = Popen('java -jar '+tikaServerJar+' --port '+str(port) +' &' , stdout= logFile, stderr = STDOUT, shell =True)
     time.sleep(5) 
 
 def getRemoteFile(urlOrPath, destPath):
