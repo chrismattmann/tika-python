@@ -15,9 +15,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#Reference
 #https://docs.python.org/2/library/unittest.html
 #http://eli.thegreenplace.net/2011/08/02/python-unit-testing-parametrized-test-cases
-#http://eli.thegreenplace.net/pages/code
+#public domain license reference: http://eli.thegreenplace.net/pages/code
  
 #Run
 #python tika/tests/tests_params.py
@@ -26,15 +27,12 @@ import csv
 import unittest
 import tika.parser
 
-
 class CreateTest(unittest.TestCase):
     "test for file types"
     def __init__(self, methodName='runTest', param1=None, param2=None):
         super(CreateTest, self).__init__(methodName)
 
         self.param1 = param1
-        #self.param1 = tika.parser.from_file(param1)
-        #self.param2 = tika.parser.from_file(param2)
 
     @staticmethod
     def parameterize(test_case, param1=None, param2=None):
@@ -48,7 +46,6 @@ class CreateTest(unittest.TestCase):
 class RemoteTest(CreateTest):
     def setUp(self):
         self.param1 = tika.parser.from_file(self.param1)
-        #self.param1 = tika.parser.from_file("http://www.fns.usda.gov/sites/default/files/snap/2014-SNAP-Retailer-Management-Annual-Report.pdf")
     def test_true(self):
         self.assertTrue(self.param1)
     def test_meta(self):
