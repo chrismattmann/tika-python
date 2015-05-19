@@ -17,8 +17,10 @@
 
 #https://docs.python.org/2/library/unittest.html
 #http://eli.thegreenplace.net/2011/08/02/python-unit-testing-parametrized-test-cases
+#http://eli.thegreenplace.net/pages/code
  
-#python -m unittest tika.tests.tests_params
+#Run
+#python tika/tests/tests_params.py
 
 import csv
 import unittest
@@ -61,7 +63,6 @@ def test_url():
                 yield url[1]
 
 if __name__ == '__main__':
-    #unittest.main()
     suite = unittest.TestSuite()
     t_urls = list(test_url())
     t_urls.pop(0) #remove header
