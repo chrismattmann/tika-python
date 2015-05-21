@@ -8,3 +8,4 @@
 /tika/*.pyc
 /tika/*/*.pyc
 .DS_Store
+/setup.cfg
