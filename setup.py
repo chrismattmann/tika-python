@@ -31,7 +31,7 @@ try:
 except ImportError:
     from distutils.core import setup, find_packages
 
-version = '1.8.8'
+version = '1.8.9'
 
 _descr = u'''**********
 tika
