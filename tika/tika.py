@@ -142,7 +142,8 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
     service = services.get(option, services['all'])
     if service == '/tika': responseMimeType = 'text/plain'
     status, response = callServer('put', serverEndpoint, service, open(path, 'r'),
-                                  {'Accept': responseMimeType}, verbose, tikaServerJar)
+                                  {'Accept': responseMimeType, 'Content-Disposition': 'attachment; filename=%s' % os.path.basename(path)}, 
+                                  verbose, tikaServerJar)
     if type == 'remote': os.unlink(path)
     return (status, response)
 
