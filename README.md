@@ -9,8 +9,12 @@ library, installable via Setuptools, Pip and Easy Install.
 
 Inspired by [Aptivate Tika](https://github.com/aptivate/python-tika).
 
-Installation
-----------------
+Installation (with pip)
+-----------------------
+1. `pip install tika`
+
+Installation (without pip)
+--------------------------
 1. `python setup.py build`  
 2. `python setup.py install`  
 
