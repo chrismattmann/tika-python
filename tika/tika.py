@@ -68,8 +68,9 @@ from subprocess import Popen
 from subprocess import PIPE
 from subprocess import STDOUT
 
+TikaVersion = "1.9"
 TikaJarPath = tempfile.gettempdir()
-TikaServerJar  = "http://search.maven.org/remotecontent?filepath=org/apache/tika/tika-server/1.8/tika-server-1.8.jar"
+TikaServerJar  = "http://search.maven.org/remotecontent?filepath=org/apache/tika/tika-server/"+TikaVersion+"/tika-server-"+TikaVersion+".jar"
 ServerHost = "localhost"
 Port = "9998"
 ServerEndpoint = 'http://' + ServerHost + ':' + Port
