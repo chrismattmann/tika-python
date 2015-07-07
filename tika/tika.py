@@ -242,14 +242,15 @@ def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, ti
     if verb not in httpVerbs:
         die('Tika Server call must be one of %s' % str(httpVerbs.keys()))
     verbFn = httpVerbs[verb]
-    resp = verbFn(serviceUrl, data=data, headers=headers)
+    encodedData = data.encode('utf-8')
+    resp = verbFn(serviceUrl, encodedData, headers=headers)
     if verbose: 
         print sys.stderr, "Request headers: ", headers
         print sys.stderr, "Response headers: ", resp.headers
     if resp.status_code != 200:
         warn('Tika server returned status:', resp.status_code)
     resp.encoding = "utf-8"
-    return (resp.status_code, resp.content)
+    return (resp.status_code, resp.text)
 
 
 def checkTikaServer(serverHost=ServerHost, port = Port, tikaServerJar=TikaServerJar):
