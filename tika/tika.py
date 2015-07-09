@@ -242,7 +242,9 @@ def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, ti
     if verb not in httpVerbs:
         die('Tika Server call must be one of %s' % str(httpVerbs.keys()))
     verbFn = httpVerbs[verb]
-    encodedData = data.encode('utf-8')
+    encodedData = data
+    if type(data) == "str":
+        encodedData = data.encode('utf-8')
     resp = verbFn(serviceUrl, encodedData, headers=headers)
     if verbose: 
         print sys.stderr, "Request headers: ", headers
