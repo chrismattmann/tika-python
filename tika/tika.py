@@ -243,7 +243,7 @@ def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, ti
         die('Tika Server call must be one of %s' % str(httpVerbs.keys()))
     verbFn = httpVerbs[verb]
     encodedData = data
-    if type(data) == "unicode":
+    if type(data) is unicode:
         encodedData = data.encode('utf-8')
     resp = verbFn(serviceUrl, encodedData, headers=headers)
     if verbose: 
