@@ -52,6 +52,6 @@ def _parse(jsonOutput):
                 if n in parsed["metadata"]:
                     parsed["metadata"][n].append(js[n])
                 else:
-                    parsed["metadata"][n] = [js[n]]
+                    parsed["metadata"][n] = js[n]
 
     return parsed
