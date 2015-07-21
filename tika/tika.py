@@ -286,7 +286,17 @@ def getRemoteFile(urlOrPath, destPath):
         filename = urlOrPath.rsplit('/',1)[1]
         destPath = destPath + '/' +filename
         echo2('Retrieving %s to %s.' % (urlOrPath, destPath))
-        urlretrieve(urlOrPath, destPath)
+        try:
+            urlretrieve(urlOrPath, destPath)
+        except IOError, e:
+            # monkey patch fix for SSL/Windows per Tika-Python #54 
+            # https://github.com/chrismattmann/tika-python/issues/54
+            import ssl
+            if hasattr(ssl, '_create_unverified_context'):
+                ssl._create_default_https_context = ssl._create_unverified_context
+            # delete whatever we had there
+            os.remove(destPath)
+            urlretrieve(urlOrPath, destPath)
         return (destPath, 'remote')
 
 def getRemoteJar(urlOrPath, destPath):
