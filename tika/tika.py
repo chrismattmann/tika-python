@@ -311,7 +311,8 @@ def getRemoteFile(urlOrPath, destPath):
             if hasattr(ssl, '_create_unverified_context'):
                 ssl._create_default_https_context = ssl._create_unverified_context
             # delete whatever we had there
-            os.remove(destPath)
+            if os.path.exists(destPath) and os.path.isfile(destPath):
+                os.remove(destPath)
             urlretrieve(urlOrPath, destPath)
         return (destPath, 'remote')
 
@@ -331,7 +332,8 @@ def getRemoteJar(urlOrPath, destPath):
             if hasattr(ssl, '_create_unverified_context'):
                 ssl._create_default_https_context = ssl._create_unverified_context
             # delete whatever we had there
-            os.remove(destPath)
+            if os.path.exists(destPath) and os.path.isfile(destPath):
+                os.remove(destPath)
             urlretrieve(urlOrPath, destPath) 
                
         return (destPath, 'remote')
