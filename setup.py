@@ -73,7 +73,6 @@ setup(
     download_url='http://github.com/chrismattmann/tika-python',
     license=read('LICENSE.txt'),
     packages=find_packages(exclude=['ez_setup']),
-    namespace_packages=['tika'],
     include_package_data=True,
     zip_safe=True,
     test_suite='tika.tests',
