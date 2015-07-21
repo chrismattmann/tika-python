@@ -71,6 +71,7 @@ from subprocess import STDOUT
 
 TikaVersion = "1.9"
 TikaJarPath = tempfile.gettempdir()
+TikaFilesPath = tempfile.gettempdir()
 TikaServerJar  = "http://search.maven.org/remotecontent?filepath=org/apache/tika/tika-server/"+TikaVersion+"/tika-server-"+TikaVersion+".jar"
 ServerHost = "localhost"
 Port = "9998"
@@ -138,7 +139,7 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
           responseMimeType='application/json',
           services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta'}):
     """Parse the object and return extracted metadata and/or text in JSON format."""
-    path, type = getRemoteFile(urlOrPath, '/tmp')
+    path, type = getRemoteFile(urlOrPath, TikaFilesPath)
     if option not in services:
         warn('config option must be one of meta, text, or all; using all.')
     service = services.get(option, services['all'])
@@ -160,7 +161,7 @@ def detectLang1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbos
                responseMimeType='text/plain',
                services={'file' : '/language/stream'}):
     """Detect the language of the provided stream and return its 2 character code as text/plain."""
-    path, mode = getRemoteFile(urlOrPath, '/tmp')
+    path, mode = getRemoteFile(urlOrPath, TikaFilesPath)
     if option not in services:
         die('Language option must be one of %s ' % str(services.keys()))
     service = services[option]
@@ -178,7 +179,7 @@ def doTranslate(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbo
 def doTranslate1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar,
                  responseMimeType='text/plain', 
                  services={'all': '/translate/all'}):
-    path, mode = getRemoteFile(urlOrPath, '/tmp')
+    path, mode = getRemoteFile(urlOrPath, TikaFilesPath)
     srcLang = ""
     destLang = ""
     
@@ -211,7 +212,7 @@ def detectType1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbos
                responseMimeType='text/plain',
                services={'type': '/detect/stream'}):
     """Detect the MIME/media type of the stream and return it in text/plain."""
-    path, mode = getRemoteFile(urlOrPath, '/tmp')
+    path, mode = getRemoteFile(urlOrPath, TikaFilesPath)
     if option not in services:
         die('Detect option must be one of %s' % str(services.keys()))
     service = services[option]
