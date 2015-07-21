@@ -64,6 +64,7 @@ from urlparse import urlparse
 import requests
 import socket 
 import tempfile
+import hashlib
 from subprocess import Popen
 from subprocess import PIPE
 from subprocess import STDOUT
@@ -263,11 +264,27 @@ def checkTikaServer(serverHost=ServerHost, port = Port, tikaServerJar=TikaServer
     logPath = os.path.join(TikaJarPath, 'tika-server.log')
     if 'localhost' in serverEndpoint:
         if not os.path.isfile(jarPath) and urlp.scheme != '':
-            tikaServerJar = getRemoteJar(tikaServerJar, jarPath) 
+            getRemoteJar(tikaServerJar, jarPath) 
+        
+        if not checkJarSig(tikaServerJar, jarPath):
+            os.remove(jarPath)
+            tikaServerJar = getRemoteJar(tikaServerJar, jarPath)
+            
         if not checkPortIsOpen(serverHost, port):
             startServer(jarPath, serverHost, port)
     return serverEndpoint
 
+def checkJarSig(tikaServerJar, jarPath):
+    if not os.path.isfile(jarPath + ".md5"):
+        getRemoteJar(tikaServerJar + ".md5", jarPath + ".md5")
+    m = hashlib.md5()
+    with open(jarPath, 'rb') as f:
+        binContents = f.read()
+        m.update(binContents)
+        with open(jarPath + ".md5", "r") as em:
+            existingContents = em.read()
+            return existingContents == m.hexdigest()
+        
 
 def startServer(tikaServerJar, serverHost = ServerHost, port = Port):
     logFile = open(os.path.join(TikaJarPath, 'tika-server.log'), 'w')
@@ -276,7 +293,6 @@ def startServer(tikaServerJar, serverHost = ServerHost, port = Port):
 
 def getRemoteFile(urlOrPath, destPath):
     """Fetch URL to local path or just return absolute path."""
-    #import pdb; pdb.set_trace()
     urlp = urlparse(urlOrPath)
     if urlp.scheme == '':
         return (os.path.abspath(urlOrPath), 'local')
@@ -301,13 +317,23 @@ def getRemoteFile(urlOrPath, destPath):
 
 def getRemoteJar(urlOrPath, destPath):
     """Fetch URL to local path or just return absolute path."""
-    #import pdb; pdb.set_trace()
     urlp = urlparse(urlOrPath)
     if urlp.scheme == '':
         return (os.path.abspath(urlOrPath), 'local')
     else:
         echo2('Retrieving %s to %s.' % (urlOrPath, destPath))
-        urlretrieve(urlOrPath, destPath)
+        try:
+            urlretrieve(urlOrPath, destPath)
+        except IOError, e:
+            # monkey patch fix for SSL/Windows per Tika-Python #54 
+            # https://github.com/chrismattmann/tika-python/issues/54
+            import ssl
+            if hasattr(ssl, '_create_unverified_context'):
+                ssl._create_default_https_context = ssl._create_unverified_context
+            # delete whatever we had there
+            os.remove(destPath)
+            urlretrieve(urlOrPath, destPath) 
+               
         return (destPath, 'remote')
     
 def checkPortIsOpen(remoteServerHost=ServerHost, port = Port):
