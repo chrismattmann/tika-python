@@ -31,7 +31,6 @@ class CreateTest(unittest.TestCase):
     "test for file types"
     def __init__(self, methodName='runTest', param1=None, param2=None):
         super(CreateTest, self).__init__(methodName)
-
         self.param1 = param1
 
     @staticmethod
@@ -39,34 +38,43 @@ class CreateTest(unittest.TestCase):
         testloader = unittest.TestLoader()
         testnames = testloader.getTestCaseNames(test_case)
         suite = unittest.TestSuite()
-        for name in testnames:
+        for name in ['check_true', 'check_meta', 'check_content']:
             suite.addTest(test_case(name, param1=param1, param2=param2))
         return suite
 
 class RemoteTest(CreateTest):
-    def setUp(self):
+    def check_true(self):
         self.param1 = tika.parser.from_file(self.param1)
-    def test_true(self):
         self.assertTrue(self.param1)
-    def test_meta(self):
+    def check_meta(self):
+        self.param1 = tika.parser.from_file(self.param1)
         self.assertTrue(self.param1['metadata'])
-    def test_content(self):
+    def check_content(self):
+        self.param1 = tika.parser.from_file(self.param1)
         self.assertTrue(self.param1['content'])
+    def test_all(self):
+        suite = test_suite()
+        unittest.TextTestRunner(verbosity=2).run(suite)
+
+def test_suite():
+    suite = unittest.TestSuite()
+    t_urls = list(test_url())
+    t_urls.pop(0) #remove header
+    for x in t_urls:
+        try:
+            suite.addTest(CreateTest.parameterize(RemoteTest,param1=x))
+        except IOError as e:
+            print(e.strerror)    
+    return suite        
 
 def test_url():
     with open('tika/tests/arguments/test_remote_content.csv', 'r') as csvfile:
             urlread = csv.reader(csvfile)
             for url in urlread:
                 yield url[1]
+                
+
 
 if __name__ == '__main__':
-    suite = unittest.TestSuite()
-    t_urls = list(test_url())
-    t_urls.pop(0) #remove header
-
-    for x in t_urls:
-        try:
-            suite.addTest(CreateTest.parameterize(RemoteTest,param1=x))
-        except IOError as e:
-            print(e.strerror)
+    suite = test_suite()
     unittest.TextTestRunner(verbosity=2).run(suite)
