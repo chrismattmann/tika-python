@@ -69,7 +69,7 @@ from subprocess import Popen
 from subprocess import PIPE
 from subprocess import STDOUT
 
-TikaVersion = "1.9"
+TikaVersion = "1.10"
 TikaJarPath = tempfile.gettempdir()
 TikaFilesPath = tempfile.gettempdir()
 TikaServerJar  = "http://search.maven.org/remotecontent?filepath=org/apache/tika/tika-server/"+TikaVersion+"/tika-server-"+TikaVersion+".jar"
