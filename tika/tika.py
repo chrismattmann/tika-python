@@ -65,10 +65,12 @@ import requests
 import socket 
 import tempfile
 import hashlib
+import platform
 from subprocess import Popen
 from subprocess import PIPE
 from subprocess import STDOUT
 
+Windows = True if platform.system() == "Windows" else False
 TikaVersion = "1.10"
 TikaJarPath = tempfile.gettempdir()
 TikaFilesPath = tempfile.gettempdir()
@@ -244,6 +246,10 @@ def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, ti
     if verb not in httpVerbs:
         die('Tika Server call must be one of %s' % str(httpVerbs.keys()))
     verbFn = httpVerbs[verb]
+    
+    if Windows and type(data) is file:
+        data = data.read()    
+        
     encodedData = data
     if type(data) is unicode:
         encodedData = data.encode('utf-8')
