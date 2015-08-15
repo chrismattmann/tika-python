@@ -50,6 +50,8 @@ def _parse(jsonOutput):
         for n in js:
             if n != "X-TIKA:content":
                 if n in parsed["metadata"]:
+                    if not isinstance(parsed["metadata"][n], list):
+                        parsed["metadata"][n] = [parsed["metadata"][n]]                    
                     parsed["metadata"][n].append(js[n])
                 else:
                     parsed["metadata"][n] = js[n]
