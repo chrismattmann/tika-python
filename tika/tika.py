@@ -269,15 +269,17 @@ def checkTikaServer(serverHost=ServerHost, port = Port, tikaServerJar=TikaServer
     serverEndpoint = 'http://' + serverHost +':' + str(port)
     jarPath = os.path.join(TikaJarPath, 'tika-server.jar')
     logPath = os.path.join(TikaJarPath, 'tika-server.log')
-    if 'localhost' in serverEndpoint:
-        if not os.path.isfile(jarPath) and urlp.scheme != '':
-            getRemoteJar(tikaServerJar, jarPath) 
+    if 'localhost' in serverEndpoint or '127.0.0.1' in serverEndpoint:
+        alreadyRunning = checkPortIsOpen(serverHost, port)
         
-        if not checkJarSig(tikaServerJar, jarPath):
-            os.remove(jarPath)
-            tikaServerJar = getRemoteJar(tikaServerJar, jarPath)
+        if not alreadyRunning:
+            if not os.path.isfile(jarPath) and urlp.scheme != '':
+                getRemoteJar(tikaServerJar, jarPath) 
             
-        if not checkPortIsOpen(serverHost, port):
+            if not checkJarSig(tikaServerJar, jarPath):
+                os.remove(jarPath)
+                tikaServerJar = getRemoteJar(tikaServerJar, jarPath)
+            
             startServer(jarPath, serverHost, port)
     return serverEndpoint
 
