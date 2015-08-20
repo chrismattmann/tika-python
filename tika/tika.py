@@ -296,8 +296,13 @@ def checkJarSig(tikaServerJar, jarPath):
         
 
 def startServer(tikaServerJar, serverHost = ServerHost, port = Port):
+    host = "localhost"
+    if Windows:
+        host = "0.0.0.0"
+    
+    cmd = 'java -jar '+tikaServerJar+' --port '+str(port) +' --host '+host+' &'
     logFile = open(os.path.join(TikaJarPath, 'tika-server.log'), 'w')
-    cmd = Popen('java -jar '+tikaServerJar+' --port '+str(port) +' &' , stdout= logFile, stderr = STDOUT, shell =True)
+    cmd = Popen(host , stdout= logFile, stderr = STDOUT, shell =True)
     time.sleep(5) 
 
 def getRemoteFile(urlOrPath, destPath):
