@@ -302,7 +302,7 @@ def startServer(tikaServerJar, serverHost = ServerHost, port = Port):
     
     cmd = 'java -jar '+tikaServerJar+' --port '+str(port) +' --host '+host+' &'
     logFile = open(os.path.join(TikaJarPath, 'tika-server.log'), 'w')
-    cmd = Popen(host , stdout= logFile, stderr = STDOUT, shell =True)
+    cmd = Popen(cmd , stdout= logFile, stderr = STDOUT, shell =True)
     time.sleep(5) 
 
 def getRemoteFile(urlOrPath, destPath):
