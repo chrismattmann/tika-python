@@ -71,7 +71,7 @@ from subprocess import PIPE
 from subprocess import STDOUT
 
 Windows = True if platform.system() == "Windows" else False
-TikaVersion = "1.10"
+TikaVersion = "1.11"
 TikaJarPath = tempfile.gettempdir()
 TikaFilesPath = tempfile.gettempdir()
 TikaServerJar  = "http://search.maven.org/remotecontent?filepath=org/apache/tika/tika-server/"+TikaVersion+"/tika-server-"+TikaVersion+".jar"
