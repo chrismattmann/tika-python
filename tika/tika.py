@@ -390,12 +390,13 @@ def main(argv=None):
         
     tikaServerJar = TikaServerJar
     serverEndpoint = ServerEndpoint
+    serverHost = ServerHost
     outDir = '.'
     port = Port
     for opt, val in opts:
         if opt   in ('-h', '--help'):    echo2(USAGE); sys.exit()
         elif opt in ('--install'):       tikaServerJar = val
-        elif opt in ('--server'):        serverEndpoint = val
+        elif opt in ('--server'):        serverHost = val
         elif opt in ('-o', '--output'):  outDir = val
         elif opt in ('--port'):          port = val
         elif opt in ('-v', '--verbose'): Verbose = 1
@@ -407,7 +408,7 @@ def main(argv=None):
         paths = argv[2:]
     except:
         paths = None
-    return runCommand(cmd, option, paths, port, outDir, serverHost=ServerHost, tikaServerJar=tikaServerJar, verbose=Verbose)
+    return runCommand(cmd, option, paths, port, outDir, serverHost=serverHost, tikaServerJar=tikaServerJar, verbose=Verbose)
 
 
 if __name__ == '__main__':
