@@ -149,6 +149,10 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
     status, response = callServer('put', serverEndpoint, service, open(path, 'r'),
                                   {'Accept': responseMimeType, 'Content-Disposition': 'attachment; filename=%s' % os.path.basename(path)}, 
                                   verbose, tikaServerJar)
+    
+    # Uncomment this to encode response in UTF-8. This helps when you want to write response, with special characters, into a file.
+    # response = response.encode("utf8")
+
     if type == 'remote': os.unlink(path)
     return (status, response)
 
