@@ -17,7 +17,7 @@
 # 
 
 USAGE = """
-tika.py [-v] [-o <outputDir>] [--server <TikaServerEndpoint>] [--install <UrlToTikaServerJar>] [--port <portNumber>] <command> <option> <urlOrPathToFile>
+tika.py [-v] [-e] [-o <outputDir>] [--server <TikaServerEndpoint>] [--install <UrlToTikaServerJar>] [--port <portNumber>] <command> <option> <urlOrPathToFile>
 
 tika.py parse all test.pdf | python -mjson.tool        (pretty print Tika JSON output)
 tika.py detect type test.pdf                           (returns mime-type as text/plain)
@@ -47,6 +47,7 @@ Arguments:
   
 Switches:
   --verbose, -v                  = verbose mode
+  --encode, -e			 = encode response in UTF-8
   --server <TikaServerEndpoint>  = use a remote Tika Server at this endpoint, otherwise use local server
   --install <UrlToTikaServerJar> = download and exec Tika Server (JAR file), starting server on default port 9998
 
@@ -81,12 +82,13 @@ ServerEndpoint = 'http://' + ServerHost + ':' + Port
 Translator = "org.apache.tika.language.translate.Lingo24Translator"
 
 Verbose = 0
+EncodeUtf8 = 0
 def echo2(*s): sys.stderr.write('tika.py: ' + ' '.join(map(str, s)) + '\n')
 def warn(*s):  echo2('Warn:', *s)
 def die(*s):   warn('Error:',  *s); echo2(USAGE); sys.exit()
 def setTranslator(translator): Translator = translator
 
-def runCommand(cmd, option, urlOrPaths, port, outDir=None, serverHost=ServerHost, tikaServerJar=TikaServerJar, verbose=Verbose):
+def runCommand(cmd, option, urlOrPaths, port, outDir=None, serverHost=ServerHost, tikaServerJar=TikaServerJar, verbose=Verbose, encode=EncodeUtf8):
     """Run the Tika command by calling the Tika server and return results in JSON format (or plain text)."""
    # import pdb; pdb.set_trace()
     if (cmd in 'parse' or cmd in 'detect') and (urlOrPaths == [] or urlOrPaths == None):
@@ -95,6 +97,8 @@ def runCommand(cmd, option, urlOrPaths, port, outDir=None, serverHost=ServerHost
     if cmd == 'parse':
         if len(urlOrPaths) == 1:
             status, resp = parse1(option, urlOrPaths[0], serverEndpoint, verbose, tikaServerJar)
+	    if encode:
+		resp = resp.encode("utf-8")
             return resp
         else:
             return parseAndSave(option, urlOrPaths, outDir, serverEndpoint, verbose, tikaServerJar)
@@ -150,9 +154,6 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
                                   {'Accept': responseMimeType, 'Content-Disposition': 'attachment; filename=%s' % os.path.basename(path)}, 
                                   verbose, tikaServerJar)
     
-    # Uncomment this to encode response in UTF-8. This helps when you want to write response, with special characters, into a file.
-    # response = response.encode("utf8")
-
     if type == 'remote': os.unlink(path)
     return (status, response)
 
@@ -382,13 +383,14 @@ def checkPortIsOpen(remoteServerHost=ServerHost, port = Port):
 def main(argv=None):
     """Run Tika from command line according to USAGE."""
     global Verbose
+    global EncodeUtf8
     if argv is None:
         argv = sys.argv
 
-    if len(argv) < 3: die('Bad args')
+    if (len(argv) < 3 and not (('-h' in argv) or ('--help' in argv))): die('Bad args')
     try:
-        opts, argv = getopt.getopt(argv[1:], 'hi:s:o:p:v',
-          ['help', 'install=', 'server=', 'output=', 'port=', 'verbose'])
+        opts, argv = getopt.getopt(argv[1:], 'hi:s:o:p:v:e',
+          ['help', 'install=', 'server=', 'output=', 'port=', 'verbose', 'encode'])
     except getopt.GetoptError, (msg, bad_opt):
         die("%s error: Bad option: %s, %s" % (argv[0], bad_opt, msg))
         
@@ -404,6 +406,7 @@ def main(argv=None):
         elif opt in ('-o', '--output'):  outDir = val
         elif opt in ('--port'):          port = val
         elif opt in ('-v', '--verbose'): Verbose = 1
+	elif opt in ('-e', '--encode'): EncodeUtf8 = 1
         else: die(USAGE)
 
     cmd = argv[0]
@@ -412,7 +415,7 @@ def main(argv=None):
         paths = argv[2:]
     except:
         paths = None
-    return runCommand(cmd, option, paths, port, outDir, serverHost=serverHost, tikaServerJar=tikaServerJar, verbose=Verbose)
+    return runCommand(cmd, option, paths, port, outDir, serverHost=serverHost, tikaServerJar=tikaServerJar, verbose=Verbose, encode=EncodeUtf8)
 
 
 if __name__ == '__main__':
