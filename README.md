@@ -159,6 +159,7 @@ Contributors
 * Vlad Shvedov, Profinda.com
 * Diogo Vieira, Globo.com
 * Aron Ahmadia, Continuum Analytics
+* Karanjeet Singh, USC
 
 License
 =======
