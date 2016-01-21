@@ -16,7 +16,7 @@
 # limitations under the License.
 # 
 
-from tika import getConfig
+from .tika import getConfig
 
 def getParsers():
     return getConfig('parsers')[1]

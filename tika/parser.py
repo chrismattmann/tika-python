@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-from tika import parse1, callServer, ServerEndpoint
+from .tika import parse1, callServer, ServerEndpoint
 import os
 import json
 

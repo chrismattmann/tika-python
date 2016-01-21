@@ -16,7 +16,7 @@
 # limitations under the License.
 # 
 
-from tika import detectType1, callServer, ServerEndpoint
+from .tika import detectType1, callServer, ServerEndpoint
 
 def from_file(filename):
     jsonOutput = detectType1('type', filename)

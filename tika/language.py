@@ -16,7 +16,7 @@
 # limitations under the License.
 # 
 
-from tika import detectLang1, callServer, ServerEndpoint
+from .tika import detectLang1, callServer, ServerEndpoint
 
 def from_file(filename):
     jsonOutput = detectLang1('file', filename)

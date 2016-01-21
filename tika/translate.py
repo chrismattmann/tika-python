@@ -16,7 +16,7 @@
 # limitations under the License.
 # 
 
-from tika import doTranslate1, callServer, Translator, ServerEndpoint
+from .tika import doTranslate1, callServer, Translator, ServerEndpoint
 
 def from_file(filename, srcLang, destLang, serverEndpoint=ServerEndpoint):
     jsonOutput = doTranslate1(srcLang+':'+destLang, filename, serverEndpoint)
