@@ -29,8 +29,8 @@ import tika
 tika.initVM()
 from tika import parser
 parsed = parser.from_file('/path/to/file')
-print parsed["metadata"]
-print parsed["content"]
+print(parsed["metadata"])
+print(parsed["content"])
 ```
 
 Parser Interface (new)
@@ -40,8 +40,8 @@ Parser Interface (new)
 import tika
 from tika import parser
 parsed = parser.from_file('/path/to/file')
-print parsed["metadata"]
-print parsed["content"]
+print(parsed["metadata"])
+print(parsed["content"])
 
 # Optionally, you can pass Tika server URL along with the call
 # what's useful for multi-instance execution or when Tika is dockerzed/linked
@@ -55,7 +55,7 @@ Detect Interface (new)
 #!/usr/bin/env python3.5
 import tika
 from tika import detector
-print detector.from_file('/path/to/file')
+print(detector.from_file('/path/to/file'))
 ```
 
 Config Interface (new)
@@ -64,9 +64,9 @@ Config Interface (new)
 #!/usr/bin/env python3.5
 import tika
 from tika import config
-print config.getParsers()
-print config.getMimeTypes()
-print config.getDetectors()
+print(config.getParsers())
+print(config.getMimeTypes())
+print(config.getDetectors())
 ```
 
 Language Detection Interface (new)
@@ -74,7 +74,7 @@ Language Detection Interface (new)
 ```
 #!/usr/bin/env python3.5
 from tika import language
-print language.from_file('/path/to/file')
+print(language.from_file('/path/to/file'))
 ```
 
 Translate Interface (new)
@@ -82,7 +82,7 @@ Translate Interface (new)
 ```
 #!/usr/bin/env python3.5
 from tika import translate
-print translate.from_file('/path/to/spanish', 'es', 'en')
+print(translate.from_file('/path/to/spanish', 'es', 'en'))
 ```
 
 Using a Buffer
