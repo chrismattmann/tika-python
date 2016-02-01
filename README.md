@@ -24,7 +24,7 @@ Testing it out
 Parser Interface (backwards compat prior to REST)
 -------------------------------------------------
 ```
-#!/usr/bin/env python3.5
+#!/usr/bin/env python
 import tika
 tika.initVM()
 from tika import parser
@@ -36,7 +36,7 @@ print(parsed["content"])
 Parser Interface (new)
 ----------------------
 ```
-#!/usr/bin/env python3.5
+#!/usr/bin/env python
 import tika
 from tika import parser
 parsed = parser.from_file('/path/to/file')
@@ -52,7 +52,7 @@ string_parsed = parser.from_buffer('Good evening, Dave', 'http://tika:9998/tika'
 Detect Interface (new)
 ----------------------
 ```
-#!/usr/bin/env python3.5
+#!/usr/bin/env python
 import tika
 from tika import detector
 print(detector.from_file('/path/to/file'))
@@ -61,7 +61,7 @@ print(detector.from_file('/path/to/file'))
 Config Interface (new)
 ----------------------
 ```
-#!/usr/bin/env python3.5
+#!/usr/bin/env python
 import tika
 from tika import config
 print(config.getParsers())
@@ -72,7 +72,7 @@ print(config.getDetectors())
 Language Detection Interface (new)
 ---------------------------------
 ```
-#!/usr/bin/env python3.5
+#!/usr/bin/env python
 from tika import language
 print(language.from_file('/path/to/file'))
 ```
@@ -80,7 +80,7 @@ print(language.from_file('/path/to/file'))
 Translate Interface (new)
 ------------------------
 ```
-#!/usr/bin/env python3.5
+#!/usr/bin/env python
 from tika import translate
 print(translate.from_file('/path/to/spanish', 'es', 'en'))
 ```
