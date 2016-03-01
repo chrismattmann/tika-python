@@ -94,12 +94,6 @@ def runCommand(cmd, option, urlOrPaths, port, outDir=None, serverHost=ServerHost
         die('No URLs/paths specified.')
     serverEndpoint = 'http://' + serverHost + ':' + port
     if cmd == 'parse':
-#        if len(urlOrPaths) == 1:
-#            status, resp = parse1(option, urlOrPaths[0], serverEndpoint, verbose, tikaServerJar)
-#            if encode:
-#                resp = resp.encode("utf-8")
-#            return resp
-#        else:
         return parseAndSave(option, urlOrPaths, outDir, serverEndpoint, verbose, tikaServerJar)
     elif cmd == "detect":
         return detectType(option, urlOrPaths, serverEndpoint, verbose, tikaServerJar)
