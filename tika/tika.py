@@ -108,12 +108,7 @@ def runCommand(cmd, option, urlOrPaths, port, outDir=None, serverHost=ServerHost
         die('Bad args')
 
 
-def parseAndSave(option, urlOrPaths, outDir=None, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar,
-                 responseMimeType='application/json', metaExtension='_meta.json',
-                 services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta'}):
-    """Parse the objects and write extracted metadata and/or text in JSON format to matching
-    filename with an extension of '_meta.json'."""
-    metaPaths = []
+def getPaths(urlOrPaths):
     paths = []
     for eachUrlOrPaths in urlOrPaths:
       if os.path.isdir(eachUrlOrPaths):
@@ -122,6 +117,15 @@ def parseAndSave(option, urlOrPaths, outDir=None, serverEndpoint=ServerEndpoint,
             paths.append(os.path.join(root,filename))
       else:
         paths.append(eachUrlOrPaths)
+    return paths
+
+def parseAndSave(option, urlOrPaths, outDir=None, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar,
+                 responseMimeType='application/json', metaExtension='_meta.json',
+                 services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta'}):
+    """Parse the objects and write extracted metadata and/or text in JSON format to matching
+    filename with an extension of '_meta.json'."""
+    metaPaths = []
+    paths = getPaths(urlOrPaths)
     for path in paths:
          if outDir is None:
              metaPath = path + metaExtension
@@ -162,14 +166,7 @@ def detectLang(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbos
                 responseMimeType='text/plain',
                 services={'file' : '/language/stream'}):
     """Detect the language of the provided stream and return its 2 character code as text/plain."""
-    paths = []
-    for eachUrlOrPaths in urlOrPaths:
-      if os.path.isdir(eachUrlOrPaths):
-        for root, directories, filenames in walk(eachUrlOrPaths):
-          for filename in filenames:
-            paths.append(os.path.join(root,filename))
-      else:
-        paths.append(eachUrlOrPaths)
+    paths = getPaths(urlOrPaths)
     return [detectLang1(option, path, serverEndpoint, verbose, tikaServerJar, responseMimeType, services)
             for path in paths]
 
@@ -189,14 +186,7 @@ def doTranslate(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbo
                 responseMimeType='text/plain',
                 services={'all': '/translate/all'}):
     """Translate the file from source language to destination language."""
-    paths = []
-    for eachUrlOrPaths in urlOrPaths:
-      if os.path.isdir(eachUrlOrPaths):
-        for root, directories, filenames in walk(eachUrlOrPaths):
-          for filename in filenames:
-            paths.append(os.path.join(root,filename))
-      else:
-        paths.append(eachUrlOrPaths)
+    paths = getPaths(urlOrPaths)
     return [doTranslate1(option, path, serverEndpoint, verbose, tikaServerJar, responseMimeType, services)
             for path in paths]
     
@@ -229,14 +219,7 @@ def detectType(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbos
                responseMimeType='text/plain',
                services={'type': '/detect/stream'}):
     """Detect the MIME/media type of the stream and return it in text/plain."""
-    paths = []
-    for eachUrlOrPaths in urlOrPaths:
-      if os.path.isdir(eachUrlOrPaths):
-        for root, directories, filenames in walk(eachUrlOrPaths):
-          for filename in filenames:
-            paths.append(os.path.join(root,filename))
-      else:
-        paths.append(eachUrlOrPaths)
+    paths = getPaths(urlOrPaths)
     return [detectType1(option, path, serverEndpoint, verbose, tikaServerJar, responseMimeType, services)
              for path in paths]
 
@@ -347,7 +330,7 @@ def getRemoteFile(urlOrPath, destPath):
         echo2('Retrieving %s to %s.' % (urlOrPath, destPath))
         try:
             urlretrieve(urlOrPath, destPath)
-        except IOError, e:
+        except IOError:
             # monkey patch fix for SSL/Windows per Tika-Python #54 
             # https://github.com/chrismattmann/tika-python/issues/54
             import ssl
@@ -368,7 +351,7 @@ def getRemoteJar(urlOrPath, destPath):
         echo2('Retrieving %s to %s.' % (urlOrPath, destPath))
         try:
             urlretrieve(urlOrPath, destPath)
-        except IOError, e:
+        except IOError:
             # monkey patch fix for SSL/Windows per Tika-Python #54 
             # https://github.com/chrismattmann/tika-python/issues/54
             import ssl
