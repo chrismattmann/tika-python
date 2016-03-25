@@ -160,6 +160,7 @@ Contributors
 * Diogo Vieira, Globo.com
 * Aron Ahmadia, Continuum Analytics
 * Karanjeet Singh, USC
+* Renat Nasyrov, Yandex
 
 License
 =======
