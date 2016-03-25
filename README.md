@@ -7,6 +7,10 @@ library that makes Tika available using the
 This makes Apache Tika available as a Python
 library, installable via Setuptools, Pip and Easy Install.
 
+To use this library, you need to have Java 7+ installed on your
+system as tika-python starts up the Tika REST server in the
+background.
+
 Inspired by [Aptivate Tika](https://github.com/aptivate/python-tika).
 
 Installation (with pip)
@@ -23,7 +27,7 @@ Testing it out
 
 Parser Interface (backwards compat prior to REST)
 -------------------------------------------------
-```
+```python
 #!/usr/bin/env python2.7
 import tika
 tika.initVM()
@@ -35,7 +39,7 @@ print parsed["content"]
 
 Parser Interface (new)
 ----------------------
-```
+```python
 #!/usr/bin/env python2.7
 import tika
 from tika import parser
@@ -51,7 +55,7 @@ string_parsed = parser.from_buffer('Good evening, Dave', 'http://tika:9998/tika'
 
 Detect Interface (new)
 ----------------------
-```
+```python
 #!/usr/bin/env python2.7
 import tika
 from tika import detector
@@ -60,7 +64,7 @@ print detector.from_file('/path/to/file')
 
 Config Interface (new)
 ----------------------
-```
+```python
 #!/usr/bin/env python2.7
 import tika
 from tika import config
@@ -71,7 +75,7 @@ print config.getDetectors()
 
 Language Detection Interface (new)
 ---------------------------------
-```
+```python
 #!/usr/bin/env python2.7
 from tika import language
 print language.from_file('/path/to/file')
@@ -79,7 +83,7 @@ print language.from_file('/path/to/file')
 
 Translate Interface (new)
 ------------------------
-```
+```python
 #!/usr/bin/env python2.7
 from tika import translate
 print translate.from_file('/path/to/spanish', 'es', 'en')

@@ -81,11 +81,11 @@ import tempfile
 import hashlib
 import platform
 from subprocess import Popen
-from subprocess import PIPE
 from subprocess import STDOUT
+from os import walk
 
 Windows = True if platform.system() == "Windows" else False
-TikaVersion = "1.11"
+TikaVersion = "1.12"
 TikaJarPath = tempfile.gettempdir()
 TikaFilesPath = tempfile.gettempdir()
 TikaServerJar  = "http://search.maven.org/remotecontent?filepath=org/apache/tika/tika-server/"+TikaVersion+"/tika-server-"+TikaVersion+".jar"
@@ -99,7 +99,6 @@ EncodeUtf8 = 0
 def echo2(*s): sys.stderr.write('tika.py: ' + ' '.join(map(binary_string, s)) + '\n')
 def warn(*s):  echo2('Warn:', *s)
 def die(*s):   warn('Error:',  *s); echo2(USAGE); sys.exit()
-def setTranslator(translator): Translator = translator
 
 def runCommand(cmd, option, urlOrPaths, port, outDir=None, serverHost=ServerHost, tikaServerJar=TikaServerJar, verbose=Verbose, encode=EncodeUtf8):
     """Run the Tika command by calling the Tika server and return results in JSON format (or plain text)."""
@@ -108,13 +107,7 @@ def runCommand(cmd, option, urlOrPaths, port, outDir=None, serverHost=ServerHost
         die('No URLs/paths specified.')
     serverEndpoint = 'http://' + serverHost + ':' + port
     if cmd == 'parse':
-        if len(urlOrPaths) == 1:
-            status, resp = parse1(option, urlOrPaths[0], serverEndpoint, verbose, tikaServerJar)
-            if encode:
-                resp = resp.encode("utf-8")
-            return resp
-        else:
-            return parseAndSave(option, urlOrPaths, outDir, serverEndpoint, verbose, tikaServerJar)
+        return parseAndSave(option, urlOrPaths, outDir, serverEndpoint, verbose, tikaServerJar)
     elif cmd == "detect":
         return detectType(option, urlOrPaths, serverEndpoint, verbose, tikaServerJar)
     elif cmd == "language":
@@ -128,13 +121,25 @@ def runCommand(cmd, option, urlOrPaths, port, outDir=None, serverHost=ServerHost
         die('Bad args')
 
 
+def getPaths(urlOrPaths):
+    paths = []
+    for eachUrlOrPaths in urlOrPaths:
+      if os.path.isdir(eachUrlOrPaths):
+        for root, directories, filenames in walk(eachUrlOrPaths):
+          for filename in filenames:
+            paths.append(os.path.join(root,filename))
+      else:
+        paths.append(eachUrlOrPaths)
+    return paths
+
 def parseAndSave(option, urlOrPaths, outDir=None, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar,
                  responseMimeType='application/json', metaExtension='_meta.json',
                  services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta'}):
     """Parse the objects and write extracted metadata and/or text in JSON format to matching
     filename with an extension of '_meta.json'."""
     metaPaths = []
-    for path in urlOrPaths:
+    paths = getPaths(urlOrPaths)
+    for path in paths:
          if outDir is None:
              metaPath = path + metaExtension
          else:
@@ -174,8 +179,9 @@ def detectLang(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbos
                 responseMimeType='text/plain',
                 services={'file' : '/language/stream'}):
     """Detect the language of the provided stream and return its 2 character code as text/plain."""
+    paths = getPaths(urlOrPaths)
     return [detectLang1(option, path, serverEndpoint, verbose, tikaServerJar, responseMimeType, services)
-            for path in urlOrPaths]
+            for path in paths]
 
 def detectLang1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar, 
                responseMimeType='text/plain',
@@ -193,8 +199,9 @@ def doTranslate(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbo
                 responseMimeType='text/plain',
                 services={'all': '/translate/all'}):
     """Translate the file from source language to destination language."""
+    paths = getPaths(urlOrPaths)
     return [doTranslate1(option, path, serverEndpoint, verbose, tikaServerJar, responseMimeType, services)
-            for path in urlOrPaths]
+            for path in paths]
     
 def doTranslate1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar,
                  responseMimeType='text/plain', 
@@ -225,8 +232,9 @@ def detectType(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbos
                responseMimeType='text/plain',
                services={'type': '/detect/stream'}):
     """Detect the MIME/media type of the stream and return it in text/plain."""
+    paths = getPaths(urlOrPaths)
     return [detectType1(option, path, serverEndpoint, verbose, tikaServerJar, responseMimeType, services)
-             for path in urlOrPaths]
+             for path in paths]
 
 def detectType1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar, 
                responseMimeType='text/plain',
@@ -287,7 +295,6 @@ def checkTikaServer(serverHost=ServerHost, port = Port, tikaServerJar=TikaServer
     urlp = urlparse(tikaServerJar)
     serverEndpoint = 'http://%s:%s' % (serverHost, port)
     jarPath = os.path.join(TikaJarPath, 'tika-server.jar')
-    logPath = os.path.join(TikaJarPath, 'tika-server.log')
     if 'localhost' in serverEndpoint or '127.0.0.1' in serverEndpoint:
         alreadyRunning = checkPortIsOpen(serverHost, port)
         
@@ -337,7 +344,7 @@ def getRemoteFile(urlOrPath, destPath):
         echo2('Retrieving %s to %s.' % (urlOrPath, destPath))
         try:
             urlretrieve(urlOrPath, destPath)
-        except IOError as e:
+        except IOError:
             # monkey patch fix for SSL/Windows per Tika-Python #54 
             # https://github.com/chrismattmann/tika-python/issues/54
             import ssl
@@ -358,7 +365,7 @@ def getRemoteJar(urlOrPath, destPath):
         echo2('Retrieving %s to %s.' % (urlOrPath, destPath))
         try:
             urlretrieve(urlOrPath, destPath)
-        except IOError as e:
+        except IOError:
             # monkey patch fix for SSL/Windows per Tika-Python #54 
             # https://github.com/chrismattmann/tika-python/issues/54
             import ssl
@@ -410,7 +417,6 @@ def main(argv=None):
         die("%s error: Bad option: %s, %s" % (argv[0], bad_opt, msg))
         
     tikaServerJar = TikaServerJar
-    serverEndpoint = ServerEndpoint
     serverHost = ServerHost
     outDir = '.'
     port = Port
@@ -438,5 +444,4 @@ if __name__ == '__main__':
     if type(resp) == list:
         print('\n'.join([r[1] for r in resp]))
     else:
-        print(resp)
-
+        print resp
