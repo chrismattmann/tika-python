@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 # encoding: utf-8
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -263,7 +263,7 @@ def getConfig(option, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServer
 def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, tikaServerJar=TikaServerJar, 
                httpVerbs={'get': requests.get, 'put': requests.put, 'post': requests.post}):
     """Call the Tika Server, do some error checking, and return the response."""
-    print ("server endpoint:", serverEndpoint)
+    print("server endpoint:", serverEndpoint)
     parsedUrl = urlparse(serverEndpoint) 
     serverHost = parsedUrl.hostname
     port = parsedUrl.port
