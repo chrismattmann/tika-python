@@ -27,25 +27,25 @@ Testing it out
 
 Parser Interface (backwards compat prior to REST)
 -------------------------------------------------
-```python
-#!/usr/bin/env python2.7
+```
+#!/usr/bin/env python
 import tika
 tika.initVM()
 from tika import parser
 parsed = parser.from_file('/path/to/file')
-print parsed["metadata"]
-print parsed["content"]
+print(parsed["metadata"])
+print(parsed["content"])
 ```
 
 Parser Interface (new)
 ----------------------
-```python
-#!/usr/bin/env python2.7
+```
+#!/usr/bin/env python
 import tika
 from tika import parser
 parsed = parser.from_file('/path/to/file')
-print parsed["metadata"]
-print parsed["content"]
+print(parsed["metadata"])
+print(parsed["content"])
 
 # Optionally, you can pass Tika server URL along with the call
 # what's useful for multi-instance execution or when Tika is dockerzed/linked
@@ -55,38 +55,38 @@ string_parsed = parser.from_buffer('Good evening, Dave', 'http://tika:9998/tika'
 
 Detect Interface (new)
 ----------------------
-```python
-#!/usr/bin/env python2.7
+```
+#!/usr/bin/env python
 import tika
 from tika import detector
-print detector.from_file('/path/to/file')
+print(detector.from_file('/path/to/file'))
 ```
 
 Config Interface (new)
 ----------------------
-```python
-#!/usr/bin/env python2.7
+```
+#!/usr/bin/env python
 import tika
 from tika import config
-print config.getParsers()
-print config.getMimeTypes()
-print config.getDetectors()
+print(config.getParsers())
+print(config.getMimeTypes())
+print(config.getDetectors())
 ```
 
 Language Detection Interface (new)
 ---------------------------------
-```python
-#!/usr/bin/env python2.7
+```
+#!/usr/bin/env python
 from tika import language
-print language.from_file('/path/to/file')
+print(language.from_file('/path/to/file'))
 ```
 
 Translate Interface (new)
 ------------------------
-```python
-#!/usr/bin/env python2.7
+```
+#!/usr/bin/env python
 from tika import translate
-print translate.from_file('/path/to/spanish', 'es', 'en')
+print(translate.from_file('/path/to/spanish', 'es', 'en'))
 ```
 
 Using a Buffer
