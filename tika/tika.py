@@ -85,7 +85,7 @@ from subprocess import STDOUT
 from os import walk
 
 Windows = True if platform.system() == "Windows" else False
-TikaVersion = "1.12"
+TikaVersion = "1.12-py3"
 TikaJarPath = tempfile.gettempdir()
 TikaFilesPath = tempfile.gettempdir()
 TikaServerJar  = "http://search.maven.org/remotecontent?filepath=org/apache/tika/tika-server/"+TikaVersion+"/tika-server-"+TikaVersion+".jar"
