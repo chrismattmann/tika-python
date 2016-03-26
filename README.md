@@ -165,6 +165,7 @@ Contributors
 * Aron Ahmadia, Continuum Analytics
 * Karanjeet Singh, USC
 * Renat Nasyrov, Yandex
+* James Brooking, Blackhat
 
 License
 =======
