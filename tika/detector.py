@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 # encoding: utf-8
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -16,7 +16,7 @@
 # limitations under the License.
 # 
 
-from tika import detectType1, callServer, ServerEndpoint
+from .tika import detectType1, callServer, ServerEndpoint
 
 def from_file(filename):
     jsonOutput = detectType1('type', filename)
