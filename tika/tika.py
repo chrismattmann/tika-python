@@ -122,6 +122,10 @@ def runCommand(cmd, option, urlOrPaths, port, outDir=None, serverHost=ServerHost
 
 
 def getPaths(urlOrPaths):
+    """Determines if the given URL in urlOrPaths is a URL or a file or directory. If it's
+    a directory, it walks the directory and then finds all file paths in it, and ads them
+    too. If it's a file, it adds it to the paths. If it's a URL it just adds it to the path.
+    """
     paths = []
     for eachUrlOrPaths in urlOrPaths:
       if os.path.isdir(eachUrlOrPaths):
