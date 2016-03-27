@@ -93,6 +93,7 @@ ServerHost = "localhost"
 Port = "9998"
 ServerEndpoint = 'http://' + ServerHost + ':' + Port
 Translator = "org.apache.tika.language.translate.Lingo24Translator"
+TikaClientOnly = False
 
 Verbose = 0
 EncodeUtf8 = 0
@@ -271,7 +272,9 @@ def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, ti
     parsedUrl = urlparse(serverEndpoint) 
     serverHost = parsedUrl.hostname
     port = parsedUrl.port
-    serverEndpoint = checkTikaServer(serverHost, port, tikaServerJar)
+    global TikaClientOnly
+    if not TikaClientOnly:
+        serverEndpoint = checkTikaServer(serverHost, port, tikaServerJar)
 
     serviceUrl  = serverEndpoint + service
     if verb not in httpVerbs:

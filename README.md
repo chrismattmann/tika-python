@@ -97,6 +97,18 @@ a string buffer in Python and/or detect its MIME
 type. This is useful if you've already loaded
 the content into memory.
 
+Using Client Only Mode
+----------------------
+You can set Tika to use Client only mode by setting
+```python
+import tika
+tika.tika.TikaClientOnly = True
+```
+
+Then you can run any of the methods and it will fully
+omit the check to see if the service on localhost is
+running and omit printing the check messages.
+
 New Command Line Client Tool
 ============================
 When you install Tika-Python you also get a new command
