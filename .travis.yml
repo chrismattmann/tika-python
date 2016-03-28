@@ -7,4 +7,4 @@ python:
   - "3.4"
   - "3.5"
 install: "pip install -r requirements.txt"
-script: pytest
+script: py.test
