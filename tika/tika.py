@@ -444,4 +444,4 @@ if __name__ == '__main__':
     if type(resp) == list:
         print('\n'.join([r[1] for r in resp]))
     else:
-        print resp
+        print(resp)
