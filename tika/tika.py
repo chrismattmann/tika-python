@@ -61,7 +61,7 @@ Example usage as python client:
 
 import sys, os, getopt, time
 try:
-    unicode_string = unicode
+    unicode_string = 'utf_8'
     binary_string = str
 except NameError:
     unicode_string = str
@@ -451,4 +451,4 @@ if __name__ == '__main__':
     if type(resp) == list:
         print('\n'.join([r[1] for r in resp]))
     else:
-        print resp
+        print(resp)
