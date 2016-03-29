@@ -319,14 +319,14 @@ def checkJarSig(tikaServerJar, jarPath):
         with open(jarPath + ".md5", "r") as em:
             existingContents = em.read()
             return existingContents == m.hexdigest()
-        
+
 
 def startServer(tikaServerJar, serverHost = ServerHost, port = Port):
     host = "localhost"
     if Windows:
         host = "0.0.0.0"
-    
-    cmd = 'java -jar '+tikaServerJar+' --port '+binary_string(port) +' --host '+host+' &'
+
+    cmd = 'java -jar %s --port %i --host %s &' % (tikaServerJar, port, host)
     logFile = open(os.path.join(TikaJarPath, 'tika-server.log'), 'w')
     cmd = Popen(cmd , stdout= logFile, stderr = STDOUT, shell =True)
     time.sleep(5) 
