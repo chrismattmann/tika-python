@@ -97,7 +97,7 @@ TikaClientOnly = False
 
 Verbose = 0
 EncodeUtf8 = 0
-def echo2(*s): sys.stderr.write(unicode_string('tika.py: %s\n') % ' '.join(map(unicode_string, s)))
+def echo2(*s): sys.stderr.write(unicode_string('tika.py: %s\n') % unicode_string(' ').join(map(unicode_string, s)))
 def warn(*s):  echo2('Warn:', *s)
 def die(*s):   warn('Error:',  *s); echo2(USAGE); sys.exit()
 
