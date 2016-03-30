@@ -1,8 +1,11 @@
+[![Build Status](https://travis-ci.org/chrismattmann/tika-python.svg?branch=master)](https://travis-ci.org/chrismattmann/tika-python)
+[![Coverage Status](https://coveralls.io/repos/github/chrismattmann/tika-python/badge.svg?branch=master)](https://coveralls.io/github/chrismattmann/tika-python?branch=master)
+
 tika-python
 ===========
 A Python port of the [Apache Tika](http://tika.apache.org/)
 library that makes Tika available using the
-[Tika REST Server](http://wiki.apache.org/tika/TikaJAXRS).
+[Tika REST Server](http://wiki.apache.org/tika/TikaJAXRS). 
 
 This makes Apache Tika available as a Python
 library, installable via Setuptools, Pip and Easy Install.
@@ -97,6 +100,18 @@ a string buffer in Python and/or detect its MIME
 type. This is useful if you've already loaded
 the content into memory.
 
+Using Client Only Mode
+----------------------
+You can set Tika to use Client only mode by setting
+```python
+import tika
+tika.tika.TikaClientOnly = True
+```
+
+Then you can run any of the methods and it will fully
+omit the check to see if the service on localhost is
+running and omit printing the check messages.
+
 New Command Line Client Tool
 ============================
 When you install Tika-Python you also get a new command
@@ -165,6 +180,7 @@ Contributors
 * Aron Ahmadia, Continuum Analytics
 * Karanjeet Singh, USC
 * Renat Nasyrov, Yandex
+* James Brooking, Blackbeard
 
 License
 =======

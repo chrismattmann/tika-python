@@ -61,7 +61,7 @@ Example usage as python client:
 
 import sys, os, getopt, time
 try:
-    unicode_string = unicode
+    unicode_string = 'utf_8'
     binary_string = str
 except NameError:
     unicode_string = str
@@ -93,6 +93,7 @@ ServerHost = "localhost"
 Port = "9998"
 ServerEndpoint = 'http://' + ServerHost + ':' + Port
 Translator = "org.apache.tika.language.translate.Lingo24Translator"
+TikaClientOnly = False
 
 Verbose = 0
 EncodeUtf8 = 0
@@ -122,6 +123,10 @@ def runCommand(cmd, option, urlOrPaths, port, outDir=None, serverHost=ServerHost
 
 
 def getPaths(urlOrPaths):
+    """Determines if the given URL in urlOrPaths is a URL or a file or directory. If it's
+    a directory, it walks the directory and then finds all file paths in it, and ads them
+    too. If it's a file, it adds it to the paths. If it's a URL it just adds it to the path.
+    """
     paths = []
     for eachUrlOrPaths in urlOrPaths:
       if os.path.isdir(eachUrlOrPaths):
@@ -267,7 +272,9 @@ def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, ti
     parsedUrl = urlparse(serverEndpoint) 
     serverHost = parsedUrl.hostname
     port = parsedUrl.port
-    serverEndpoint = checkTikaServer(serverHost, port, tikaServerJar)
+    global TikaClientOnly
+    if not TikaClientOnly:
+        serverEndpoint = checkTikaServer(serverHost, port, tikaServerJar)
 
     serviceUrl  = serverEndpoint + service
     if verb not in httpVerbs:
