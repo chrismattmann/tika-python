@@ -61,7 +61,7 @@ Example usage as python client:
 
 import sys, os, getopt, time
 try:
-    unicode_string = 'utf_8'
+    unicode_string = unicode 
     binary_string = str
 except NameError:
     unicode_string = str
