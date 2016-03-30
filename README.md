@@ -181,6 +181,7 @@ Contributors
 * Karanjeet Singh, USC
 * Renat Nasyrov, Yandex
 * James Brooking, Blackbeard
+* Yash Tanna, USC
 
 License
 =======
