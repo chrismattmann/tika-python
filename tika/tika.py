@@ -61,7 +61,7 @@ Example usage as python client:
 
 import sys, os, getopt, time
 try:
-    unicode_string = 'utf_8'
+    unicode_string = unicode 
     binary_string = str
 except NameError:
     unicode_string = str
@@ -97,7 +97,7 @@ TikaClientOnly = False
 
 Verbose = 0
 EncodeUtf8 = 0
-def echo2(*s): sys.stderr.write('tika.py: ' + ' '.join(map(binary_string, s)) + '\n')
+def echo2(*s): sys.stderr.write(unicode_string('tika.py: %s\n') % unicode_string(' ').join(map(unicode_string, s)))
 def warn(*s):  echo2('Warn:', *s)
 def die(*s):   warn('Error:',  *s); echo2(USAGE); sys.exit()
 
@@ -326,14 +326,14 @@ def checkJarSig(tikaServerJar, jarPath):
         with open(jarPath + ".md5", "r") as em:
             existingContents = em.read()
             return existingContents == m.hexdigest()
-        
+
 
 def startServer(tikaServerJar, serverHost = ServerHost, port = Port):
     host = "localhost"
     if Windows:
         host = "0.0.0.0"
-    
-    cmd = 'java -jar '+tikaServerJar+' --port '+binary_string(port) +' --host '+host+' &'
+
+    cmd = 'java -jar %s --port %i --host %s &' % (tikaServerJar, port, host)
     logFile = open(os.path.join(TikaJarPath, 'tika-server.log'), 'w')
     cmd = Popen(cmd , stdout= logFile, stderr = STDOUT, shell =True)
     time.sleep(5) 
