@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/chrismattmann/tika-python.svg?branch=master)](https://travis-ci.org/chrismattmann/tika-python)
+[![Coverage Status](https://coveralls.io/repos/chrismattmann/tika-python/badge.svg?branch=master)](https://coveralls.io/r/chrismattmann/tika-python?branch=master)
+
 tika-python
 ===========
 A Python port of the [Apache Tika](http://tika.apache.org/)
