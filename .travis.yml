@@ -7,4 +7,4 @@ python:
   - "3.5"
 install: "pip install -r requirements.txt"
 script: py.test --cov
-after_sucess: coveralls
+after_success: coveralls
