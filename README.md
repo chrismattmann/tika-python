@@ -125,7 +125,7 @@ the tika-server jar and start it if you haven't done so already.
 ```
 tika.py [-v] [-o <outputDir>] [--server <TikaServerEndpoint>] [--install <UrlToTikaServerJar>] [--port <portNumber>] <command> <option> <urlOrPathToFile>
 
-tika.py parse all test.pdf | python -mjson.tool        (pretty print Tika JSON output)
+tika.py parse all test.pdf test2.pdf                   (write output JSON metadata files for test1.pdf_meta.json and test2.pdf_meta.json)
 tika.py detect type test.pdf                           (returns mime-type as text/plain)
 tika.py language file french.txt                       (returns language e.g., fr as text/plain)
 tika.py translate fr:en french.txt                     (translates the file french.txt from french to english)
@@ -141,7 +141,7 @@ To check the configuration of the Tika server, use:
 tika.py config <mime-types | detectors | parsers>
 
 Commands:
-  parse  = parse the input file and return a JSON doc containing the extracted metadata, text, or both
+  parse  = parse the input file and write a JSON doc file.ext_meta.json containing the extracted metadata, text, or both
   detect type = parse the stream and 'detect' the MIME/media type, return in text/plain
   language file = parse the file stream and identify the language of the text, return its 2 character code in text/plain
   translate src:dest = parse and extract text and then translate the text from source language to destination language
