@@ -19,7 +19,7 @@
 USAGE = """
 tika.py [-v] [-e] [-o <outputDir>] [--server <TikaServerEndpoint>] [--install <UrlToTikaServerJar>] [--port <portNumber>] <command> <option> <urlOrPathToFile>
 
-tika.py parse all test.pdf | python -mjson.tool        (pretty print Tika JSON output)
+tika.py parse all test.pdf test2.pdf                   (write output JSON metadata files for test1.pdf_meta.json and test2.pdf_meta.json)
 tika.py detect type test.pdf                           (returns mime-type as text/plain)
 tika.py language file french.txt                       (returns language e.g., fr as text/plain)
 tika.py translate fr:en french.txt                     (translates the file french.txt from french to english)
@@ -35,7 +35,7 @@ To check the configuration of the Tika server, use:
 tika.py config <mime-types | detectors | parsers>
 
 Commands:
-  parse  = parse the input file and return a JSON doc containing the extracted metadata, text, or both
+  parse  = parse the input file and write a JSON doc file.ext_meta.json containing the extracted metadata, text, or both
   detect type = parse the stream and 'detect' the MIME/media type, return in text/plain
   language file = parse the file stream and identify the language of the text, return its 2 character code in text/plain
   translate src:dest = parse and extract text and then translate the text from source language to destination language
@@ -59,7 +59,7 @@ Example usage as python client:
 
 """
 
-import sys, os, getopt, time
+import sys, os, getopt, time, codecs
 try:
     unicode_string = unicode 
     binary_string = str
@@ -75,6 +75,11 @@ try:
     from urlparse import urlparse
 except ImportError:
     from urllib.parse import urlparse as urlparse
+
+if sys.version_info[0] < 3:
+    import codecs
+    open = codecs.open
+
 import requests
 import socket 
 import tempfile
@@ -150,9 +155,9 @@ def parseAndSave(option, urlOrPaths, outDir=None, serverEndpoint=ServerEndpoint,
          else:
              metaPath = os.path.join(outDir, os.path.split(path)[1] + metaExtension)
              echo2('Writing %s' % metaPath)
-             with open(metaPath, 'w') as f:
+             with open(metaPath, 'w', 'utf-8') as f:
                  f.write(parse1(option, path, serverEndpoint, verbose, tikaServerJar, \
-                                   responseMimeType, services) + "\n")
+                                    responseMimeType, services)[1] + u"\n")
          metaPaths.append(metaPath)
     return metaPaths
 
@@ -161,7 +166,7 @@ def parse(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
           responseMimeType='application/json',
           services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta'}):
     """Parse the objects and return extracted metadata and/or text in JSON format."""
-    return [parse1(option, urlOrPaths, serverEndpoint, verbose, tikaServerJar, responseMimeType, services)
+    return [parse1(option, path, serverEndpoint, verbose, tikaServerJar, responseMimeType, services)
              for path in urlOrPaths]
 
 def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar, 
