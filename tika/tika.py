@@ -114,7 +114,6 @@ def runCommand(cmd, option, urlOrPaths, port, outDir=None, serverHost=ServerHost
     serverEndpoint = 'http://' + serverHost + ':' + port
     if cmd == 'parse':
         return parseAndSave(option, urlOrPaths, outDir, serverEndpoint, verbose, tikaServerJar)
-        #return parse(option, urlOrPaths, serverEndpoint, verbose, tikaServerJar)
     elif cmd == "detect":
         return detectType(option, urlOrPaths, serverEndpoint, verbose, tikaServerJar)
     elif cmd == "language":
