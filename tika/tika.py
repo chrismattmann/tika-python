@@ -273,7 +273,7 @@ def getConfig(option, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServer
 def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, tikaServerJar=TikaServerJar, 
                httpVerbs={'get': requests.get, 'put': requests.put, 'post': requests.post}):
     """Call the Tika Server, do some error checking, and return the response."""
-    print("server endpoint:", serverEndpoint)
+    
     parsedUrl = urlparse(serverEndpoint) 
     serverHost = parsedUrl.hostname
     port = parsedUrl.port
