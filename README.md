@@ -32,7 +32,7 @@ These are read once, when tika/tika.py is initially loaded and used throughout a
 1. `TIKA_VERSION` - set to the version string, e.g., 1.12 or default to current Tika version.
 2. `TIKA_SERVER_JAR` - set to the full URL to the remote Tika server jar to download and cache.
 3. `TIKA_SERVER_ENDPOINT` - set to the host (local or remote) for the running Tika server jar.
-4. `TIKA_CLIENT_ONLY` - if set to True, then TIKA_SERVER_JAR is ignored, and relies on the value for `TIKA_SERVER_ENDPOINT` and treats Tika like a REST client.
+4. `TIKA_CLIENT_ONLY` - if set to True, then `TIKA_SERVER_JAR` is ignored, and relies on the value for `TIKA_SERVER_ENDPOINT` and treats Tika like a REST client.
 5. `TIKA_TRANSLATOR` - set to the fully qualified class name (defaults to Lingo24) for the Tika translator implementation.
 
 Testing it out
