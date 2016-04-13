@@ -90,20 +90,15 @@ from subprocess import STDOUT
 from os import walk
 
 Windows = True if platform.system() == "Windows" else False
-TikaVersion = os.getenv('TIKA_VERSION', '1.12')
+TikaVersion = "1.12"
 TikaJarPath = tempfile.gettempdir()
 TikaFilesPath = tempfile.gettempdir()
-TikaServerJar = os.getenv(
-    'TIKA_SERVER_JAR',
-    "http://search.maven.org/remotecontent?filepath=org/apache/tika/tika-server/"+TikaVersion+"/tika-server-"+TikaVersion+".jar")
+TikaServerJar  = "http://search.maven.org/remotecontent?filepath=org/apache/tika/tika-server/"+TikaVersion+"/tika-server-"+TikaVersion+".jar"
 ServerHost = "localhost"
 Port = "9998"
-ServerEndpoint = os.getenv(
-    'TIKA_SERVER_ENDPOINT', 'http://' + ServerHost + ':' + Port)
-Translator = os.getenv(
-    'TIKA_TRANSLATOR',
-    "org.apache.tika.language.translate.Lingo24Translator")
-TikaClientOnly = os.getenv('TIKA_CLIENT_ONLY', False)
+ServerEndpoint = 'http://' + ServerHost + ':' + Port
+Translator = "org.apache.tika.language.translate.Lingo24Translator"
+TikaClientOnly = False
 
 Verbose = 0
 EncodeUtf8 = 0
