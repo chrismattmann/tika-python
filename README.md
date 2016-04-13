@@ -192,6 +192,7 @@ Contributors
 * Renat Nasyrov, Yandex
 * James Brooking, Blackbeard
 * Yash Tanna, USC
+* Igor Tokarev, Freelance
 
 License
 =======
