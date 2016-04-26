@@ -458,7 +458,17 @@ def main(argv=None):
 
 if __name__ == '__main__':
     resp = main(sys.argv)
+
+    # Set encoding of the terminal to UTF-8
+    if sys.version.startswith("2"):
+        # Python 2.x
+        out = codecs.getwriter("UTF-8")(sys.stdout)
+    elif sys.version.startswith("3"):
+        # Python 3.x
+        out = codecs.getwriter("UTF-8")(sys.stdout.buffer)
+
     if type(resp) == list:
-        print('\n'.join([r[1] for r in resp]))
+        out.write('\n'.join([r[1] for r in resp]))
     else:
-        print(resp)
+        out.write(resp)
+
