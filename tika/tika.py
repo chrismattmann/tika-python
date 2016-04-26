@@ -48,6 +48,7 @@ Arguments:
 Switches:
   --verbose, -v                  = verbose mode
   --encode, -e           = encode response in UTF-8
+  --csv, -c    = report detect output in comma-delimited format
   --server <TikaServerEndpoint>  = use a remote Tika Server at this endpoint, otherwise use local server
   --install <UrlToTikaServerJar> = download and exec Tika Server (JAR file), starting server on default port 9998
 
@@ -107,6 +108,8 @@ TikaClientOnly = os.getenv('TIKA_CLIENT_ONLY', False)
 
 Verbose = 0
 EncodeUtf8 = 0
+csvOutput = 0
+
 def echo2(*s): sys.stderr.write(unicode_string('tika.py: %s\n') % unicode_string(' ').join(map(unicode_string, s)))
 def warn(*s):  echo2('Warn:', *s)
 def die(*s):   warn('Error:',  *s); echo2(USAGE); sys.exit()
@@ -262,8 +265,10 @@ def detectType1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbos
     status, response = callServer('put', serverEndpoint, service, open(path, 'r'),
             {'Accept': responseMimeType, 'Content-Disposition': 'attachment; filename=%s' % os.path.basename(path)},
             verbose, tikaServerJar)
-    return (status, response)
-
+    if csvOutput == 1:
+        return(status, urlOrPath.decode("UTF-8") + "," + response)
+    else:
+        return (status, response)
 
 def getConfig(option, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar, responseMimeType='application/json',
               services={'mime-types': '/mime-types', 'detectors': '/detectors', 'parsers': '/parsers/details'}):
@@ -422,13 +427,14 @@ def main(argv=None):
     """Run Tika from command line according to USAGE."""
     global Verbose
     global EncodeUtf8
+    global csvOutput
     if argv is None:
         argv = sys.argv
 
     if (len(argv) < 3 and not (('-h' in argv) or ('--help' in argv))): die('Bad args')
     try:
-        opts, argv = getopt.getopt(argv[1:], 'hi:s:o:p:v:e',
-          ['help', 'install=', 'server=', 'output=', 'port=', 'verbose', 'encode'])
+        opts, argv = getopt.getopt(argv[1:], 'hi:s:o:p:v:e:c',
+          ['help', 'install=', 'server=', 'output=', 'port=', 'verbose', 'encode', 'csv'])
     except getopt.GetoptError as opt_error:
         msg, bad_opt = opt_error
         die("%s error: Bad option: %s, %s" % (argv[0], bad_opt, msg))
@@ -445,6 +451,7 @@ def main(argv=None):
         elif opt in ('--port'):          port = val
         elif opt in ('-v', '--verbose'): Verbose = 1
         elif opt in ('-e', '--encode'): EncodeUtf8 = 1
+        elif opt in ('-c', '--csv'): csvOutput = 1
         else: die(USAGE)
 
     cmd = argv[0]
