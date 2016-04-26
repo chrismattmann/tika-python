@@ -478,4 +478,5 @@ if __name__ == '__main__':
         out.write('\n'.join([r[1] for r in resp]))
     else:
         out.write(resp)
+    out.write('\n')
 
