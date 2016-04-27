@@ -163,6 +163,8 @@ Arguments:
 
 Switches:
   --verbose, -v                  = verbose mode
+  --encode, -e           = encode response in UTF-8
+  --csv, -c    = report detect output in comma-delimited format
   --server <TikaServerEndpoint>  = use a remote Tika Server at this endpoint, otherwise use local server
   --install <UrlToTikaServerJar> = download and exec Tika Server (JAR file), starting server on default port 9998
 
