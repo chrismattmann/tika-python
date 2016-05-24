@@ -78,7 +78,6 @@ except ImportError:
     from urllib.parse import urlparse as urlparse
 
 if sys.version_info[0] < 3:
-    import codecs
     open = codecs.open
 
 import requests
@@ -94,6 +93,7 @@ Windows = True if platform.system() == "Windows" else False
 TikaVersion = os.getenv('TIKA_VERSION', '1.12')
 TikaJarPath = tempfile.gettempdir()
 TikaFilesPath = tempfile.gettempdir()
+TikaServerLogFilePath = tempfile.gettempdir()
 TikaServerJar = os.getenv(
     'TIKA_SERVER_JAR',
     "http://search.maven.org/remotecontent?filepath=org/apache/tika/tika-server/"+TikaVersion+"/tika-server-"+TikaVersion+".jar")
@@ -116,7 +116,7 @@ def die(*s):   warn('Error:',  *s); echo2(USAGE); sys.exit()
 
 def runCommand(cmd, option, urlOrPaths, port, outDir=None, serverHost=ServerHost, tikaServerJar=TikaServerJar, verbose=Verbose, encode=EncodeUtf8):
     """Run the Tika command by calling the Tika server and return results in JSON format (or plain text)."""
-   # import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace()
     if (cmd in 'parse' or cmd in 'detect') and (urlOrPaths == [] or urlOrPaths == None):
         die('No URLs/paths specified.')
     serverEndpoint = 'http://' + serverHost + ':' + port
@@ -142,12 +142,12 @@ def getPaths(urlOrPaths):
     """
     paths = []
     for eachUrlOrPaths in urlOrPaths:
-      if os.path.isdir(eachUrlOrPaths):
-        for root, directories, filenames in walk(eachUrlOrPaths):
-          for filename in filenames:
-            paths.append(os.path.join(root,filename))
-      else:
-        paths.append(eachUrlOrPaths)
+        if os.path.isdir(eachUrlOrPaths):
+            for root, directories, filenames in walk(eachUrlOrPaths):
+                for filename in filenames:
+                    paths.append(os.path.join(root,filename))
+        else:
+            paths.append(eachUrlOrPaths)
     return paths
 
 def parseAndSave(option, urlOrPaths, outDir=None, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar,
@@ -158,15 +158,15 @@ def parseAndSave(option, urlOrPaths, outDir=None, serverEndpoint=ServerEndpoint,
     metaPaths = []
     paths = getPaths(urlOrPaths)
     for path in paths:
-         if outDir is None:
-             metaPath = path + metaExtension
-         else:
-             metaPath = os.path.join(outDir, os.path.split(path)[1] + metaExtension)
-             echo2('Writing %s' % metaPath)
-             with open(metaPath, 'w', 'utf-8') as f:
-                 f.write(parse1(option, path, serverEndpoint, verbose, tikaServerJar, \
+        if outDir is None:
+            metaPath = path + metaExtension
+        else:
+            metaPath = os.path.join(outDir, os.path.split(path)[1] + metaExtension)
+            echo2('Writing %s' % metaPath)
+            with open(metaPath, 'w', 'utf-8') as f:
+                f.write(parse1(option, path, serverEndpoint, verbose, tikaServerJar, \
                                     responseMimeType, services)[1] + u"\n")
-         metaPaths.append(metaPath)
+        metaPaths.append(metaPath)
     return metaPaths
 
 
@@ -181,7 +181,7 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
           responseMimeType='application/json',
           services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta/text'}):
     """Parse the object and return extracted metadata and/or text in JSON format."""
-    path, type = getRemoteFile(urlOrPath, TikaFilesPath)
+    path, file_type = getRemoteFile(urlOrPath, TikaFilesPath)
     if option not in services:
         warn('config option must be one of meta, text, or all; using all.')
     service = services.get(option, services['all'])
@@ -190,7 +190,7 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
                                   {'Accept': responseMimeType, 'Content-Disposition': 'attachment; filename=%s' % os.path.basename(path)}, 
                                   verbose, tikaServerJar)
     
-    if type == 'remote': os.unlink(path)
+    if file_type == 'remote': os.unlink(path)
     return (status, response)
 
 def detectLang(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar,
@@ -349,7 +349,7 @@ def startServer(tikaServerJar, serverHost = ServerHost, port = Port):
         host = "0.0.0.0"
 
     cmd = 'java -jar %s --port %i --host %s &' % (tikaServerJar, port, host)
-    logFile = open(os.path.join(TikaJarPath, 'tika-server.log'), 'w')
+    logFile = open(os.path.join(TikaServerLogFilePath, 'tika-server.log'), 'w')
     cmd = Popen(cmd , stdout= logFile, stderr = STDOUT, shell =True)
     time.sleep(5) 
 
