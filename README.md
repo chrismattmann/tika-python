@@ -195,6 +195,7 @@ Contributors
 * James Brooking, Blackbeard
 * Yash Tanna, USC
 * Igor Tokarev, Freelance
+* Imraan Parker, Freelance
 
 License
 =======
