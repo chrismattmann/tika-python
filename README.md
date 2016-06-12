@@ -115,7 +115,7 @@ Using Client Only Mode
 You can set Tika to use Client only mode by setting
 ```python
 import tika
-tika.tika.TikaClientOnly = True
+tika.TikaClientOnly = True
 ```
 
 Then you can run any of the methods and it will fully
