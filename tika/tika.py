@@ -106,6 +106,8 @@ Translator = os.getenv(
     "org.apache.tika.language.translate.Lingo24Translator")
 TikaClientOnly = os.getenv('TIKA_CLIENT_ONLY', False)
 
+TikaServerClasspath = os.getenv('TIKA_SERVER_CLASSPATH', "")
+
 Verbose = 0
 EncodeUtf8 = 0
 csvOutput = 0
@@ -179,7 +181,7 @@ def parse(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
 
 def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar, 
           responseMimeType='application/json',
-          services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta/text'}):
+          services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta/text'}, classpath = TikaServerClasspath):
     """Parse the object and return extracted metadata and/or text in JSON format."""
     path, file_type = getRemoteFile(urlOrPath, TikaFilesPath)
     if option not in services:
@@ -188,7 +190,7 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
     if service == '/tika': responseMimeType = 'text/plain'
     status, response = callServer('put', serverEndpoint, service, open(path, 'rb'),
                                   {'Accept': responseMimeType, 'Content-Disposition': 'attachment; filename=%s' % os.path.basename(path)}, 
-                                  verbose, tikaServerJar)
+                                  verbose, tikaServerJar, classpath = classpath)
     
     if file_type == 'remote': os.unlink(path)
     return (status, response)
@@ -281,7 +283,7 @@ def getConfig(option, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServer
 
 
 def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, tikaServerJar=TikaServerJar, 
-               httpVerbs={'get': requests.get, 'put': requests.put, 'post': requests.post}):
+               httpVerbs={'get': requests.get, 'put': requests.put, 'post': requests.post}, classpath = TikaServerClasspath):
     """Call the Tika Server, do some error checking, and return the response."""
     
     parsedUrl = urlparse(serverEndpoint) 
@@ -289,7 +291,7 @@ def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, ti
     port = parsedUrl.port
     global TikaClientOnly
     if not TikaClientOnly:
-        serverEndpoint = checkTikaServer(serverHost, port, tikaServerJar)
+        serverEndpoint = checkTikaServer(serverHost, port, tikaServerJar, classpath )
 
     serviceUrl  = serverEndpoint + service
     if verb not in httpVerbs:
@@ -312,7 +314,7 @@ def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, ti
     return (resp.status_code, resp.text)
 
 
-def checkTikaServer(serverHost=ServerHost, port = Port, tikaServerJar=TikaServerJar):
+def checkTikaServer(serverHost=ServerHost, port = Port, tikaServerJar=TikaServerJar, classpath = TikaServerClasspath):
     """Check that tika-server is running.  If not, download JAR file and start it up."""
     urlp = urlparse(tikaServerJar)
     serverEndpoint = 'http://%s:%s' % (serverHost, port)
@@ -328,7 +330,7 @@ def checkTikaServer(serverHost=ServerHost, port = Port, tikaServerJar=TikaServer
                 os.remove(jarPath)
                 tikaServerJar = getRemoteJar(tikaServerJar, jarPath)
             
-            startServer(jarPath, serverHost, port)
+            startServer(jarPath, serverHost, port, classpath)
     return serverEndpoint
 
 def checkJarSig(tikaServerJar, jarPath):
@@ -343,12 +345,17 @@ def checkJarSig(tikaServerJar, jarPath):
             return existingContents == m.hexdigest()
 
 
-def startServer(tikaServerJar, serverHost = ServerHost, port = Port):
+def startServer(tikaServerJar, serverHost = ServerHost, port = Port, classpath = TikaServerClasspath):
     host = "localhost"
     if Windows:
         host = "0.0.0.0"
-
-    cmd = 'java -jar %s --port %i --host %s &' % (tikaServerJar, port, host)
+    
+    if classpath :
+        classpath += ":" + tikaServerJar
+    else :
+        classpath = tikaServerJar
+        
+    cmd = 'java -cp %s org.apache.tika.server.TikaServerCli --port %i --host %s &' % (classpath, port, host)
     logFile = open(os.path.join(TikaServerLogFilePath, 'tika-server.log'), 'w')
     cmd = Popen(cmd , stdout= logFile, stderr = STDOUT, shell =True)
     time.sleep(5) 
