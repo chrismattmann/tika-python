@@ -88,6 +88,26 @@ import platform
 from subprocess import Popen
 from subprocess import STDOUT
 from os import walk
+import logging
+
+log_path = tempfile.gettempdir()
+log_file = os.path.join(log_path, 'tika.log')
+
+logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
+log = logging.getLogger()
+
+# File logs
+fileHandler = logging.FileHandler(log_file)
+fileHandler.setFormatter(logFormatter)
+log.addHandler(fileHandler)
+
+# Stdout logs
+consoleHandler = logging.StreamHandler()
+consoleHandler.setFormatter(logFormatter)
+log.addHandler(consoleHandler)
+
+# Log level
+log.setLevel(logging.INFO)
 
 Windows = True if platform.system() == "Windows" else False
 TikaVersion = os.getenv('TIKA_VERSION', '1.13')
@@ -110,6 +130,9 @@ Verbose = 0
 EncodeUtf8 = 0
 csvOutput = 0
 
+class TikaException(Exception):
+    pass
+
 def echo2(*s): sys.stderr.write(unicode_string('tika.py: %s\n') % unicode_string(' ').join(map(unicode_string, s)))
 def warn(*s):  echo2('Warn:', *s)
 def die(*s):   warn('Error:',  *s); echo2(USAGE); sys.exit()
@@ -118,7 +141,8 @@ def runCommand(cmd, option, urlOrPaths, port, outDir=None, serverHost=ServerHost
     """Run the Tika command by calling the Tika server and return results in JSON format (or plain text)."""
     # import pdb; pdb.set_trace()
     if (cmd in 'parse' or cmd in 'detect') and (urlOrPaths == [] or urlOrPaths == None):
-        die('No URLs/paths specified.')
+        log.exception('No URLs/paths specified.')
+        raise TikaException('No URLs/paths specified.')
     serverEndpoint = 'http://' + serverHost + ':' + port
     if cmd == 'parse':
         return parseAndSave(option, urlOrPaths, outDir, serverEndpoint, verbose, tikaServerJar)
@@ -131,8 +155,9 @@ def runCommand(cmd, option, urlOrPaths, port, outDir=None, serverHost=ServerHost
     elif cmd == "config":
         status, resp = getConfig(option, serverEndpoint, verbose, tikaServerJar)
         return resp
-    else:   
-        die('Bad args')
+    else:
+        log.exception('Bad args')
+        raise TikaException('Bad args')
 
 
 def getPaths(urlOrPaths):
@@ -162,7 +187,7 @@ def parseAndSave(option, urlOrPaths, outDir=None, serverEndpoint=ServerEndpoint,
             metaPath = path + metaExtension
         else:
             metaPath = os.path.join(outDir, os.path.split(path)[1] + metaExtension)
-            echo2('Writing %s' % metaPath)
+            log.info('Writing %s' % metaPath)
             with open(metaPath, 'w', 'utf-8') as f:
                 f.write(parse1(option, path, serverEndpoint, verbose, tikaServerJar, \
                                     responseMimeType, services)[1] + u"\n")
@@ -183,7 +208,7 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
     """Parse the object and return extracted metadata and/or text in JSON format."""
     path, file_type = getRemoteFile(urlOrPath, TikaFilesPath)
     if option not in services:
-        warn('config option must be one of meta, text, or all; using all.')
+        log.warning('config option must be one of meta, text, or all; using all.')
     service = services.get(option, services['all'])
     if service == '/tika': responseMimeType = 'text/plain'
     status, response = callServer('put', serverEndpoint, service, open(path, 'rb'),
@@ -207,7 +232,8 @@ def detectLang1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbos
     """Detect the language of the provided stream and return its 2 character code as text/plain."""
     path, mode = getRemoteFile(urlOrPath, TikaFilesPath)
     if option not in services:
-        die('Language option must be one of %s ' % binary_string(services.keys()))
+        log.exception('Language option must be one of %s ' % binary_string(services.keys()))
+        raise TikaException('Language option must be one of %s ' % binary_string(services.keys()))
     service = services[option]
     status, response = callServer('put', serverEndpoint, service, open(path, 'r'),
             {'Accept': responseMimeType}, verbose, tikaServerJar)
@@ -233,7 +259,8 @@ def doTranslate1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbo
         srcLang = options[0]
         destLang = options[1]
         if len(options) != 2:
-            die('Translate options are specified as srcLang:destLang or as destLang') 
+            log.exception('Translate options are specified as srcLang:destLang or as destLang')
+            raise TikaException('Translate options are specified as srcLang:destLang or as destLang')
     else:
         destLang = option
           
@@ -260,7 +287,8 @@ def detectType1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbos
     """Detect the MIME/media type of the stream and return it in text/plain."""
     path, mode = getRemoteFile(urlOrPath, TikaFilesPath)
     if option not in services:
-        die('Detect option must be one of %s' % binary_string(services.keys()))
+        log.exception('Detect option must be one of %s' % binary_string(services.keys()))
+        raise TikaException('Detect option must be one of %s' % binary_string(services.keys()))
     service = services[option]
     status, response = callServer('put', serverEndpoint, service, open(path, 'r'),
             {'Accept': responseMimeType, 'Content-Disposition': 'attachment; filename=%s' % os.path.basename(path)},
@@ -293,7 +321,8 @@ def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, ti
 
     serviceUrl  = serverEndpoint + service
     if verb not in httpVerbs:
-        die('Tika Server call must be one of %s' % binary_string(httpVerbs.keys()))
+        log.exception('Tika Server call must be one of %s' % binary_string(httpVerbs.keys()))
+        raise TikaException('Tika Server call must be one of %s' % binary_string(httpVerbs.keys()))
     verbFn = httpVerbs[verb]
     
     if Windows and hasattr(data, "read"):
@@ -307,7 +336,7 @@ def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, ti
         print(sys.stderr, "Request headers: ", headers)
         print(sys.stderr, "Response headers: ", resp.headers)
     if resp.status_code != 200:
-        warn('Tika server returned status:', resp.status_code)
+        log.warning('Tika server returned status:', resp.status_code)
     resp.encoding = "utf-8"
     return (resp.status_code, resp.text)
 
@@ -363,7 +392,7 @@ def getRemoteFile(urlOrPath, destPath):
     else:
         filename = urlOrPath.rsplit('/',1)[1]
         destPath = destPath + '/' +filename
-        echo2('Retrieving %s to %s.' % (urlOrPath, destPath))
+        log.info('Retrieving %s to %s.' % (urlOrPath, destPath))
         try:
             urlretrieve(urlOrPath, destPath)
         except IOError:
@@ -384,7 +413,7 @@ def getRemoteJar(urlOrPath, destPath):
     if urlp.scheme == '':
         return (os.path.abspath(urlOrPath), 'local')
     else:
-        echo2('Retrieving %s to %s.' % (urlOrPath, destPath))
+        log.info('Retrieving %s to %s.' % (urlOrPath, destPath))
         try:
             urlretrieve(urlOrPath, destPath)
         except IOError:
@@ -431,14 +460,17 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv
 
-    if (len(argv) < 3 and not (('-h' in argv) or ('--help' in argv))): die('Bad args')
+    if (len(argv) < 3 and not (('-h' in argv) or ('--help' in argv))):
+        log.exception('Bad args')
+        raise TikaException('Bad args')
     try:
         opts, argv = getopt.getopt(argv[1:], 'hi:s:o:p:v:e:c',
           ['help', 'install=', 'server=', 'output=', 'port=', 'verbose', 'encode', 'csv'])
     except getopt.GetoptError as opt_error:
         msg, bad_opt = opt_error
-        die("%s error: Bad option: %s, %s" % (argv[0], bad_opt, msg))
-        
+        log.exception("%s error: Bad option: %s, %s" % (argv[0], bad_opt, msg))
+        raise TikaException("%s error: Bad option: %s, %s" % (argv[0], bad_opt, msg))
+
     tikaServerJar = TikaServerJar
     serverHost = ServerHost
     outDir = '.'
@@ -452,7 +484,8 @@ def main(argv=None):
         elif opt in ('-v', '--verbose'): Verbose = 1
         elif opt in ('-e', '--encode'): EncodeUtf8 = 1
         elif opt in ('-c', '--csv'): csvOutput = 1
-        else: die(USAGE)
+        else:
+            raise TikaException(USAGE)
 
     cmd = argv[0]
     option = argv[1]
@@ -464,6 +497,7 @@ def main(argv=None):
 
 
 if __name__ == '__main__':
+    log.info("Logging on '%s'" % (log_file))
     resp = main(sys.argv)
 
     # Set encoding of the terminal to UTF-8
