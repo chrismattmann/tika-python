@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+__version__ = "1.13.1"
+
 try:
     __import__('pkg_resources').declare_namespace(__name__)
 except ImportError:
