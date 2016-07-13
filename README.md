@@ -118,6 +118,24 @@ import tika
 tika.TikaClientOnly = True
 ```
 
+Changing the Tika Classpath
+---------------------------
+You can update the classpath that Tika server uses by
+setting
+```python
+import tika
+tika.TikaServerClasspath = '/tmp/keys'
+```
+
+Then, kill Tika server:
+
+```bash
+ps aux | grep java | grep Tika
+kill -9 PID
+```
+
+Then, try Tika, and you should see the new classpath.
+
 Then you can run any of the methods and it will fully
 omit the check to see if the service on localhost is
 running and omit printing the check messages.
