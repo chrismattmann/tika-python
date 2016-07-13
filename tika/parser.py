@@ -20,7 +20,7 @@ from .tika import parse1, callServer, ServerEndpoint, TikaServerClasspath
 import os
 import json
 
-def from_file(filename, serverEndpoint=ServerEndpoint, xmlContent=False, classpath = TikaServerClasspath):
+def from_file(filename, serverEndpoint=ServerEndpoint, xmlContent=False):
     if not xmlContent:
         jsonOutput = parse1('all', filename, serverEndpoint, classpath = classpath)
     else:
@@ -28,7 +28,7 @@ def from_file(filename, serverEndpoint=ServerEndpoint, xmlContent=False, classpa
     return _parse(jsonOutput)
 
 
-def from_buffer(string, serverEndpoint=ServerEndpoint, xmlContent=False, classpath = TikaServerClasspath):
+def from_buffer(string, serverEndpoint=ServerEndpoint, xmlContent=False):
     if not xmlContent:
         status, response = callServer('put', serverEndpoint, '/rmeta/text', string,
                 {'Accept': 'application/json'}, False, classpath = classpath)

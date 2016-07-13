@@ -206,7 +206,7 @@ def parse(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
 
 def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar, 
           responseMimeType='application/json',
-          services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta/text'}, classpath = TikaServerClasspath):
+          services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta/text'}):
     """Parse the object and return extracted metadata and/or text in JSON format."""
     path, file_type = getRemoteFile(urlOrPath, TikaFilesPath)
     if option not in services:
