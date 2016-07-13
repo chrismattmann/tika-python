@@ -34,6 +34,7 @@ These are read once, when tika/tika.py is initially loaded and used throughout a
 3. `TIKA_SERVER_ENDPOINT` - set to the host (local or remote) for the running Tika server jar.
 4. `TIKA_CLIENT_ONLY` - if set to True, then `TIKA_SERVER_JAR` is ignored, and relies on the value for `TIKA_SERVER_ENDPOINT` and treats Tika like a REST client.
 5. `TIKA_TRANSLATOR` - set to the fully qualified class name (defaults to Lingo24) for the Tika translator implementation.
+6. `TIKA_SERVER_CLASSPATH' - set to a string (delimited by ':' for each additional path) to prepend to the Tika server jar path.
 
 Testing it out
 ==============
@@ -118,6 +119,10 @@ import tika
 tika.TikaClientOnly = True
 ```
 
+Then you can run any of the methods and it will fully
+omit the check to see if the service on localhost is
+running and omit printing the check messages.
+
 Changing the Tika Classpath
 ---------------------------
 You can update the classpath that Tika server uses by
@@ -135,10 +140,6 @@ kill -9 PID
 ```
 
 Then, try Tika, and you should see the new classpath.
-
-Then you can run any of the methods and it will fully
-omit the check to see if the service on localhost is
-running and omit printing the check messages.
 
 New Command Line Client Tool
 ============================
