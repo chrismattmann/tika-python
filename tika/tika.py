@@ -125,8 +125,7 @@ Translator = os.getenv(
     'TIKA_TRANSLATOR',
     "org.apache.tika.language.translate.Lingo24Translator")
 TikaClientOnly = os.getenv('TIKA_CLIENT_ONLY', False)
-
-TikaServerClasspath = os.getenv('TIKA_SERVER_CLASSPATH', "")
+TikaServerClasspath = os.getenv('TIKA_SERVER_CLASSPATH', '')
 
 Verbose = 0
 EncodeUtf8 = 0
@@ -311,12 +310,15 @@ def getConfig(option, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServer
 
 
 def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, tikaServerJar=TikaServerJar, 
-               httpVerbs={'get': requests.get, 'put': requests.put, 'post': requests.post}, classpath = TikaServerClasspath):
+               httpVerbs={'get': requests.get, 'put': requests.put, 'post': requests.post},classpath=None):
     """Call the Tika Server, do some error checking, and return the response."""
     
     parsedUrl = urlparse(serverEndpoint) 
     serverHost = parsedUrl.hostname
     port = parsedUrl.port
+    if classpath is None:
+        classpath = TikaServerClasspath
+    
     global TikaClientOnly
     if not TikaClientOnly:
         serverEndpoint = checkTikaServer(serverHost, port, tikaServerJar, classpath)
@@ -343,8 +345,10 @@ def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, ti
     return (resp.status_code, resp.text)
 
 
-def checkTikaServer(serverHost=ServerHost, port = Port, tikaServerJar=TikaServerJar, classpath = TikaServerClasspath):
+def checkTikaServer(serverHost=ServerHost, port = Port, tikaServerJar=TikaServerJar,classpath=None):
     """Check that tika-server is running.  If not, download JAR file and start it up."""
+    if classpath is None:
+        classpath = TikaServerClasspath
     urlp = urlparse(tikaServerJar)
     serverEndpoint = 'http://%s:%s' % (serverHost, port)
     jarPath = os.path.join(TikaJarPath, 'tika-server.jar')
@@ -374,14 +378,17 @@ def checkJarSig(tikaServerJar, jarPath):
             return existingContents == m.hexdigest()
 
 
-def startServer(tikaServerJar, serverHost = ServerHost, port = Port, classpath = TikaServerClasspath):
+def startServer(tikaServerJar, serverHost = ServerHost, port = Port, classpath=None):
+    if classpath is None:
+        classpath = TikaServerClasspath
+    
     host = "localhost"
     if Windows:
         host = "0.0.0.0"
     
-    if classpath :
+    if classpath:
         classpath += ":" + tikaServerJar
-    else :
+    else:
         classpath = tikaServerJar
         
     cmd = 'java -cp %s org.apache.tika.server.TikaServerCli --port %i --host %s &' % (classpath, port, host)

@@ -126,20 +126,29 @@ running and omit printing the check messages.
 Changing the Tika Classpath
 ---------------------------
 You can update the classpath that Tika server uses by
-setting
-```python
-import tika
-tika.TikaServerClasspath = '/tmp/keys'
-```
+setting the classpath as a set of ':' delimited strings.
+For example if you want to get Tika-Python working with 
+[GeoTopicParsing](http://wiki.apache.org/tika/GeoTopicParser),
+you can do this, replace paths below with your own paths, as
+identified [here](http://wiki.apache.org/tika/GeoTopicParser) 
+and make sure that you have done this:
 
-Then, kill Tika server:
+kill Tika server (if already running):
 
 ```bash
 ps aux | grep java | grep Tika
 kill -9 PID
 ```
 
-Then, try Tika, and you should see the new classpath.
+```python
+import tika.tika
+import os
+from tika import parser
+home = os.getenv('HOME')
+tika.tika.TikaServerClasspath = home + '/git/geotopicparser-utils/mime:'+home+'/git/geotopicparser-utils/models/polar'
+parsed = parser.from_file(home + '/git/geotopicparser-utils/geotopics/polar.geot')
+print parsed["metadata"]```
+
 
 New Command Line Client Tool
 ============================
