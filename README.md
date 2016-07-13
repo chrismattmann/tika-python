@@ -147,8 +147,8 @@ from tika import parser
 home = os.getenv('HOME')
 tika.tika.TikaServerClasspath = home + '/git/geotopicparser-utils/mime:'+home+'/git/geotopicparser-utils/models/polar'
 parsed = parser.from_file(home + '/git/geotopicparser-utils/geotopics/polar.geot')
-print parsed["metadata"]```
-
+print parsed["metadata"]
+```
 
 New Command Line Client Tool
 ============================
