@@ -16,25 +16,25 @@
 # limitations under the License.
 #
 
-from .tika import parse1, callServer, ServerEndpoint, TikaServerClasspath
+from .tika import parse1, callServer, ServerEndpoint
 import os
 import json
 
 def from_file(filename, serverEndpoint=ServerEndpoint, xmlContent=False):
     if not xmlContent:
-        jsonOutput = parse1('all', filename, serverEndpoint, classpath = classpath)
+        jsonOutput = parse1('all', filename, serverEndpoint)
     else:
-        jsonOutput = parse1('all', filename, serverEndpoint, services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta/xml'}, classpath = classpath)
+        jsonOutput = parse1('all', filename, serverEndpoint, services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta/xml'})
     return _parse(jsonOutput)
 
 
 def from_buffer(string, serverEndpoint=ServerEndpoint, xmlContent=False):
     if not xmlContent:
         status, response = callServer('put', serverEndpoint, '/rmeta/text', string,
-                {'Accept': 'application/json'}, False, classpath = classpath)
+                {'Accept': 'application/json'}, False)
     else:
         status, response = callServer('put', serverEndpoint, '/rmeta/xml', string,
-                {'Accept': 'application/json'}, False, classpath = classpath)      
+                {'Accept': 'application/json'}, False)      
   
     return _parse((status,response))
 
