@@ -19,6 +19,7 @@
 # $Id$
 
 import os.path
+import tika
 
 try:
     from ez_setup import use_setuptools
@@ -31,7 +32,7 @@ try:
 except ImportError:
     from distutils.core import setup, find_packages
 
-version = '1.13.1'
+version = tika.__version__
 
 _descr = u'''**********
 tika
