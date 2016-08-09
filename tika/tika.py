@@ -94,7 +94,7 @@ log_path = tempfile.gettempdir()
 log_file = os.path.join(log_path, 'tika.log')
 
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
-log = logging.getLogger()
+log = logging.getLogger('tika.tika')
 
 # File logs
 fileHandler = logging.FileHandler(log_file)
