@@ -17,10 +17,16 @@
 #
 
 from .tika import parse1, callServer, ServerEndpoint
-import os
 import tarfile
 from io import BytesIO, TextIOWrapper
 import csv
+from sys import version_info
+
+# Python 3 introduced .readable() to tarfile extracted files objects - this
+# is required to wrap a TextIOWrapper around the object. However, wrapping
+# with TextIOWrapper is only required for csv.reader() in Python 3, so the
+# tarfile returned object can be used as is in earlier versions.
+_text_wrapper = TextIOWrapper if version_info.major >= 3 else lambda x: x
 
 def from_file(filename, serverEndpoint=ServerEndpoint):
     tarOutput = parse1('unpack', filename, serverEndpoint,
@@ -58,7 +64,7 @@ def _parse(tarOutput):
 
         metadataMember = tarFile.getmember("__METADATA__")
         if not metadataMember.issym() and metadataMember.isfile():
-            metadataFile = TextIOWrapper(tarFile.extractfile(metadataMember))
+            metadataFile = _text_wrapper(tarFile.extractfile(metadataMember))
             metadataReader = csv.reader(metadataFile)
             for metadataLine in metadataReader:
                 # each metadata line comes as a key-value pair, with list values
@@ -78,7 +84,7 @@ def _parse(tarOutput):
 
         contentMember = tarFile.getmember("__TEXT__")
         if not contentMember.issym() and contentMember.isfile():
-            content = TextIOWrapper(tarFile.extractfile(contentMember)).read()
+            content = _text_wrapper(tarFile.extractfile(contentMember)).read()
 
     # get the remaining files as attachments
     attachments = {}
