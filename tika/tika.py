@@ -80,7 +80,7 @@ except ImportError:
 try:
     from rfc6266 import build_header
     def make_content_disposition_header(fn):
-        return build_header(os.path.basename(fn))
+        return build_header(os.path.basename(fn)).decode('ascii')
 except ImportError:
     def make_content_disposition_header(fn):
         return 'attachment; filename=%s' % os.path.basename(fn)
