@@ -340,7 +340,7 @@ def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, ti
         print(sys.stderr, "Request headers: ", headers)
         print(sys.stderr, "Response headers: ", resp.headers)
     if resp.status_code != 200:
-        log.warning('Tika server returned status:', resp.status_code)
+        log.warning('Tika server returned status: %d', resp.status_code)
     resp.encoding = "utf-8"
     return (resp.status_code, resp.text)
 
