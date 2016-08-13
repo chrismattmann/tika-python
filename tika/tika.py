@@ -77,6 +77,14 @@ try:
 except ImportError:
     from urllib.parse import urlparse as urlparse
 
+try:
+    from rfc6266 import build_header
+    def make_content_disposition_header(fn):
+        return build_header(os.path.basename(fn)).decode('ascii')
+except ImportError:
+    def make_content_disposition_header(fn):
+        return 'attachment; filename=%s' % os.path.basename(fn)
+
 if sys.version_info[0] < 3:
     open = codecs.open
 
@@ -213,7 +221,10 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
     service = services.get(option, services['all'])
     if service == '/tika': responseMimeType = 'text/plain'
     status, response = callServer('put', serverEndpoint, service, open(path, 'rb'),
-                                  {'Accept': responseMimeType, 'Content-Disposition': 'attachment; filename=%s' % os.path.basename(path)}, 
+                                  {
+                                      'Accept': responseMimeType,
+                                      'Content-Disposition': make_content_disposition_header(path)
+                                  }, 
                                   verbose, tikaServerJar)
     
     if file_type == 'remote': os.unlink(path)
@@ -292,7 +303,10 @@ def detectType1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbos
         raise TikaException('Detect option must be one of %s' % binary_string(services.keys()))
     service = services[option]
     status, response = callServer('put', serverEndpoint, service, open(path, 'r'),
-            {'Accept': responseMimeType, 'Content-Disposition': 'attachment; filename=%s' % os.path.basename(path)},
+            {
+                'Accept': responseMimeType,
+                'Content-Disposition': make_content_disposition_header(path)
+            },
             verbose, tikaServerJar)
     if csvOutput == 1:
         return(status, urlOrPath.decode("UTF-8") + "," + response)
@@ -340,7 +354,7 @@ def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, ti
         print(sys.stderr, "Request headers: ", headers)
         print(sys.stderr, "Response headers: ", resp.headers)
     if resp.status_code != 200:
-        log.warning('Tika server returned status:', resp.status_code)
+        log.warning('Tika server returned status: %d', resp.status_code)
     resp.encoding = "utf-8"
     return (resp.status_code, resp.text)
 
