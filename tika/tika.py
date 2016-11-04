@@ -174,6 +174,8 @@ def getPaths(urlOrPaths):
     a directory, it walks the directory and then finds all file paths in it, and ads them
     too. If it's a file, it adds it to the paths. If it's a URL it just adds it to the path.
     """
+    if isinstance(urlOrPaths, basestring):
+      urlOrPaths = [urlOrPaths]  # do not recursively walk over letters of a single path which can include "/"
     paths = []
     for eachUrlOrPaths in urlOrPaths:
         if os.path.isdir(eachUrlOrPaths):
