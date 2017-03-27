@@ -98,7 +98,7 @@ from subprocess import STDOUT
 from os import walk
 import logging
 
-log_path = tempfile.gettempdir()
+log_path = os.getenv('TIKA_LOG_PATH', tempfile.gettempdir())
 log_file = os.path.join(log_path, 'tika.log')
 
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
@@ -121,7 +121,7 @@ Windows = True if platform.system() == "Windows" else False
 TikaVersion = os.getenv('TIKA_VERSION', '1.14')
 TikaJarPath = tempfile.gettempdir()
 TikaFilesPath = tempfile.gettempdir()
-TikaServerLogFilePath = tempfile.gettempdir()
+TikaServerLogFilePath = log_path
 TikaServerJar = os.getenv(
     'TIKA_SERVER_JAR',
     "http://search.maven.org/remotecontent?filepath=org/apache/tika/tika-server/"+TikaVersion+"/tika-server-"+TikaVersion+".jar")
