@@ -208,9 +208,9 @@ def parseAndSave(option, urlOrPaths, outDir=None, serverEndpoint=ServerEndpoint,
 
 def parse(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar, 
           responseMimeType='application/json',
-          services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta'}):
+          services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta'}, rawResponse=False):
     """Parse the objects and return extracted metadata and/or text in JSON format."""
-    return [parse1(option, path, serverEndpoint, verbose, tikaServerJar, responseMimeType, services)
+    return [parse1(option, path, serverEndpoint, verbose, tikaServerJar, responseMimeType, services, rawResponse)
              for path in urlOrPaths]
 
 def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar, 
