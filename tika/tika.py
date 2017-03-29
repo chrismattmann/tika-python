@@ -102,7 +102,7 @@ log_path = os.getenv('TIKA_LOG_PATH', tempfile.gettempdir())
 log_file = os.path.join(log_path, 'tika.log')
 
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
-log = logging.getLogger()
+log = logging.getLogger('tika.tika')
 
 # File logs
 fileHandler = logging.FileHandler(log_file)
@@ -215,7 +215,7 @@ def parse(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
 
 def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar, 
           responseMimeType='application/json',
-          services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta/text'}):
+          services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta/text'}, rawResponse=False):
     """Parse the object and return extracted metadata and/or text in JSON format."""
     path, file_type = getRemoteFile(urlOrPath, TikaFilesPath)
     if option not in services:
@@ -223,11 +223,9 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
     service = services.get(option, services['all'])
     if service == '/tika': responseMimeType = 'text/plain'
     status, response = callServer('put', serverEndpoint, service, open(path, 'rb'),
-                                  {
-                                      'Accept': responseMimeType,
-                                      'Content-Disposition': make_content_disposition_header(path)
-                                  }, 
-                                  verbose, tikaServerJar)
+                                  {'Accept': responseMimeType, 'Content-Disposition': 'attachment; filename=%s' % os.path.basename(path)}, 
+                                  verbose, tikaServerJar, rawResponse=rawResponse)
+
     
     if file_type == 'remote': os.unlink(path)
     return (status, response)
@@ -326,7 +324,8 @@ def getConfig(option, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServer
 
 
 def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, tikaServerJar=TikaServerJar, 
-               httpVerbs={'get': requests.get, 'put': requests.put, 'post': requests.post},classpath=None):
+               httpVerbs={'get': requests.get, 'put': requests.put, 'post': requests.post}, classpath=None,
+               rawResponse=False):
     """Call the Tika Server, do some error checking, and return the response."""
     
     parsedUrl = urlparse(serverEndpoint) 
@@ -357,8 +356,12 @@ def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, ti
         print(sys.stderr, "Response headers: ", resp.headers)
     if resp.status_code != 200:
         log.warning('Tika server returned status: %d', resp.status_code)
+
     resp.encoding = "utf-8"
-    return (resp.status_code, resp.text)
+    if rawResponse:
+        return (resp.status_code, resp.content)
+    else:
+        return (resp.status_code, resp.text)
 
 
 def checkTikaServer(serverHost=ServerHost, port = Port, tikaServerJar=TikaServerJar,classpath=None):
