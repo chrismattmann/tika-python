@@ -52,8 +52,12 @@ print(parsed["metadata"])
 print(parsed["content"])
 ```
 
-Parser Interface (new)
+Parser Interface
 ----------------------
+The parser interface extracts text and metadata using the /rmeta 
+interface. THis is one of the better ways to get the internal XHTML
+content extracted.
+
 ```
 #!/usr/bin/env python
 import tika
@@ -68,8 +72,24 @@ parsed = parser.from_file('/path/to/file', 'http://tika:9998/tika')
 string_parsed = parser.from_buffer('Good evening, Dave', 'http://tika:9998/tika')
 ```
 
-Detect Interface (new)
+Unpack Interface
+----------------
+The unpack interface handles both metadata and text extraction in a single
+call and internally returns back a tarball of metadata and text entries that
+is internally unpacked, reducing the wire load for extraction.
+
+```
+#!/usr/bin/env python
+import tika
+from tika import unpack
+parsed = unpack.from_file('/path/to/file')
+```
+
+Detect Interface
 ----------------------
+The detect interface provides a IANA MIME type classification for the
+provided file.
+
 ```
 #!/usr/bin/env python
 import tika
@@ -77,8 +97,12 @@ from tika import detector
 print(detector.from_file('/path/to/file'))
 ```
 
-Config Interface (new)
+Config Interface
 ----------------------
+The config interface allows you to inspect the Tika Server environment's
+configuration including what parsers, mime types, and detectors the 
+server has been configured with.
+
 ```
 #!/usr/bin/env python
 import tika
@@ -88,16 +112,22 @@ print(config.getMimeTypes())
 print(config.getDetectors())
 ```
 
-Language Detection Interface (new)
+Language Detection Interface
 ---------------------------------
+The language detection interface provides a 2 character language 
+code texted based on the text in provided file.
+
 ```
 #!/usr/bin/env python
 from tika import language
 print(language.from_file('/path/to/file'))
 ```
 
-Translate Interface (new)
+Translate Interface
 ------------------------
+The translate interface translates the text automatically extracted
+by Tika from the source language to the destination language.
+
 ```
 #!/usr/bin/env python
 from tika import translate
