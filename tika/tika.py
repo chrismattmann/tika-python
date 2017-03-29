@@ -223,7 +223,7 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
     service = services.get(option, services['all'])
     if service == '/tika': responseMimeType = 'text/plain'
     status, response = callServer('put', serverEndpoint, service, open(path, 'rb'),
-                                  {'Accept': responseMimeType, 'Content-Disposition': 'attachment; filename=%s' % os.path.basename(path)}, 
+                                  {'Accept': responseMimeType, 'Content-Disposition': make_content_disposition_header(path)},
                                   verbose, tikaServerJar, rawResponse=rawResponse)
 
     
