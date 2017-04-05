@@ -19,19 +19,49 @@
 from .tika import doTranslate1, callServer, Translator, ServerEndpoint
 
 def from_file(filename, srcLang, destLang, serverEndpoint=ServerEndpoint):
+    '''
+    Traslates the content of source file to destination language
+    :param filename: file whose contents needs translation
+    :param srcLang: name of language of input file
+    :param destLang: name of language of desired language
+    :param serverEndpoint: Tika server end point (Optional)
+    :return: translated content
+    '''
     jsonOutput = doTranslate1(srcLang+':'+destLang, filename, serverEndpoint)
     return jsonOutput[1]
 
 def from_buffer(string, srcLang, destLang, serverEndpoint=ServerEndpoint):
+    '''
+    Translates content from source language to desired destination language
+    :param string: input content which needs translation
+    :param srcLang: name of language of the input content
+    :param destLang: name of the desired language for translation
+    :param serverEndpoint:
+    :return:
+    '''
     status, response = callServer('put', ServerEndpoint, '/translate/all/'+Translator+'/'+srcLang+'/'+destLang, 
                                   string, {'Accept': 'text/plain'}, False)
     return response
 
 def auto_from_file(filename, destLang, serverEndpoint=ServerEndpoint):
+    '''
+    Translates contents of a file to desired language by auto detecting the source language
+    :param filename: file whose contents needs translation
+    :param destLang: name of the desired language for translation
+    :param serverEndpoint: Tika server end point (Optional)
+    :return:
+    '''
     jsonOutput = doTranslate1(destLang, filename, serverEndpoint)
     return jsonOutput[1]    
 
 def auto_from_buffer(string, destLang, serverEndpoint=ServerEndpoint):
+    '''
+    Translates content to desired language by auto detecting the source language
+    :param string: input content which needs translation
+    :param destLang: name of the desired language for translation
+    :param serverEndpoint: Tika server end point (Optional)
+    :return:
+    '''
     status, response = callServer('put', ServerEndpoint, '/translate/all/'+Translator+'/'+destLang, 
                                   string, {'Accept': 'text/plain'}, False)
     return response
