@@ -495,13 +495,15 @@ def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, ti
     '''
     parsedUrl = urlparse(serverEndpoint) 
     serverHost = parsedUrl.hostname
+    scheme = parsedUrl.scheme
+
     port = parsedUrl.port
     if classpath is None:
         classpath = TikaServerClasspath
     
     global TikaClientOnly
     if not TikaClientOnly:
-        serverEndpoint = checkTikaServer(serverHost, port, tikaServerJar, classpath)
+        serverEndpoint = checkTikaServer(scheme, serverHost, port, tikaServerJar, classpath)
 
     serviceUrl  = serverEndpoint + service
     if verb not in httpVerbs:
@@ -515,8 +517,9 @@ def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, ti
     encodedData = data
     if type(data) is unicode_string:
         encodedData = data.encode('utf-8')
-    resp = verbFn(serviceUrl, encodedData, headers=headers)
-    if verbose: 
+
+    resp = verbFn(serviceUrl, encodedData, headers=headers, verify=False)
+    if verbose:
         print(sys.stderr, "Request headers: ", headers)
         print(sys.stderr, "Response headers: ", resp.headers)
     if resp.status_code != 200:
@@ -529,9 +532,10 @@ def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, ti
         return (resp.status_code, resp.text)
 
 
-def checkTikaServer(serverHost=ServerHost, port = Port, tikaServerJar=TikaServerJar,classpath=None):
+def checkTikaServer(scheme="http", serverHost=ServerHost, port=Port, tikaServerJar=TikaServerJar, classpath=None):
     '''
     Check that tika-server is running.  If not, download JAR file and start it up.
+    :param scheme: e.g. http or https
     :param serverHost:
     :param port:
     :param tikaServerJar:
@@ -541,7 +545,7 @@ def checkTikaServer(serverHost=ServerHost, port = Port, tikaServerJar=TikaServer
     if classpath is None:
         classpath = TikaServerClasspath
     urlp = urlparse(tikaServerJar)
-    serverEndpoint = 'http://%s:%s' % (serverHost, port)
+    serverEndpoint = '%s://%s:%s' % (scheme, serverHost, port)
     jarPath = os.path.join(TikaJarPath, 'tika-server.jar')
     if 'localhost' in serverEndpoint or '127.0.0.1' in serverEndpoint:
         alreadyRunning = checkPortIsOpen(serverHost, port)
