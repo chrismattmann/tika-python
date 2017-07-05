@@ -31,7 +31,7 @@ class CreateTest(unittest.TestCase):
     def test_remote_html(self):
         'parse remote HTML' 
         self.assertTrue(tika.parser.from_file(
-            'http://philadelphia.pa.gegov.com/_templates/551/RetailFood/_report_full.cfm?inspectionID=8B2C8CA4-8039-EC2C-F94DBD247613E5CC&domainID=551&userID=0'))
+            'https://www.nasa.gov/index.html'))
     def test_remote_mp3(self):
         'parese remote mp3'
         self.assertTrue(tika.parser.from_file(
