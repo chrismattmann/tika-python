@@ -55,7 +55,7 @@ print(parsed["content"])
 Parser Interface
 ----------------------
 The parser interface extracts text and metadata using the /rmeta 
-interface. THis is one of the better ways to get the internal XHTML
+interface. This is one of the better ways to get the internal XHTML
 content extracted.
 
 ```
