@@ -72,6 +72,21 @@ parsed = parser.from_file('/path/to/file', 'http://tika:9998/tika')
 string_parsed = parser.from_buffer('Good evening, Dave', 'http://tika:9998/tika')
 ```
 
+Specify Output Format To XHTML
+---------------------
+The parser interface is optionally able to output the content as XHTML rather than plain text.
+
+```
+#!/usr/bin/env python
+import tika
+from tika import parser
+parsed = parser.from_file('/path/to/file', xmlContent=True)
+print(parsed["metadata"])
+print(parsed["content"])
+
+# Note: This is also available when parsing from the buffer.
+```
+
 Unpack Interface
 ----------------
 The unpack interface handles both metadata and text extraction in a single
