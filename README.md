@@ -58,10 +58,9 @@ The parser interface extracts text and metadata using the /rmeta
 interface. This is one of the better ways to get the internal XHTML
 content extracted.
 
-<div class="alert alert-success">
+Note: 
+![Alert Icon](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon28.png "Alert")
 The parser interface needs the following environment variable set on the console for printing of the extracted content.
-</div>
-
 ```export PYTHONIOENCODING=utf8```
 
 ```
@@ -82,10 +81,9 @@ Specify Output Format To XHTML
 ---------------------
 The parser interface is optionally able to output the content as XHTML rather than plain text.
 
-<div class="alert alert-success">
-Reminder: The parser interface needs the following environment variable set on the console for printing of the extracted content.
-</div>
-
+Note: 
+![Alert Icon](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon28.png "Alert")
+The parser interface needs the following environment variable set on the console for printing of the extracted content.
 ```export PYTHONIOENCODING=utf8```
 
 ```
