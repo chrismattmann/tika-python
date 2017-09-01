@@ -303,16 +303,18 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
     :param headers:
     :return:
     '''
+    headers = headers or {}
+
     path, file_type = getRemoteFile(urlOrPath, TikaFilesPath)
+    headers.update({'Accept': responseMimeType, 'Content-Disposition': make_content_disposition_header(path)})
+
     if option not in services:
         log.warning('config option must be one of meta, text, or all; using all.')
     service = services.get(option, services['all'])
     if service == '/tika': responseMimeType = 'text/plain'
     status, response = callServer('put', serverEndpoint, service, open(path, 'rb'),
-                                  dict({'Accept': responseMimeType, 'Content-Disposition': make_content_disposition_header(path)}, **(headers or {})),
-                                  verbose, tikaServerJar, rawResponse=rawResponse)
+                                  headers, verbose, tikaServerJar, rawResponse=rawResponse)
 
-    
     if file_type == 'remote': os.unlink(path)
     return (status, response)
 

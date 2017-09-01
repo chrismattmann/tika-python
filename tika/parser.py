@@ -50,12 +50,13 @@ def from_buffer(string, serverEndpoint=ServerEndpoint, xmlContent=False, headers
                     be a dictionary. This is optional
     :return:
     '''
+    headers = headers or {}
+    headers.update({'Accept': 'application/json'})
+
     if not xmlContent:
-        status, response = callServer('put', serverEndpoint, '/rmeta/text', string,
-                dict({'Accept': 'application/json'}, **(headers or {})), False)
+        status, response = callServer('put', serverEndpoint, '/rmeta/text', string, headers, False)
     else:
-        status, response = callServer('put', serverEndpoint, '/rmeta/xml', string,
-                dict({'Accept': 'application/json'}, **(headers or {})), False)
+        status, response = callServer('put', serverEndpoint, '/rmeta/xml', string, headers, False)
 
     return _parse((status,response))
 
