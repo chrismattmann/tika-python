@@ -289,7 +289,7 @@ def parse(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
 
 def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar, 
           responseMimeType='application/json',
-          services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta/text'}, rawResponse=False):
+          services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta/text'}, rawResponse=False, headers=None):
     '''
     Parse the object and return extracted metadata and/or text in JSON format.
     :param option:
@@ -299,6 +299,8 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
     :param tikaServerJar:
     :param responseMimeType:
     :param services:
+    :param rawResponse:
+    :param headers:
     :return:
     '''
     path, file_type = getRemoteFile(urlOrPath, TikaFilesPath)
@@ -307,7 +309,7 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
     service = services.get(option, services['all'])
     if service == '/tika': responseMimeType = 'text/plain'
     status, response = callServer('put', serverEndpoint, service, open(path, 'rb'),
-                                  {'Accept': responseMimeType, 'Content-Disposition': make_content_disposition_header(path)},
+                                  dict({'Accept': responseMimeType, 'Content-Disposition': make_content_disposition_header(path)}, **(headers or {})),
                                   verbose, tikaServerJar, rawResponse=rawResponse)
 
     
