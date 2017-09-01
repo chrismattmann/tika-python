@@ -58,6 +58,10 @@ The parser interface extracts text and metadata using the /rmeta
 interface. This is one of the better ways to get the internal XHTML
 content extracted.
 
+The parser interface needs the following environment variable set on the console for printing of the extracted content.
+
+export PYTHONIOENCODING=utf8
+
 ```
 #!/usr/bin/env python
 import tika
@@ -75,6 +79,10 @@ string_parsed = parser.from_buffer('Good evening, Dave', 'http://tika:9998/tika'
 Specify Output Format To XHTML
 ---------------------
 The parser interface is optionally able to output the content as XHTML rather than plain text.
+
+The parser interface needs the following environment variable set on the console for printing of the extracted content.
+
+export PYTHONIOENCODING=utf8
 
 ```
 #!/usr/bin/env python
