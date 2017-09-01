@@ -20,38 +20,43 @@ from .tika import parse1, callServer, ServerEndpoint
 import os
 import json
 
-def from_file(filename, serverEndpoint=ServerEndpoint, xmlContent=False):
+def from_file(filename, serverEndpoint=ServerEndpoint, xmlContent=False, headers=None):
     '''
     Parses a file for metadata and content
     :param filename: path to file which needs to be parsed
     :param serverEndpoint: Server endpoint url
     :param xmlContent: Whether or not XML content be requested.
                     Default is 'False', which results in text content.
+    :param headers: Request headers to be sent to the tika reset server, should
+                    be a dictionary. This is optional
     :return: dictionary having 'metadata' and 'content' keys.
             'content' has a str value and metadata has a dict type value.
     '''
     if not xmlContent:
-        jsonOutput = parse1('all', filename, serverEndpoint)
+        jsonOutput = parse1('all', filename, serverEndpoint, headers=headers)
     else:
-        jsonOutput = parse1('all', filename, serverEndpoint, services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta/xml'})
+        jsonOutput = parse1('all', filename, serverEndpoint, services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta/xml'}, headers=headers)
     return _parse(jsonOutput)
 
 
-def from_buffer(string, serverEndpoint=ServerEndpoint, xmlContent=False):
+def from_buffer(string, serverEndpoint=ServerEndpoint, xmlContent=False, headers=None):
     '''
     Parses the content from buffer
     :param string: Buffer value
     :param serverEndpoint: Server endpoint. This is optional
     :param xmlContent: Whether or not XML content be requested.
                     Default is 'False', which results in text content.
+    :param headers: Request headers to be sent to the tika reset server, should
+                    be a dictionary. This is optional
     :return:
     '''
+    headers = headers or {}
+    headers.update({'Accept': 'application/json'})
+
     if not xmlContent:
-        status, response = callServer('put', serverEndpoint, '/rmeta/text', string,
-                {'Accept': 'application/json'}, False)
+        status, response = callServer('put', serverEndpoint, '/rmeta/text', string, headers, False)
     else:
-        status, response = callServer('put', serverEndpoint, '/rmeta/xml', string,
-                {'Accept': 'application/json'}, False)
+        status, response = callServer('put', serverEndpoint, '/rmeta/xml', string, headers, False)
 
     return _parse((status,response))
 
