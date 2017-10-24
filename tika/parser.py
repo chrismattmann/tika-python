@@ -69,7 +69,9 @@ def _parse(jsonOutput):
     parsed={}
     if not jsonOutput:
         return parsed
-    elif jsonOutput[1] == None or jsonOutput[1] == "":
+    
+    parsed["status"] = jsonOutput[0]
+    if jsonOutput[1] == None or jsonOutput[1] == "":
         return parsed
     realJson = json.loads(jsonOutput[1])
 
