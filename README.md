@@ -36,6 +36,7 @@ These are read once, when tika/tika.py is initially loaded and used throughout a
 5. `TIKA_TRANSLATOR` - set to the fully qualified class name (defaults to Lingo24) for the Tika translator implementation.
 6. `TIKA_SERVER_CLASSPATH` - set to a string (delimited by ':' for each additional path) to prepend to the Tika server jar path.
 7. `TIKA_LOG_PATH` - set to a directory with write permissions and the `tika.log` and `tika-server.log` files will be placed in this directory.
+8. `TIKA_PATH` - set to a directory with write permissions and the `tika_server.jar` file will be placed in this directory.
 
 Testing it out
 ==============
