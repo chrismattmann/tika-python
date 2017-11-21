@@ -94,7 +94,7 @@ Example usage as python client:
 
 """
 
-import sys, os, getopt, time, codecs
+import sys, os, getopt, time, codecs, re
 try:
     unicode_string = unicode 
     binary_string = str
@@ -609,6 +609,11 @@ def startServer(tikaServerJar, serverHost = ServerHost, port = Port, classpath=N
     cmd = Popen(cmd , stdout= logFile, stderr = STDOUT, shell =True)
     time.sleep(5) 
 
+def toFilename(urlOrPath):
+    value = re.sub('[^\w\s-]', '-', urlOrPath).strip().lower()
+    return re.sub('[-\s]+', '-', value).strip("-")
+
+    
 def getRemoteFile(urlOrPath, destPath):
     '''
     Fetches URL to local path or just returns absolute path.
@@ -622,7 +627,7 @@ def getRemoteFile(urlOrPath, destPath):
     elif urlp.scheme not in ('http', 'https'):
         return (urlOrPath, 'local')
     else:
-        filename = urlOrPath.rsplit('/',1)[1]
+        filename = toFilename(urlOrPath)
         destPath = destPath + '/' +filename
         log.info('Retrieving %s to %s.' % (urlOrPath, destPath))
         try:
