@@ -96,7 +96,7 @@ def _parse(tarOutput):
 
         contentMember = tarFile.getmember("__TEXT__")
         if not contentMember.issym() and contentMember.isfile():
-            content = _text_wrapper(tarFile.extractfile(contentMember)).read()
+            content = _text_wrapper(tarFile.extractfile(contentMember), encoding='utf8').read()
 
     # get the remaining files as attachments
     attachments = {}
