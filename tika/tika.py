@@ -355,7 +355,7 @@ def detectLang1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbos
         log.exception('Language option must be one of %s ' % binary_string(services.keys()))
         raise TikaException('Language option must be one of %s ' % binary_string(services.keys()))
     service = services[option]
-    status, response = callServer('put', serverEndpoint, service, open(path, 'r'),
+    status, response = callServer('put', serverEndpoint, service, open(path, 'rb'),
             {'Accept': responseMimeType}, verbose, tikaServerJar)
     return (status, response)
 
@@ -409,7 +409,7 @@ def doTranslate1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbo
         service = services["all"] + "/" + Translator + "/" + srcLang + "/" + destLang
     else:
         service = services["all"] + "/" + Translator + "/" + destLang  
-    status, response = callServer('put', serverEndpoint, service, open(path, 'r'),
+    status, response = callServer('put', serverEndpoint, service, open(path, 'rb'),
                                   {'Accept' : responseMimeType},
                                   verbose, tikaServerJar)
     return (status, response)
@@ -451,7 +451,7 @@ def detectType1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbos
         log.exception('Detect option must be one of %s' % binary_string(services.keys()))
         raise TikaException('Detect option must be one of %s' % binary_string(services.keys()))
     service = services[option]
-    status, response = callServer('put', serverEndpoint, service, open(path, 'r'),
+    status, response = callServer('put', serverEndpoint, service, open(path, 'rb'),
             {
                 'Accept': responseMimeType,
                 'Content-Disposition': make_content_disposition_header(path)
