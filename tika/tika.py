@@ -168,8 +168,8 @@ Translator = os.getenv(
     "org.apache.tika.language.translate.Lingo24Translator")
 TikaClientOnly = os.getenv('TIKA_CLIENT_ONLY', False)
 TikaServerClasspath = os.getenv('TIKA_SERVER_CLASSPATH', '')
-TikaStartupSleep = os.getenv('TIKA_STARTUP_SLEEP', 5)
-TikaStartupMaxRetry = os.getenv('TIKA_STARTUP_MAX_RETRY', 3)
+TikaStartupSleep = float(os.getenv('TIKA_STARTUP_SLEEP', 5))
+TikaStartupMaxRetry = int(os.getenv('TIKA_STARTUP_MAX_RETRY', 3))
 TikaJava = os.getenv("TIKA_JAVA", "java")
 
 Verbose = 0
@@ -640,11 +640,13 @@ def startServer(tikaServerJar, java_path = TikaJava, serverHost = ServerHost, po
             # check for INFO string to confirm listening endpoint
             if "Started Apache Tika server at" in tika_log_file_tmp.read():
                 is_started = True
+            else:
+                log.warning("Failed to see startup log message; retrying...")
         time.sleep(TikaStartupSleep)
         try_count += 1
 
     if not is_started:
-        log.error("Tika startup log message not received after %d tries" % (TikaStartupMaxRetry))
+        log.error("Tika startup log message not received after %d tries." % (TikaStartupMaxRetry))
         return False
     else:
         return True
