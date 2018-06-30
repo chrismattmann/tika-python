@@ -37,6 +37,9 @@ These are read once, when tika/tika.py is initially loaded and used throughout a
 6. `TIKA_SERVER_CLASSPATH` - set to a string (delimited by ':' for each additional path) to prepend to the Tika server jar path.
 7. `TIKA_LOG_PATH` - set to a directory with write permissions and the `tika.log` and `tika-server.log` files will be placed in this directory.
 8. `TIKA_PATH` - set to a directory with write permissions and the `tika_server.jar` file will be placed in this directory.
+9. `TIKA_JAVA` - set the Java runtime name, e.g., `java` or `java9`
+10. `TIKA_STARTUP_SLEEP` - number of seconds to wait per check if Tika server is launched at runtime
+11. `TIKA_STARTUP_MAX_RETRY` - number of checks to attempt for Tika server startup if launched at runtime
 
 Testing it out
 ==============

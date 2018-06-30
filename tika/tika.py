@@ -168,6 +168,9 @@ Translator = os.getenv(
     "org.apache.tika.language.translate.Lingo24Translator")
 TikaClientOnly = os.getenv('TIKA_CLIENT_ONLY', False)
 TikaServerClasspath = os.getenv('TIKA_SERVER_CLASSPATH', '')
+TikaStartupSleep = os.getenv('TIKA_STARTUP_SLEEP', 5)
+TikaStartupMaxRetry = os.getenv('TIKA_STARTUP_MAX_RETRY', 3)
+TikaJava = os.getenv("TIKA_JAVA", "java")
 
 Verbose = 0
 EncodeUtf8 = 0
@@ -553,16 +556,19 @@ def checkTikaServer(scheme="http", serverHost=ServerHost, port=Port, tikaServerJ
     jarPath = os.path.join(TikaJarPath, 'tika-server.jar')
     if 'localhost' in serverEndpoint or '127.0.0.1' in serverEndpoint:
         alreadyRunning = checkPortIsOpen(serverHost, port)
-        
+
         if not alreadyRunning:
             if not os.path.isfile(jarPath) and urlp.scheme != '':
-                getRemoteJar(tikaServerJar, jarPath) 
-            
+                getRemoteJar(tikaServerJar, jarPath)
+
             if not checkJarSig(tikaServerJar, jarPath):
                 os.remove(jarPath)
                 tikaServerJar = getRemoteJar(tikaServerJar, jarPath)
-            
-            startServer(jarPath, serverHost, port, classpath)
+
+            status = startServer(jarPath, TikaJava, serverHost, port, classpath)
+            if not status:
+                log.error("Failed to receive startup confirmation from startServer.")
+                raise RuntimeError("Unable to start Tika server.")
     return serverEndpoint
 
 def checkJarSig(tikaServerJar, jarPath):
@@ -583,7 +589,7 @@ def checkJarSig(tikaServerJar, jarPath):
             return existingContents == m.hexdigest()
 
 
-def startServer(tikaServerJar, serverHost = ServerHost, port = Port, classpath=None):
+def startServer(tikaServerJar, java_path = TikaJava, serverHost = ServerHost, port = Port, classpath=None):
     '''
     Starts Tika Server
     :param tikaServerJar: path to tika server jar
@@ -594,20 +600,54 @@ def startServer(tikaServerJar, serverHost = ServerHost, port = Port, classpath=N
     '''
     if classpath is None:
         classpath = TikaServerClasspath
-    
+
     host = "localhost"
     if Windows:
         host = "0.0.0.0"
-    
+
     if classpath:
         classpath += ":" + tikaServerJar
     else:
         classpath = tikaServerJar
-        
-    cmd = 'java -cp %s org.apache.tika.server.TikaServerCli --port %i --host %s &' % (classpath, port, host)
-    logFile = open(os.path.join(TikaServerLogFilePath, 'tika-server.log'), 'w')
-    cmd = Popen(cmd , stdout= logFile, stderr = STDOUT, shell =True)
-    time.sleep(5) 
+
+    # setup command string
+    cmd_string = '%s -cp %s org.apache.tika.server.TikaServerCli --port %i --host %s &' \
+                 % (java_path, classpath, port, host)
+
+    # Check that we can write to log path
+    try:
+        tika_log_file_path = os.path.join(TikaServerLogFilePath, 'tika-server.log')
+        logFile = open(tika_log_file_path, 'w')
+    except PermissionError as e:
+        log.error("Unable to create tika-server.log at %s due to permission error." % (TikaServerLogFilePath))
+        return False
+
+    # Check that specified java binary is available on path
+    try:
+        _ = Popen(java_path, stdout=open(os.devnull, "w"), stderr=open(os.devnull, "w"))
+    except FileNotFoundError as e:
+        log.error("Unable to run java; is it installed?")
+        return False
+
+    # Run java with jar args
+    cmd = Popen(cmd_string, stdout=logFile, stderr=STDOUT, shell=True)
+
+    # Check logs and retry as configured
+    try_count = 0
+    is_started = False
+    while try_count < TikaStartupMaxRetry:
+        with open(tika_log_file_path, "r") as tika_log_file_tmp:
+            # check for INFO string to confirm listening endpoint
+            if "Started Apache Tika server at" in tika_log_file_tmp.read():
+                is_started = True
+        time.sleep(TikaStartupSleep)
+        try_count += 1
+
+    if not is_started:
+        log.error("Tika startup log message not received after %d tries" % (TikaStartupMaxRetry))
+        return False
+    else:
+        return True
 
 def toFilename(urlOrPath):
     value = re.sub('[^\w\s-]', '-', urlOrPath).strip().lower()
