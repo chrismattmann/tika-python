@@ -31,11 +31,11 @@ class CreateTest(unittest.TestCase):
     def test_remote_html(self):
         'parse remote HTML' 
         self.assertTrue(tika.parser.from_file(
-            'https://www.nasa.gov/index.html'))
+            'https://www.jpl.nasa.gov/index.html'))
     def test_remote_mp3(self):
         'parese remote mp3'
         self.assertTrue(tika.parser.from_file(
-            'http://tindeck.com/download/pro/viqis/theCalling-Lemming-Version.mp3'))
+            'https://archive.org/download/Ainst-Spaceshipdemo.mp3/Ainst-Spaceshipdemo.mp3'))
     def test_remote_jpg(self):
         'parse remote jpg'
         self.assertTrue(tika.parser.from_file(
