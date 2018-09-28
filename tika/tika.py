@@ -47,6 +47,15 @@ Visit https://github.com/chrismattmann/tika-python to learn more about it.
    # Use auto Language detection feature
    print(translate.from_file('/path/to/file', 'destLang')
 
+***Tika-Python Configuration***
+You can now use custom configuration files. See https://tika.apache.org/1.18/configuring.html
+for details on writing configuration files. Configuration is set the first time the server is started.
+To use a configuration file with a parser, or detector:
+    parsed = parser.from_file('/path/to/file', config_path='/path/to/configfile')
+or:
+    detected = detector.from_file('/path/to/file', config_path='/path/to/configfile')
+or:
+    detected = detector.from_buffer('some buffered content', config_path='/path/to/configfile')
 
 '''
 
@@ -152,7 +161,7 @@ log.addHandler(consoleHandler)
 log.setLevel(logging.INFO)
 
 Windows = True if platform.system() == "Windows" else False
-TikaVersion = os.getenv('TIKA_VERSION', '1.18')
+TikaVersion = os.getenv('TIKA_VERSION', '1.19')
 TikaJarPath = os.getenv('TIKA_PATH', tempfile.gettempdir())
 TikaFilesPath = tempfile.gettempdir()
 TikaServerLogFilePath = log_path
@@ -292,7 +301,7 @@ def parse(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
 
 def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar, 
           responseMimeType='application/json',
-          services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta/text'}, rawResponse=False, headers=None):
+          services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta/text'}, rawResponse=False, headers=None, config_path=None):
     '''
     Parse the object and return extracted metadata and/or text in JSON format.
     :param option:
@@ -316,7 +325,7 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
     service = services.get(option, services['all'])
     if service == '/tika': responseMimeType = 'text/plain'
     status, response = callServer('put', serverEndpoint, service, open(path, 'rb'),
-                                  headers, verbose, tikaServerJar, rawResponse=rawResponse)
+                                  headers, verbose, tikaServerJar, config_path=config_path, rawResponse=rawResponse)
 
     if file_type == 'remote': os.unlink(path)
     return (status, response)
@@ -437,7 +446,7 @@ def detectType(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbos
 
 def detectType1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar, 
                responseMimeType='text/plain',
-               services={'type': '/detect/stream'}):
+               services={'type': '/detect/stream'}, config_path=None):
     '''
     Detect the MIME/media type of the stream and return it in text/plain.
     :param option:
@@ -459,7 +468,7 @@ def detectType1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbos
                 'Accept': responseMimeType,
                 'Content-Disposition': make_content_disposition_header(path)
             },
-            verbose, tikaServerJar)
+            verbose, tikaServerJar, config_path=config_path)
     if csvOutput == 1:
         return(status, urlOrPath.decode("UTF-8") + "," + response)
     else:
@@ -486,7 +495,7 @@ def getConfig(option, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServer
 
 def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, tikaServerJar=TikaServerJar,
                httpVerbs={'get': requests.get, 'put': requests.put, 'post': requests.post}, classpath=None,
-               rawResponse=False):
+                rawResponse=False,config_path=None):
     '''
     Call the Tika Server, do some error checking, and return the response.
     :param verb:
@@ -510,14 +519,14 @@ def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, ti
     
     global TikaClientOnly
     if not TikaClientOnly:
-        serverEndpoint = checkTikaServer(scheme, serverHost, port, tikaServerJar, classpath)
+        serverEndpoint = checkTikaServer(scheme, serverHost, port, tikaServerJar, classpath, config_path)
 
     serviceUrl  = serverEndpoint + service
     if verb not in httpVerbs:
         log.exception('Tika Server call must be one of %s' % binary_string(httpVerbs.keys()))
         raise TikaException('Tika Server call must be one of %s' % binary_string(httpVerbs.keys()))
     verbFn = httpVerbs[verb]
-    
+
     if Windows and hasattr(data, "read"):
         data = data.read()
         
@@ -539,7 +548,7 @@ def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, ti
         return (resp.status_code, resp.text)
 
 
-def checkTikaServer(scheme="http", serverHost=ServerHost, port=Port, tikaServerJar=TikaServerJar, classpath=None):
+def checkTikaServer(scheme="http", serverHost=ServerHost, port=Port, tikaServerJar=TikaServerJar, classpath=None, config_path=None):
     '''
     Check that tika-server is running.  If not, download JAR file and start it up.
     :param scheme: e.g. http or https
@@ -565,7 +574,7 @@ def checkTikaServer(scheme="http", serverHost=ServerHost, port=Port, tikaServerJ
                 os.remove(jarPath)
                 tikaServerJar = getRemoteJar(tikaServerJar, jarPath)
 
-            status = startServer(jarPath, TikaJava, serverHost, port, classpath)
+            status = startServer(jarPath, TikaJava, serverHost, port, classpath, config_path)
             if not status:
                 log.error("Failed to receive startup confirmation from startServer.")
                 raise RuntimeError("Unable to start Tika server.")
@@ -589,7 +598,7 @@ def checkJarSig(tikaServerJar, jarPath):
             return existingContents == m.hexdigest()
 
 
-def startServer(tikaServerJar, java_path = TikaJava, serverHost = ServerHost, port = Port, classpath=None):
+def startServer(tikaServerJar, java_path = TikaJava, serverHost = ServerHost, port = Port, classpath=None, config_path=None):
     '''
     Starts Tika Server
     :param tikaServerJar: path to tika server jar
@@ -611,8 +620,13 @@ def startServer(tikaServerJar, java_path = TikaJava, serverHost = ServerHost, po
         classpath = tikaServerJar
 
     # setup command string
-    cmd_string = '%s -cp %s org.apache.tika.server.TikaServerCli --port %i --host %s &' \
-                 % (java_path, classpath, port, host)
+    cmd_string = ""
+    if not config_path:
+        cmd_string = '%s -cp %s org.apache.tika.server.TikaServerCli --port %i --host %s &' \
+                     % (java_path, classpath, port, host)
+    else:
+        cmd_string = '%s -cp %s org.apache.tika.server.TikaServerCli --port %i --host %s --config %s &' \
+                     % (java_path, classpath, port, host, config_path)
 
     # Check that we can write to log path
     try:
