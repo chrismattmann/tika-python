@@ -284,6 +284,7 @@ Contributors
 * Yash Tanna, USC
 * Igor Tokarev, Freelance
 * Imraan Parker, Freelance
+* Annie K. Didier, JPL
 
 License
 =======
