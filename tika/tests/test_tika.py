@@ -14,7 +14,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# 
+#
 #python -m unittest tests.tests
 
 import unittest
@@ -29,9 +29,9 @@ class CreateTest(unittest.TestCase):
         self.assertTrue(tika.parser.from_file(
             'http://appsrv.achd.net/reports/rwservlet?food_rep_insp&P_ENCOUNTER=201504160015'))
     def test_remote_html(self):
-        'parse remote HTML' 
+        'parse remote HTML'
         self.assertTrue(tika.parser.from_file(
-            'https://www.jpl.nasa.gov/index.html'))
+            'http://neverssl.com/index.html'))
     def test_remote_mp3(self):
         'parese remote mp3'
         self.assertTrue(tika.parser.from_file(
