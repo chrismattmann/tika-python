@@ -1,4 +1,4 @@
 setuptools
 requests
 python-coveralls
-pytest-cov
+pytest-cov<2.6
