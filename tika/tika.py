@@ -560,6 +560,9 @@ def checkTikaServer(scheme="http", serverHost=ServerHost, port=Port, tikaServerJ
     '''
     if classpath is None:
         classpath = TikaServerClasspath
+    if port is None:
+        port = '443' if scheme == 'https' else '80'
+
     urlp = urlparse(tikaServerJar)
     serverEndpoint = '%s://%s:%s' % (scheme, serverHost, port)
     jarPath = os.path.join(TikaJarPath, 'tika-server.jar')
