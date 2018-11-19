@@ -324,6 +324,7 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
         log.warning('config option must be one of meta, text, or all; using all.')
     service = services.get(option, services['all'])
     if service == '/tika': responseMimeType = 'text/plain'
+    headers.update({'Accept': responseMimeType, 'Content-Disposition': make_content_disposition_header(path)})
     status, response = callServer('put', serverEndpoint, service, open(path, 'rb'),
                                   headers, verbose, tikaServerJar, config_path=config_path, rawResponse=rawResponse)
 
