@@ -286,6 +286,10 @@ Contributors
 * Imraan Parker, Freelance
 * Annie K. Didier, JPL
 
+Thanks
+======
+Thanks to the [DARPA MEMEX](http://memex.jpl.nasa.gov) program for funding most of the original portions of this work.
+
 License
 =======
 [Apache License, version 2](http://www.apache.org/licenses/LICENSE-2.0)
