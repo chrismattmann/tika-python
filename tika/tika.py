@@ -669,9 +669,16 @@ def startServer(tikaServerJar, java_path = TikaJava, serverHost = ServerHost, po
     else:
         return True
 
-def toFilename(urlOrPath):
-    value = re.sub('[^\w\s-]', '-', urlOrPath).strip().lower()
-    return re.sub('[-\s]+', '-', value).strip("-")
+def toFilename(url):
+    '''
+    gets url and returns filename
+    '''
+    urlp = urlparse(url)
+    path = urlp.path
+    if not path:
+        path = "file_{}".format(int(time.time()))
+    value = re.sub(r'[^\w\s\.\-]', '-', path).strip().lower()
+    return re.sub(r'[-\s]+', '-', value).strip("-")[-200:]
 
     
 def getRemoteFile(urlOrPath, destPath):
@@ -688,7 +695,7 @@ def getRemoteFile(urlOrPath, destPath):
         return (urlOrPath, 'local')
     else:
         filename = toFilename(urlOrPath)
-        destPath = destPath + '/' +filename
+        destPath = destPath + '/' + filename
         log.info('Retrieving %s to %s.' % (urlOrPath, destPath))
         try:
             urlretrieve(urlOrPath, destPath)
