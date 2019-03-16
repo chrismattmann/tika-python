@@ -180,7 +180,7 @@ TikaServerClasspath = os.getenv('TIKA_SERVER_CLASSPATH', '')
 TikaStartupSleep = float(os.getenv('TIKA_STARTUP_SLEEP', 5))
 TikaStartupMaxRetry = int(os.getenv('TIKA_STARTUP_MAX_RETRY', 3))
 TikaJava = os.getenv("TIKA_JAVA", "java")
-TikaJavaArgs = os.getenv("TIKA_JAVA_ARGS")
+TikaJavaArgs = os.getenv("TIKA_JAVA_ARGS", '')
 
 Verbose = 0
 EncodeUtf8 = 0
