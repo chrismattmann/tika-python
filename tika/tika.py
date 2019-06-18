@@ -536,6 +536,9 @@ def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, ti
         encodedData = data.encode('utf-8')
 
     resp = verbFn(serviceUrl, encodedData, headers=headers, verify=False)
+    
+    encodedData.close() # closes the file reading data
+    
     if verbose:
         print(sys.stderr, "Request headers: ", headers)
         print(sys.stderr, "Response headers: ", resp.headers)
