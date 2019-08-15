@@ -140,6 +140,7 @@ from subprocess import Popen
 from subprocess import STDOUT
 from os import walk
 import logging
+import _io
 
 log_path = os.getenv('TIKA_LOG_PATH', tempfile.gettempdir())
 log_file = os.path.join(log_path, 'tika.log')
@@ -325,9 +326,9 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
     service = services.get(option, services['all'])
     if service == '/tika': responseMimeType = 'text/plain'
     headers.update({'Accept': responseMimeType, 'Content-Disposition': make_content_disposition_header(path.encode('utf-8') if type(path) is unicode_string else path)})
-    with open(path, 'rb') as f:
+    with urlOrPath if type(urlOrPath) is _io.BufferedReader else open(path, 'rb') as f:
         status, response = callServer('put', serverEndpoint, service, f,
-                                      headers, verbose, tikaServerJar, config_path=config_path, 
+                                      headers, verbose, tikaServerJar, config_path=config_path,
                                       rawResponse=rawResponse, requestOptions=requestOptions)
 
     if file_type == 'remote': os.unlink(path)
@@ -696,8 +697,12 @@ def getRemoteFile(urlOrPath, destPath):
     Fetches URL to local path or just returns absolute path.
     :param urlOrPath: resource locator, generally URL or path
     :param destPath: path to store the resource, usually a path on file system
-    :return: tuple having (path, 'local'/'remote')
+    :return: tuple having (path, 'local'/'remote'/'binary')
     '''
+    #update to handle binary stream input
+    if type(urlOrPath) is _io.BufferedReader:
+        return (urlOrPath.name, 'binary')
+
     urlp = urlparse(urlOrPath)
     if urlp.scheme == '':
         return (os.path.abspath(urlOrPath), 'local')
