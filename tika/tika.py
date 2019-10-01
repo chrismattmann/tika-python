@@ -237,8 +237,7 @@ def getPaths(urlOrPaths):
     :param urlOrPaths: the url or path to be scanned
     :return: ``list`` of paths
     '''
-    if isinstance(urlOrPaths, basestring):
-        #FIXME: basestring is undefined
+    if isinstance(urlOrPaths, unicode_string):
         urlOrPaths = [urlOrPaths]  # do not recursively walk over letters of a single path which can include "/"
     paths = []
     for eachUrlOrPaths in urlOrPaths:
@@ -275,7 +274,7 @@ def parseAndSave(option, urlOrPaths, outDir=None, serverEndpoint=ServerEndpoint,
         else:
             metaPath = os.path.join(outDir, os.path.split(path)[1] + metaExtension)
             log.info('Writing %s' % metaPath)
-            with open(metaPath, 'w', 'utf-8') as f:
+            with open(metaPath, 'w', encoding='utf-8') as f:
                 f.write(parse1(option, path, serverEndpoint, verbose, tikaServerJar, \
                                     responseMimeType, services)[1] + u"\n")
         metaPaths.append(metaPath)
