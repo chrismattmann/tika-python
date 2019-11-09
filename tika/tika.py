@@ -301,7 +301,7 @@ def parse(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
 
 def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar, 
           responseMimeType='application/json',
-          services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta/text'}, rawResponse=False, headers=None, config_path=None):
+          services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta/text'}, rawResponse=False, headers=None, config_path=None, requestOptions={}):
     '''
     Parse the object and return extracted metadata and/or text in JSON format.
     :param option:
@@ -326,7 +326,7 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
     if service == '/tika': responseMimeType = 'text/plain'
     headers.update({'Accept': responseMimeType, 'Content-Disposition': make_content_disposition_header(path)})
     status, response = callServer('put', serverEndpoint, service, open(path, 'rb'),
-                                  headers, verbose, tikaServerJar, config_path=config_path, rawResponse=rawResponse)
+                                  headers, verbose, tikaServerJar, config_path=config_path, rawResponse=rawResponse, requestOptions=requestOptions)
 
     if file_type == 'remote': os.unlink(path)
     return (status, response)
@@ -351,7 +351,7 @@ def detectLang(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbos
 
 def detectLang1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar, 
                responseMimeType='text/plain',
-               services={'file' : '/language/stream'}):
+               services={'file' : '/language/stream'}, requestOptions={}):
     '''
     Detect the language of the provided stream and return its 2 character code as text/plain.
     :param option:
@@ -369,7 +369,7 @@ def detectLang1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbos
         raise TikaException('Language option must be one of %s ' % binary_string(services.keys()))
     service = services[option]
     status, response = callServer('put', serverEndpoint, service, open(path, 'rb'),
-            {'Accept': responseMimeType}, verbose, tikaServerJar)
+            {'Accept': responseMimeType}, verbose, tikaServerJar, requestOptions=requestOptions)
     return (status, response)
 
 def doTranslate(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar, 
@@ -392,7 +392,7 @@ def doTranslate(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbo
     
 def doTranslate1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar,
                  responseMimeType='text/plain', 
-                 services={'all': '/translate/all'}):
+                 services={'all': '/translate/all'}, requestOptions={}):
     '''
 
     :param option:
@@ -424,7 +424,7 @@ def doTranslate1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbo
         service = services["all"] + "/" + Translator + "/" + destLang  
     status, response = callServer('put', serverEndpoint, service, open(path, 'rb'),
                                   {'Accept' : responseMimeType},
-                                  verbose, tikaServerJar)
+                                  verbose, tikaServerJar, requestOptions=requestOptions)
     return (status, response)
                        
 def detectType(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar, 
@@ -447,7 +447,7 @@ def detectType(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbos
 
 def detectType1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar, 
                responseMimeType='text/plain',
-               services={'type': '/detect/stream'}, config_path=None):
+               services={'type': '/detect/stream'}, config_path=None, requestOptions={}):
     '''
     Detect the MIME/media type of the stream and return it in text/plain.
     :param option:
@@ -469,14 +469,14 @@ def detectType1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbos
                 'Accept': responseMimeType,
                 'Content-Disposition': make_content_disposition_header(path)
             },
-            verbose, tikaServerJar, config_path=config_path)
+            verbose, tikaServerJar, config_path=config_path, requestOptions=requestOptions)
     if csvOutput == 1:
         return(status, urlOrPath.decode("UTF-8") + "," + response)
     else:
         return (status, response)
 
 def getConfig(option, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar, responseMimeType='application/json',
-              services={'mime-types': '/mime-types', 'detectors': '/detectors', 'parsers': '/parsers/details'}):
+              services={'mime-types': '/mime-types', 'detectors': '/detectors', 'parsers': '/parsers/details'}, requestOptions={}):
     '''
     Get the configuration of the Tika Server (parsers, detectors, etc.) and return it in JSON format.
     :param option:
@@ -490,13 +490,12 @@ def getConfig(option, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServer
     if option not in services:
         die('config option must be one of mime-types, detectors, or parsers')
     service = services[option]
-    status, response = callServer('get', serverEndpoint, service, None, {'Accept': responseMimeType}, verbose, tikaServerJar)
+    status, response = callServer('get', serverEndpoint, service, None, {'Accept': responseMimeType}, verbose, tikaServerJar, requestOptions=requestOptions)
     return (status, response)
-
 
 def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, tikaServerJar=TikaServerJar,
                httpVerbs={'get': requests.get, 'put': requests.put, 'post': requests.post}, classpath=None,
-                rawResponse=False,config_path=None):
+                rawResponse=False,config_path=None, requestOptions={}):
     '''
     Call the Tika Server, do some error checking, and return the response.
     :param verb:
@@ -535,7 +534,15 @@ def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, ti
     if type(data) is unicode_string:
         encodedData = data.encode('utf-8')
 
-    resp = verbFn(serviceUrl, encodedData, headers=headers, verify=False)
+    requestOptionsDefault = {
+        'timeout': 60,
+        'headers': headers,
+        'verify': False
+    }
+    effectiveRequestOptions = requestOptionsDefault.copy()
+    effectiveRequestOptions.update(requestOptions)
+
+    resp = verbFn(serviceUrl, encodedData, **effectiveRequestOptions)
     if verbose:
         print(sys.stderr, "Request headers: ", headers)
         print(sys.stderr, "Response headers: ", resp.headers)

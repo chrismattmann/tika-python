@@ -210,6 +210,15 @@ parsed = parser.from_file(home + '/git/geotopicparser-utils/geotopics/polar.geot
 print parsed["metadata"]
 ```
 
+Customizing the Tika Server Request
+---------------------------
+You may customize the outgoing HTTP request to Tika server by setting `requestOptions` on the `.from_file` and `.from_buffer` methods (Parser, Unpack , Detect, Config, Language, Translate). It should be a dictionary of arguments that will be passed to the request method. The [request method documentation](https://2.python-requests.org/en/master/api/#requests.request) specifies valid arguments. This will override any defaults except for `url` and `params `/`data`.
+
+```
+from tika import parser
+parsed = parser.from_file('/path/to/file', requestOptions={'timeout': 120})
+```
+
 New Command Line Client Tool
 ============================
 When you install Tika-Python you also get a new command

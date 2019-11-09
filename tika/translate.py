@@ -18,7 +18,7 @@
 
 from .tika import doTranslate1, callServer, Translator, ServerEndpoint
 
-def from_file(filename, srcLang, destLang, serverEndpoint=ServerEndpoint):
+def from_file(filename, srcLang, destLang, serverEndpoint=ServerEndpoint, requestOptions={}):
     '''
     Traslates the content of source file to destination language
     :param filename: file whose contents needs translation
@@ -27,10 +27,10 @@ def from_file(filename, srcLang, destLang, serverEndpoint=ServerEndpoint):
     :param serverEndpoint: Tika server end point (Optional)
     :return: translated content
     '''
-    jsonOutput = doTranslate1(srcLang+':'+destLang, filename, serverEndpoint)
+    jsonOutput = doTranslate1(srcLang+':'+destLang, filename, serverEndpoint, requestOptions=requestOptions)
     return jsonOutput[1]
 
-def from_buffer(string, srcLang, destLang, serverEndpoint=ServerEndpoint):
+def from_buffer(string, srcLang, destLang, serverEndpoint=ServerEndpoint, requestOptions={}):
     '''
     Translates content from source language to desired destination language
     :param string: input content which needs translation
@@ -40,10 +40,10 @@ def from_buffer(string, srcLang, destLang, serverEndpoint=ServerEndpoint):
     :return:
     '''
     status, response = callServer('put', ServerEndpoint, '/translate/all/'+Translator+'/'+srcLang+'/'+destLang, 
-                                  string, {'Accept': 'text/plain'}, False)
+                                  string, {'Accept': 'text/plain'}, False, requestOptions=requestOptions)
     return response
 
-def auto_from_file(filename, destLang, serverEndpoint=ServerEndpoint):
+def auto_from_file(filename, destLang, serverEndpoint=ServerEndpoint, requestOptions={}):
     '''
     Translates contents of a file to desired language by auto detecting the source language
     :param filename: file whose contents needs translation
@@ -51,10 +51,10 @@ def auto_from_file(filename, destLang, serverEndpoint=ServerEndpoint):
     :param serverEndpoint: Tika server end point (Optional)
     :return:
     '''
-    jsonOutput = doTranslate1(destLang, filename, serverEndpoint)
+    jsonOutput = doTranslate1(destLang, filename, serverEndpoint, requestOptions=requestOptions)
     return jsonOutput[1]    
 
-def auto_from_buffer(string, destLang, serverEndpoint=ServerEndpoint):
+def auto_from_buffer(string, destLang, serverEndpoint=ServerEndpoint, requestOptions={}):
     '''
     Translates content to desired language by auto detecting the source language
     :param string: input content which needs translation
@@ -63,6 +63,6 @@ def auto_from_buffer(string, destLang, serverEndpoint=ServerEndpoint):
     :return:
     '''
     status, response = callServer('put', ServerEndpoint, '/translate/all/'+Translator+'/'+destLang, 
-                                  string, {'Accept': 'text/plain'}, False)
+                                  string, {'Accept': 'text/plain'}, False, requestOptions=requestOptions)
     return response
 
