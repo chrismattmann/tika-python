@@ -161,7 +161,7 @@ log.addHandler(consoleHandler)
 log.setLevel(logging.INFO)
 
 Windows = True if platform.system() == "Windows" else False
-TikaVersion = os.getenv('TIKA_VERSION', '1.19')
+TikaVersion = os.getenv('TIKA_VERSION', '1.22')
 TikaJarPath = os.getenv('TIKA_PATH', tempfile.gettempdir())
 TikaFilesPath = tempfile.gettempdir()
 TikaServerLogFilePath = log_path
