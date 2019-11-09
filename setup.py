@@ -34,7 +34,7 @@ except ImportError:
 
 version = tika.__version__
 
-with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+with open(os.path.join('.', 'README.md'), encoding='utf-8') as f:
     _descr = f.read()
 
 _keywords = 'tika digital babel fish apache'
