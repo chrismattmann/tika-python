@@ -34,7 +34,8 @@ except ImportError:
 
 version = tika.__version__
 
-_descr = u'''**********
+_descr = u'''
+***************
 tika
 ***************
 
