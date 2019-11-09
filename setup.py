@@ -34,7 +34,7 @@ except ImportError:
 
 version = tika.__version__
 
-with open(os.path.join('.', 'README.md'), encoding='utf-8') as f:
+with open(os.path.join(os.path.dirname(__file__), 'README.md'), encoding='utf-8') as f:
     _descr = f.read()
 
 _keywords = 'tika digital babel fish apache'
@@ -61,12 +61,12 @@ setup(
     name='tika',
     version=version,
     description='Apache Tika Python library',
-    long_description=long_description,
     long_description_content_type='text/markdown',
+    long_description=long_description,
     classifiers=_classifiers,
     keywords=_keywords,
     author='Chris Mattmann',
-    author_email='chris.a.mttmnn@nasa.gov',
+    author_email='chris.a.mattmann@jpl.nasa.gov',
     url='http://github.com/chrismattmann/tika-python',
     download_url='http://github.com/chrismattmann/tika-python',
     license=read('LICENSE.txt'),
