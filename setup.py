@@ -34,14 +34,9 @@ except ImportError:
 
 version = tika.__version__
 
-_descr = u'''
-***************
-tika
-***************
+with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+    _descr = f.read()
 
-.. contents::
-Tika python pure REST based library.
-'''
 _keywords = 'tika digital babel fish apache'
 _classifiers = [
     'Development Status :: 3 - Alpha',
@@ -67,6 +62,7 @@ setup(
     version=version,
     description='Apache Tika Python library',
     long_description=long_description,
+    long_description_content_type='text/markdown',
     classifiers=_classifiers,
     keywords=_keywords,
     author='Chris Mattmann',
