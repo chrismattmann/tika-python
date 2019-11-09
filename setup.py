@@ -69,7 +69,7 @@ setup(
     author_email='chris.a.mattmann@jpl.nasa.gov',
     url='http://github.com/chrismattmann/tika-python',
     download_url='http://github.com/chrismattmann/tika-python',
-    license=read('LICENSE.txt'),
+    license='Apache License version 2 ("ALv2")',
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
     zip_safe=True,
