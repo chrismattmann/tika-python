@@ -180,6 +180,7 @@ TikaServerClasspath = os.getenv('TIKA_SERVER_CLASSPATH', '')
 TikaStartupSleep = float(os.getenv('TIKA_STARTUP_SLEEP', 5))
 TikaStartupMaxRetry = int(os.getenv('TIKA_STARTUP_MAX_RETRY', 3))
 TikaJava = os.getenv("TIKA_JAVA", "java")
+TikaJavaArgs = os.getenv("TIKA_JAVA_ARGS", '')
 
 Verbose = 0
 EncodeUtf8 = 0
@@ -237,8 +238,7 @@ def getPaths(urlOrPaths):
     :param urlOrPaths: the url or path to be scanned
     :return: ``list`` of paths
     '''
-    if isinstance(urlOrPaths, basestring):
-        #FIXME: basestring is undefined
+    if isinstance(urlOrPaths, unicode_string):
         urlOrPaths = [urlOrPaths]  # do not recursively walk over letters of a single path which can include "/"
     paths = []
     for eachUrlOrPaths in urlOrPaths:
@@ -275,7 +275,7 @@ def parseAndSave(option, urlOrPaths, outDir=None, serverEndpoint=ServerEndpoint,
         else:
             metaPath = os.path.join(outDir, os.path.split(path)[1] + metaExtension)
             log.info('Writing %s' % metaPath)
-            with open(metaPath, 'w', 'utf-8') as f:
+            with open(metaPath, 'w', encoding='utf-8') as f:
                 f.write(parse1(option, path, serverEndpoint, verbose, tikaServerJar, \
                                     responseMimeType, services)[1] + u"\n")
         metaPaths.append(metaPath)
@@ -587,7 +587,7 @@ def checkTikaServer(scheme="http", serverHost=ServerHost, port=Port, tikaServerJ
                 os.remove(jarPath)
                 tikaServerJar = getRemoteJar(tikaServerJar, jarPath)
 
-            status = startServer(jarPath, TikaJava, serverHost, port, classpath, config_path)
+            status = startServer(jarPath, TikaJava, TikaJavaArgs, serverHost, port, classpath, config_path)
             if not status:
                 log.error("Failed to receive startup confirmation from startServer.")
                 raise RuntimeError("Unable to start Tika server.")
@@ -611,7 +611,7 @@ def checkJarSig(tikaServerJar, jarPath):
             return existingContents == m.hexdigest()
 
 
-def startServer(tikaServerJar, java_path = TikaJava, serverHost = ServerHost, port = Port, classpath=None, config_path=None):
+def startServer(tikaServerJar, java_path = TikaJava, java_args = TikaJavaArgs, serverHost = ServerHost, port = Port, classpath=None, config_path=None):
     '''
     Starts Tika Server
     :param tikaServerJar: path to tika server jar
@@ -635,11 +635,11 @@ def startServer(tikaServerJar, java_path = TikaJava, serverHost = ServerHost, po
     # setup command string
     cmd_string = ""
     if not config_path:
-        cmd_string = '%s -cp %s org.apache.tika.server.TikaServerCli --port %s --host %s &' \
-                     % (java_path, classpath, port, host)
+        cmd_string = '%s %s -cp %s org.apache.tika.server.TikaServerCli --port %s --host %s &' \
+                     % (java_path, java_args, classpath, port, host)
     else:
-        cmd_string = '%s -cp %s org.apache.tika.server.TikaServerCli --port %s --host %s --config %s &' \
-                     % (java_path, classpath, port, host, config_path)
+        cmd_string = '%s %s -cp %s org.apache.tika.server.TikaServerCli --port %s --host %s --config %s &' \
+                     % (java_path, java_args, classpath, port, host, config_path)
 
     # Check that we can write to log path
     try:
