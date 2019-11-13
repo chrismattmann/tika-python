@@ -543,7 +543,6 @@ def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, ti
     effectiveRequestOptions.update(requestOptions)
 
     resp = verbFn(serviceUrl, encodedData, **effectiveRequestOptions)
-    encodedData.close() # closes the file reading data
 
     if verbose:
         print(sys.stderr, "Request headers: ", headers)
