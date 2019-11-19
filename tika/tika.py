@@ -138,7 +138,8 @@ import hashlib
 import platform
 from subprocess import Popen
 from subprocess import STDOUT
-from os import walk
+from os import walk, kill
+import signal
 import logging
 
 log_path = os.getenv('TIKA_LOG_PATH', tempfile.gettempdir())
@@ -185,6 +186,9 @@ TikaJavaArgs = os.getenv("TIKA_JAVA_ARGS", '')
 Verbose = 0
 EncodeUtf8 = 0
 csvOutput = 0
+
+# Tika server PID, will be used later on to kill the process and free up ram
+TikaServerPID = -1
 
 class TikaException(Exception):
     pass
@@ -657,6 +661,7 @@ def startServer(tikaServerJar, java_path = TikaJava, java_args = TikaJavaArgs, s
         return False
 
     # Run java with jar args
+    # need to check if shell=true is really needed
     cmd = Popen(cmd_string, stdout=logFile, stderr=STDOUT, shell=True)
 
     # Check logs and retry as configured
@@ -676,7 +681,14 @@ def startServer(tikaServerJar, java_path = TikaJava, java_args = TikaJavaArgs, s
         log.error("Tika startup log message not received after %d tries." % (TikaStartupMaxRetry))
         return False
     else:
+        TikaServerPID = cmd.pid
         return True
+
+def killServer():
+    if(TikaServerPID > 1):
+        kill(TikaServerPID, signal.SIGTERM)
+    else:
+        log.error("Invalid server PID, won't kill")
 
 def toFilename(url):
     '''
