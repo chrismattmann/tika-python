@@ -20,6 +20,7 @@
 
 import os.path
 import tika
+from io import open
 
 try:
     from ez_setup import use_setuptools
