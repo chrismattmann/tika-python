@@ -40,6 +40,10 @@ class CreateTest(unittest.TestCase):
         'parse remote jpg'
         self.assertTrue(tika.parser.from_file(
             'https://www.nasa.gov/sites/default/files/thumbnails/image/j2m-shareable.jpg'))
+    def test_local_binary(self):
+        "parse file binary"
+        file_obj = open("./files/rwservlet.pdf", "rb")
+        self.assertTrue(tika.parser.from_file(file_obj))
 
 
 if __name__ == '__main__':
