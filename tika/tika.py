@@ -325,8 +325,10 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
     service = services.get(option, services['all'])
     if service == '/tika': responseMimeType = 'text/plain'
     headers.update({'Accept': responseMimeType, 'Content-Disposition': make_content_disposition_header(path)})
-    status, response = callServer('put', serverEndpoint, service, open(path, 'rb'),
-                                  headers, verbose, tikaServerJar, config_path=config_path, rawResponse=rawResponse, requestOptions=requestOptions)
+    with open(path, 'rb') as f:
+        status, response = callServer('put', serverEndpoint, service, f,
+                                      headers, verbose, tikaServerJar, config_path=config_path, 
+                                      rawResponse=rawResponse, requestOptions=requestOptions)
 
     if file_type == 'remote': os.unlink(path)
     return (status, response)
