@@ -761,8 +761,6 @@ def checkPortIsOpen(remoteServerHost=ServerHost, port = Port):
             return True
         else :
             return False
-        sock.close()
-        #FIXME: the above line is unreachable
 
     except KeyboardInterrupt:
         print("You pressed Ctrl+C")
@@ -775,6 +773,9 @@ def checkPortIsOpen(remoteServerHost=ServerHost, port = Port):
     except socket.error:
         print("Couldn't connect to server")
         sys.exit()
+
+    finally:
+        sock.close()
 
 def main(argv=None):
     """Run Tika from command line according to USAGE."""
