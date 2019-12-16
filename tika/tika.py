@@ -58,6 +58,7 @@ or:
     detected = detector.from_buffer('some buffered content', config_path='/path/to/configfile')
 
 '''
+import types
 
 USAGE = """
 tika.py [-v] [-e] [-o <outputDir>] [--server <TikaServerEndpoint>] [--install <UrlToTikaServerJar>] [--port <portNumber>] <command> <option> <urlOrPathToFile>
@@ -326,7 +327,7 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
     service = services.get(option, services['all'])
     if service == '/tika': responseMimeType = 'text/plain'
     headers.update({'Accept': responseMimeType, 'Content-Disposition': make_content_disposition_header(path.encode('utf-8') if type(path) is unicode_string else path)})
-    with urlOrPath if isinstance(urlOrPath, io.BufferedIOBase) else open(path, 'rb') as f:
+    with urlOrPath if _is_file_object(urlOrPath) else open(path, 'rb') as f:
         status, response = callServer('put', serverEndpoint, service, f,
                                       headers, verbose, tikaServerJar, config_path=config_path,
                                       rawResponse=rawResponse, requestOptions=requestOptions)
@@ -691,7 +692,15 @@ def toFilename(url):
     value = re.sub(r'[^\w\s\.\-]', '-', path).strip().lower()
     return re.sub(r'[-\s]+', '-', value).strip("-")[-200:]
 
-    
+
+def _is_file_object(f):
+    try:
+        file_types = (types.FileType, io.IOBase)
+    except AttributeError:
+        file_types = (io.IOBase,)
+
+    return isinstance(f, file_types)
+
 def getRemoteFile(urlOrPath, destPath):
     '''
     Fetches URL to local path or just returns absolute path.
@@ -700,7 +709,7 @@ def getRemoteFile(urlOrPath, destPath):
     :return: tuple having (path, 'local'/'remote'/'binary')
     '''
     # handle binary stream input
-    if isinstance(urlOrPath, io.BufferedIOBase):
+    if _is_file_object(urlOrPath):
         return (urlOrPath.name, 'binary')
 
     urlp = urlparse(urlOrPath)
