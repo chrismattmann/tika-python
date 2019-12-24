@@ -23,7 +23,7 @@ import json
 def from_file(filename, service='all', serverEndpoint=ServerEndpoint, xmlContent=False, headers=None, config_path=None, requestOptions={}):
     '''
     Parses a file for metadata and content
-    :param filename: path to file which needs to be parsed
+    :param filename: path to file which needs to be parsed or binary file using open(path,'rb')
     :param serverEndpoint: Server endpoint url
     :param xmlContent: Whether or not XML content be requested.
                     Default is 'False', which results in text content.
