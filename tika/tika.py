@@ -138,7 +138,7 @@ import hashlib
 import platform
 from subprocess import Popen
 from subprocess import STDOUT
-from os import walk, kill
+from os import walk
 import signal
 import logging
 
@@ -187,8 +187,8 @@ Verbose = 0
 EncodeUtf8 = 0
 csvOutput = 0
 
-# Tika server PID, will be used later on to kill the process and free up ram
-TikaServerPID = -1
+# will be used later on to kill the process and free up ram
+TikaServerProcess = ""
 
 class TikaException(Exception):
     pass
@@ -662,7 +662,8 @@ def startServer(tikaServerJar, java_path = TikaJava, java_args = TikaJavaArgs, s
 
     # Run java with jar args
     # need to check if shell=true is really needed
-    cmd = Popen(cmd_string, stdout=logFile, stderr=STDOUT, shell=True)
+    global TikaServerProcess
+    TikaServerProcess = Popen(cmd_string, stdout=logFile, stderr=STDOUT, shell=True, preexec_fn=os.setsid)
 
     # Check logs and retry as configured
     try_count = 0
@@ -681,12 +682,11 @@ def startServer(tikaServerJar, java_path = TikaJava, java_args = TikaJavaArgs, s
         log.error("Tika startup log message not received after %d tries." % (TikaStartupMaxRetry))
         return False
     else:
-        TikaServerPID = cmd.pid
         return True
 
 def killServer():
-    if(TikaServerPID > 1):
-        kill(TikaServerPID, signal.SIGTERM)
+    if(TikaServerProcess.pid > 1):
+        os.killpg(os.getpgid(TikaServerProcess.pid), signal.SIGTERM)
     else:
         log.error("Invalid server PID, won't kill")
 
