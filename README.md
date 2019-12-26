@@ -5,9 +5,9 @@ tika-python
 ===========
 A Python port of the [Apache Tika](http://tika.apache.org/)
 library that makes Tika available using the
-[Tika REST Server](http://wiki.apache.org/tika/TikaJAXRS). 
+[Tika REST Server](http://wiki.apache.org/tika/TikaJAXRS).
 
-This makes Apache Tika available as a Python library, 
+This makes Apache Tika available as a Python library,
 installable via Setuptools, Pip and Easy Install.
 
 To use this library, you need to have Java 7+ installed on your
@@ -22,8 +22,14 @@ Installation (with pip)
 
 Installation (without pip)
 --------------------------
-1. `python setup.py build`  
-2. `python setup.py install`  
+1. `python setup.py build`
+2. `python setup.py install`
+
+Airgap Environment Setup
+------------------------
+To get this working in a disconnected environment, download a tika server file and set the TIKA_SERVER_JAR environment variable to TIKA_SERVER_JAR="file:///<yourpath>/tika-server.jar" which successfully tells `python-tika` to "download" this file and move it to `/tmp/tika-server.jar` and run as background process.
+
+This is the only way to run `python-tika` without internet access. Without this set, the default is to check the tika version and pull latest every time from Apache.
 
 Environment Variables
 ---------------------
@@ -58,11 +64,11 @@ print(parsed["content"])
 
 Parser Interface
 ----------------------
-The parser interface extracts text and metadata using the /rmeta 
+The parser interface extracts text and metadata using the /rmeta
 interface. This is one of the better ways to get the internal XHTML
 content extracted.
 
-Note: 
+Note:
 ![Alert Icon](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon28.png "Alert")
 The parser interface needs the following environment variable set on the console for printing of the extracted content.
 ```export PYTHONIOENCODING=utf8```
@@ -85,7 +91,7 @@ Specify Output Format To XHTML
 ---------------------
 The parser interface is optionally able to output the content as XHTML rather than plain text.
 
-Note: 
+Note:
 ![Alert Icon](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon28.png "Alert")
 The parser interface needs the following environment variable set on the console for printing of the extracted content.
 ```export PYTHONIOENCODING=utf8```
@@ -129,7 +135,7 @@ print(detector.from_file('/path/to/file'))
 Config Interface
 ----------------------
 The config interface allows you to inspect the Tika Server environment's
-configuration including what parsers, mime types, and detectors the 
+configuration including what parsers, mime types, and detectors the
 server has been configured with.
 
 ```
@@ -143,7 +149,7 @@ print(config.getDetectors())
 
 Language Detection Interface
 ---------------------------------
-The language detection interface provides a 2 character language 
+The language detection interface provides a 2 character language
 code texted based on the text in provided file.
 
 ```
@@ -187,10 +193,10 @@ Changing the Tika Classpath
 ---------------------------
 You can update the classpath that Tika server uses by
 setting the classpath as a set of ':' delimited strings.
-For example if you want to get Tika-Python working with 
+For example if you want to get Tika-Python working with
 [GeoTopicParsing](http://wiki.apache.org/tika/GeoTopicParser),
 you can do this, replace paths below with your own paths, as
-identified [here](http://wiki.apache.org/tika/GeoTopicParser) 
+identified [here](http://wiki.apache.org/tika/GeoTopicParser)
 and make sure that you have done this:
 
 kill Tika server (if already running):
@@ -294,6 +300,7 @@ Contributors
 * Igor Tokarev, Freelance
 * Imraan Parker, Freelance
 * Annie K. Didier, JPL
+* Juan Elosua, TEGRA Cybersecurity Center
 
 Thanks
 ======

@@ -58,6 +58,7 @@ or:
     detected = detector.from_buffer('some buffered content', config_path='/path/to/configfile')
 
 '''
+import types
 
 USAGE = """
 tika.py [-v] [-e] [-o <outputDir>] [--server <TikaServerEndpoint>] [--install <UrlToTikaServerJar>] [--port <portNumber>] <command> <option> <urlOrPathToFile>
@@ -141,6 +142,7 @@ from subprocess import STDOUT
 from os import walk
 import signal
 import logging
+import io
 
 log_path = os.getenv('TIKA_LOG_PATH', tempfile.gettempdir())
 log_file = os.path.join(log_path, 'tika.log')
@@ -162,7 +164,7 @@ log.addHandler(consoleHandler)
 log.setLevel(logging.INFO)
 
 Windows = True if platform.system() == "Windows" else False
-TikaVersion = os.getenv('TIKA_VERSION', '1.22')
+TikaVersion = os.getenv('TIKA_VERSION', '1.23')
 TikaJarPath = os.getenv('TIKA_PATH', tempfile.gettempdir())
 TikaFilesPath = tempfile.gettempdir()
 TikaServerLogFilePath = log_path
@@ -328,9 +330,11 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
         log.warning('config option must be one of meta, text, or all; using all.')
     service = services.get(option, services['all'])
     if service == '/tika': responseMimeType = 'text/plain'
-    headers.update({'Accept': responseMimeType, 'Content-Disposition': make_content_disposition_header(path)})
-    status, response = callServer('put', serverEndpoint, service, open(path, 'rb'),
-                                  headers, verbose, tikaServerJar, config_path=config_path, rawResponse=rawResponse, requestOptions=requestOptions)
+    headers.update({'Accept': responseMimeType, 'Content-Disposition': make_content_disposition_header(path.encode('utf-8') if type(path) is unicode_string else path)})
+    with urlOrPath if _is_file_object(urlOrPath) else open(path, 'rb') as f:
+        status, response = callServer('put', serverEndpoint, service, f,
+                                      headers, verbose, tikaServerJar, config_path=config_path,
+                                      rawResponse=rawResponse, requestOptions=requestOptions)
 
     if file_type == 'remote': os.unlink(path)
     return (status, response)
@@ -547,7 +551,6 @@ def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, ti
     effectiveRequestOptions.update(requestOptions)
 
     resp = verbFn(serviceUrl, encodedData, **effectiveRequestOptions)
-    encodedData.close() # closes the file reading data
 
     if verbose:
         print(sys.stderr, "Request headers: ", headers)
@@ -701,14 +704,26 @@ def toFilename(url):
     value = re.sub(r'[^\w\s\.\-]', '-', path).strip().lower()
     return re.sub(r'[-\s]+', '-', value).strip("-")[-200:]
 
-    
+
+def _is_file_object(f):
+    try:
+        file_types = (types.FileType, io.IOBase)
+    except AttributeError:
+        file_types = (io.IOBase,)
+
+    return isinstance(f, file_types)
+
 def getRemoteFile(urlOrPath, destPath):
     '''
     Fetches URL to local path or just returns absolute path.
     :param urlOrPath: resource locator, generally URL or path
     :param destPath: path to store the resource, usually a path on file system
-    :return: tuple having (path, 'local'/'remote')
+    :return: tuple having (path, 'local'/'remote'/'binary')
     '''
+    # handle binary stream input
+    if _is_file_object(urlOrPath):
+        return (urlOrPath.name, 'binary')
+
     urlp = urlparse(urlOrPath)
     if urlp.scheme == '':
         return (os.path.abspath(urlOrPath), 'local')
@@ -774,8 +789,6 @@ def checkPortIsOpen(remoteServerHost=ServerHost, port = Port):
             return True
         else :
             return False
-        sock.close()
-        #FIXME: the above line is unreachable
 
     except KeyboardInterrupt:
         print("You pressed Ctrl+C")
@@ -788,6 +801,9 @@ def checkPortIsOpen(remoteServerHost=ServerHost, port = Port):
     except socket.error:
         print("Couldn't connect to server")
         sys.exit()
+
+    finally:
+        sock.close()
 
 def main(argv=None):
     """Run Tika from command line according to USAGE."""

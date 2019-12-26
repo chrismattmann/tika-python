@@ -15,31 +15,44 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # 
-#python -m unittest tests.tests
-
+# python -m unittest tests.tests
+import os
 import unittest
 import tika.parser
 
 
 class CreateTest(unittest.TestCase):
-    "test for file types"
+    """test for file types"""
 
     def test_remote_pdf(self):
-        'parse remote PDF'
+        """parse remote PDF"""
         self.assertTrue(tika.parser.from_file(
             'http://appsrv.achd.net/reports/rwservlet?food_rep_insp&P_ENCOUNTER=201504160015'))
+
     def test_remote_html(self):
-        'parse remote HTML' 
-        self.assertTrue(tika.parser.from_file(
-            'http://neverssl.com/index.html'))
+        """parse remote HTML"""
+        self.assertTrue(tika.parser.from_file('http://neverssl.com/index.html'))
+
     def test_remote_mp3(self):
-        'parese remote mp3'
+        """parse remote mp3"""
         self.assertTrue(tika.parser.from_file(
             'https://archive.org/download/Ainst-Spaceshipdemo.mp3/Ainst-Spaceshipdemo.mp3'))
+
     def test_remote_jpg(self):
-        'parse remote jpg'
+        """parse remote jpg"""
         self.assertTrue(tika.parser.from_file(
             'https://www.nasa.gov/sites/default/files/thumbnails/image/j2m-shareable.jpg'))
+
+    def test_local_binary(self):
+        """parse file binary"""
+        file = os.path.join(os.path.dirname(__file__), 'files', 'rwservlet.pdf')
+        with open(file, 'rb') as file_obj:
+            self.assertTrue(tika.parser.from_file(file_obj))
+
+    def test_local_path(self):
+        """parse file path"""
+        file = os.path.join(os.path.dirname(__file__), 'files', 'rwservlet.pdf')
+        self.assertTrue(tika.parser.from_file(file))
 
 
 if __name__ == '__main__':

@@ -20,10 +20,10 @@ from .tika import parse1, callServer, ServerEndpoint
 import os
 import json
 
-def from_file(filename, serverEndpoint=ServerEndpoint, xmlContent=False, headers=None, config_path=None, requestOptions={}):
+def from_file(filename, service='all', serverEndpoint=ServerEndpoint, xmlContent=False, headers=None, config_path=None, requestOptions={}):
     '''
     Parses a file for metadata and content
-    :param filename: path to file which needs to be parsed
+    :param filename: path to file which needs to be parsed or binary file using open(path,'rb')
     :param serverEndpoint: Server endpoint url
     :param xmlContent: Whether or not XML content be requested.
                     Default is 'False', which results in text content.
@@ -33,11 +33,11 @@ def from_file(filename, serverEndpoint=ServerEndpoint, xmlContent=False, headers
             'content' has a str value and metadata has a dict type value.
     '''
     if not xmlContent:
-        jsonOutput = parse1('all', filename, serverEndpoint, headers=headers, config_path=config_path, requestOptions=requestOptions)
+        output = parse1(service, filename, serverEndpoint, headers=headers, config_path=config_path, requestOptions=requestOptions)
     else:
-        jsonOutput = parse1('all', filename, serverEndpoint, services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta/xml'},
+        output = parse1(service, filename, serverEndpoint, services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta/xml'},
                             headers=headers, config_path=config_path, requestOptions=requestOptions)
-    return _parse(jsonOutput)
+    return _parse(output, service)
 
 
 def from_buffer(string, serverEndpoint=ServerEndpoint, xmlContent=False, headers=None, config_path=None, requestOptions={}):
@@ -61,20 +61,35 @@ def from_buffer(string, serverEndpoint=ServerEndpoint, xmlContent=False, headers
 
     return _parse((status,response))
 
-def _parse(jsonOutput):
+def _parse(output, service='all'):
     '''
-    Parses JSON response from Tika REST API server
-    :param jsonOutput: JSON output from Tika Server
+    Parses response from Tika REST API server
+    :param output: output from Tika Server
+    :param service: service requested from the tika server
+                    Default is 'all', which results in recursive text content+metadata.
+                    'meta' returns only metadata
+                    'text' returns only content
     :return: a dictionary having 'metadata' and 'content' values
     '''
-    parsed={}
-    if not jsonOutput:
+    parsed={'metadata': None, 'content': None}
+    if not output:
         return parsed
-    
-    parsed["status"] = jsonOutput[0]
-    if jsonOutput[1] == None or jsonOutput[1] == "":
+
+    parsed["status"] = output[0]
+    if output[1] == None or output[1] == "":
         return parsed
-    realJson = json.loads(jsonOutput[1])
+
+    if service == "text":
+        parsed["content"] = output[1]
+        return parsed
+
+    realJson = json.loads(output[1])
+
+    parsed["metadata"] = {}
+    if service == "meta":
+        for key in realJson:
+            parsed["metadata"][key] = realJson[key]
+        return parsed
 
     content = ""
     for js in realJson:
@@ -85,7 +100,6 @@ def _parse(jsonOutput):
         content = None
 
     parsed["content"] = content
-    parsed["metadata"] = {}
 
     for js in realJson:
         for n in js:
