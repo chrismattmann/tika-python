@@ -190,7 +190,7 @@ EncodeUtf8 = 0
 csvOutput = 0
 
 # will be used later on to kill the process and free up ram
-TikaServerProcess = ""
+TikaServerProcess = False
 
 class TikaException(Exception):
     pass
@@ -664,7 +664,6 @@ def startServer(tikaServerJar, java_path = TikaJava, java_args = TikaJavaArgs, s
         return False
 
     # Run java with jar args
-    # need to check if shell=true is really needed
     global TikaServerProcess
     TikaServerProcess = Popen(cmd_string, stdout=logFile, stderr=STDOUT, shell=True, preexec_fn=os.setsid)
 
@@ -688,10 +687,11 @@ def startServer(tikaServerJar, java_path = TikaJava, java_args = TikaJavaArgs, s
         return True
 
 def killServer():
-    if(TikaServerProcess.pid > 1):
+    if(TikaServerProcess):
         os.killpg(os.getpgid(TikaServerProcess.pid), signal.SIGTERM)
+        time.sleep(1)
     else:
-        log.error("Invalid server PID, won't kill")
+        log.error("Server not running, or was already running before")
 
 def toFilename(url):
     '''
