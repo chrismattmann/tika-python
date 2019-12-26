@@ -47,6 +47,7 @@ These are read once, when tika/tika.py is initially loaded and used throughout a
 10. `TIKA_STARTUP_SLEEP` - number of seconds (`float`) to wait per check if Tika server is launched at runtime
 11. `TIKA_STARTUP_MAX_RETRY` - number of checks (`int`) to attempt for Tika server startup if launched at runtime
 12. `TIKA_JAVA_ARGS` - set java runtime arguments, e.g, `-Xmx4g`
+
 Testing it out
 ==============
 

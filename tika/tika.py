@@ -687,6 +687,9 @@ def startServer(tikaServerJar, java_path = TikaJava, java_args = TikaJavaArgs, s
         return True
 
 def killServer():
+    '''
+    Kills the tika server started by the current execution instance
+    '''
     if(TikaServerProcess):
         os.killpg(os.getpgid(TikaServerProcess.pid), signal.SIGTERM)
         time.sleep(1)
