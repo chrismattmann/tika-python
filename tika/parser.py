@@ -20,11 +20,15 @@ from .tika import parse1, callServer, ServerEndpoint
 import os
 import json
 
-def from_file(filename, service='all', serverEndpoint=ServerEndpoint, xmlContent=False, headers=None, config_path=None, requestOptions={}):
+def from_file(filename, serverEndpoint=ServerEndpoint, service='all', xmlContent=False, headers=None, config_path=None, requestOptions={}):
     '''
     Parses a file for metadata and content
     :param filename: path to file which needs to be parsed or binary file using open(path,'rb')
     :param serverEndpoint: Server endpoint url
+    :param service: service requested from the tika server
+                    Default is 'all', which results in recursive text content+metadata.
+                    'meta' returns only metadata
+                    'text' returns only content
     :param xmlContent: Whether or not XML content be requested.
                     Default is 'False', which results in text content.
     :param headers: Request headers to be sent to the tika reset server, should
