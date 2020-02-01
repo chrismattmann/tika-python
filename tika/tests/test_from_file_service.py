@@ -17,7 +17,12 @@
 #
 # python -m unittest tika.tests.test_from_file_service
 
+import sys
 import unittest
+if sys.version_info >= (3, 3):
+    from unittest import mock
+else:
+    import mock
 import tika.parser
 
 
@@ -30,6 +35,15 @@ class CreateTest(unittest.TestCase):
             'https://boe.es/boe/dias/2019/12/02/pdfs/BOE-A-2019-17288.pdf')
         self.assertEqual(result['metadata']['Content-Type'],'application/pdf')
         self.assertIn('AUTORIDADES Y PERSONAL',result['content'])
+    @mock.patch('tika.parser._parse')
+    @mock.patch('tika.parser.parse1')
+    def test_remote_endpoint(self, tika_call_mock, _):
+        result = tika.parser.from_file(
+            'filename', 'http://tika:9998/tika')
+
+        tika_call_mock.assert_called_with(
+            'all', 'filename', 'http://tika:9998/tika', headers=None, config_path=None,
+            requestOptions={})
     def test_default_service_explicit(self):
         'parse file using default service explicitly'
         result = tika.parser.from_file(
