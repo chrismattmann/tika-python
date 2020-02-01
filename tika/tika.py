@@ -140,6 +140,7 @@ import platform
 from subprocess import Popen
 from subprocess import STDOUT
 from os import walk
+import signal
 import logging
 import io
 
@@ -187,6 +188,9 @@ TikaJavaArgs = os.getenv("TIKA_JAVA_ARGS", '')
 Verbose = 0
 EncodeUtf8 = 0
 csvOutput = 0
+
+# will be used later on to kill the process and free up ram
+TikaServerProcess = False
 
 class TikaException(Exception):
     pass
@@ -660,7 +664,8 @@ def startServer(tikaServerJar, java_path = TikaJava, java_args = TikaJavaArgs, s
         return False
 
     # Run java with jar args
-    cmd = Popen(cmd_string, stdout=logFile, stderr=STDOUT, shell=True)
+    global TikaServerProcess
+    TikaServerProcess = Popen(cmd_string, stdout=logFile, stderr=STDOUT, shell=True, preexec_fn=os.setsid)
 
     # Check logs and retry as configured
     try_count = 0
@@ -680,6 +685,16 @@ def startServer(tikaServerJar, java_path = TikaJava, java_args = TikaJavaArgs, s
         return False
     else:
         return True
+
+def killServer():
+    '''
+    Kills the tika server started by the current execution instance
+    '''
+    if(TikaServerProcess):
+        os.killpg(os.getpgid(TikaServerProcess.pid), signal.SIGTERM)
+        time.sleep(1)
+    else:
+        log.error("Server not running, or was already running before")
 
 def toFilename(url):
     '''

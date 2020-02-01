@@ -19,6 +19,7 @@
 import os
 import unittest
 import tika.parser
+import tika.tika
 
 
 class CreateTest(unittest.TestCase):
@@ -54,6 +55,12 @@ class CreateTest(unittest.TestCase):
         file = os.path.join(os.path.dirname(__file__), 'files', 'rwservlet.pdf')
         self.assertTrue(tika.parser.from_file(file))
 
+    def test_kill_server(self):
+        """parse some file then kills server"""
+        file = os.path.join(os.path.dirname(__file__), 'files', 'rwservlet.pdf')
+        with open(file, 'rb') as file_obj:
+            tika.parser.from_file(file_obj)
+        self.assertIsNone(tika.tika.killServer())
 
 if __name__ == '__main__':
     unittest.main()
