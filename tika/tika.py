@@ -665,7 +665,10 @@ def startServer(tikaServerJar, java_path = TikaJava, java_args = TikaJavaArgs, s
 
     # Run java with jar args
     global TikaServerProcess
-    TikaServerProcess = Popen(cmd_string, stdout=logFile, stderr=STDOUT, shell=True, preexec_fn=os.setsid)
+    if Windows:
+        TikaServerProcess = Popen(cmd_string, stdout=logFile, stderr=STDOUT, shell=True, start_new_session=True)
+    else:    
+        TikaServerProcess = Popen(cmd_string, stdout=logFile, stderr=STDOUT, shell=True, preexec_fn=os.setsid)
 
     # Check logs and retry as configured
     try_count = 0
