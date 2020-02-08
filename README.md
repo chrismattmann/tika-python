@@ -86,7 +86,7 @@ print(parsed["content"])
 Optionally, you can pass Tika server URL along with the call
 what's useful for multi-instance execution or when Tika is dockerzed/linked.
 
-``
+```
 parsed = parser.from_file('/path/to/file', 'http://tika:9998/tika')
 string_parsed = parser.from_buffer('Good evening, Dave', 'http://tika:9998/tika')
 ```
