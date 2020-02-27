@@ -694,7 +694,10 @@ def killServer():
     Kills the tika server started by the current execution instance
     '''
     if(TikaServerProcess):
-        os.killpg(os.getpgid(TikaServerProcess.pid), signal.SIGTERM)
+        try:
+            os.killpg(os.getpgid(TikaServerProcess.pid), signal.SIGTERM)
+        except:
+            log.error("Failed to kill the current server session")    
         time.sleep(1)
     else:
         log.error("Server not running, or was already running before")
