@@ -475,7 +475,7 @@ def detectType1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbos
     status, response = callServer('put', serverEndpoint, service, open(path, 'rb'),
             {
                 'Accept': responseMimeType,
-                'Content-Disposition': make_content_disposition_header(path)
+                'Content-Disposition': make_content_disposition_header(path.encode('utf-8') if type(path) is unicode_string else path)
             },
             verbose, tikaServerJar, config_path=config_path, requestOptions=requestOptions)
     if csvOutput == 1:
