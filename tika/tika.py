@@ -143,6 +143,7 @@ from os import walk
 import signal
 import logging
 import io
+import ctypes
 
 log_path = os.getenv('TIKA_LOG_PATH', tempfile.gettempdir())
 log_file = os.path.join(log_path, 'tika.log')
@@ -665,9 +666,15 @@ def startServer(tikaServerJar, java_path = TikaJava, java_args = TikaJavaArgs, s
 
     # Run java with jar args
     global TikaServerProcess
+    # Patch for Windows support
     if Windows:
-        TikaServerProcess = Popen(cmd_string, stdout=logFile, stderr=STDOUT, shell=True, start_new_session=True)
-    else:    
+        if sys.version.startswith("2"):
+            # Python 2.x     
+            TikaServerProcess = Popen(cmd_string, stdout=logFile, stderr=STDOUT, shell=True)
+        elif sys.version.startswith("3"):
+            # Python 3.x
+            TikaServerProcess = Popen(cmd_string, stdout=logFile, stderr=STDOUT, shell=True, start_new_session=True)
+    else:
         TikaServerProcess = Popen(cmd_string, stdout=logFile, stderr=STDOUT, shell=True, preexec_fn=os.setsid)
 
     # Check logs and retry as configured
@@ -694,8 +701,22 @@ def killServer():
     Kills the tika server started by the current execution instance
     '''
     if(TikaServerProcess):
-        os.killpg(os.getpgid(TikaServerProcess.pid), signal.SIGTERM)
-        time.sleep(1)
+        # patch to support subprocess killing for windows
+        if Windows:
+            if sys.version.startswith("2"):
+                # Python 2.x
+                PROCESS_TERMINATE = 1
+                handle = ctypes.windll.kernel32.OpenProcess(PROCESS_TERMINATE, False, TikaServerProcess.pid)
+                ctypes.windll.kernel32.TerminateProcess(handle, -1)
+                ctypes.windll.kernel32.CloseHandle(handle)
+                time.sleep(1)
+            elif sys.version.startswith("3"):
+                # Python 3.x
+                os.kill(TikaServerProcess.pid, signal.SIGTERM)
+                time.sleep(1)
+        else:
+            os.killpg(os.getpgid(TikaServerProcess.pid), signal.SIGTERM)
+            time.sleep(1)
     else:
         log.error("Server not running, or was already running before")
 
