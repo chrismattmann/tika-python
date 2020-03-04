@@ -701,6 +701,11 @@ def killServer():
     Kills the tika server started by the current execution instance
     '''
     if(TikaServerProcess):
+        try:
+            os.killpg(os.getpgid(TikaServerProcess.pid), signal.SIGTERM)
+        except:
+            log.error("Failed to kill the current server session")    
+        time.sleep(1)
         # patch to support subprocess killing for windows
         if Windows:
             if sys.version.startswith("2"):
@@ -715,7 +720,10 @@ def killServer():
                 os.kill(TikaServerProcess.pid, signal.SIGTERM)
                 time.sleep(1)
         else:
-            os.killpg(os.getpgid(TikaServerProcess.pid), signal.SIGTERM)
+            try:
+                os.killpg(os.getpgid(TikaServerProcess.pid), signal.SIGTERM)
+            except:
+                log.error("Failed to kill the current server session")    
             time.sleep(1)
     else:
         log.error("Server not running, or was already running before")
