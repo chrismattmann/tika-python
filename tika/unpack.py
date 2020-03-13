@@ -78,7 +78,7 @@ def _parse(tarOutput):
         metadataMember = tarFile.getmember("__METADATA__")
         if not metadataMember.issym() and metadataMember.isfile():
             metadataFile = _text_wrapper(tarFile.extractfile(metadataMember))
-            metadataReader = csv.reader(metadataFile)
+            metadataReader = csv.reader(_truncate_nulls(metadataFile))
             for metadataLine in metadataReader:
                 # each metadata line comes as a key-value pair, with list values
                 # returned as extra values in the line - convert single values
@@ -114,3 +114,9 @@ def _parse(tarOutput):
     parsed["attachments"] = attachments
 
     return parsed
+
+
+# TODO: Remove if/when fixed. https://issues.apache.org/jira/browse/TIKA-3070
+def _truncate_nulls(s):
+    for line in s:
+        yield line.replace('\0', '')
