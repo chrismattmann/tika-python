@@ -5,7 +5,7 @@ tika-python
 ===========
 A Python port of the [Apache Tika](http://tika.apache.org/)
 library that makes Tika available using the
-[Tika REST Server](http://wiki.apache.org/tika/TikaJAXRS).
+[Tika REST Server](https://cwiki.apache.org/confluence/display/TIKA/TikaServer).
 
 This makes Apache Tika available as a Python library,
 installable via Setuptools, Pip and Easy Install.
