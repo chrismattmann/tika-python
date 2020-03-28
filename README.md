@@ -198,9 +198,9 @@ Changing the Tika Classpath
 You can update the classpath that Tika server uses by
 setting the classpath as a set of ':' delimited strings.
 For example if you want to get Tika-Python working with
-[GeoTopicParsing](http://wiki.apache.org/tika/GeoTopicParser),
+[GeoTopicParsing](https://cwiki.apache.org/confluence/display/TIKA/GeoTopicParser),
 you can do this, replace paths below with your own paths, as
-identified [here](http://wiki.apache.org/tika/GeoTopicParser)
+identified [here](https://cwiki.apache.org/confluence/display/TIKA/GeoTopicParser)
 and make sure that you have done this:
 
 kill Tika server (if already running):
