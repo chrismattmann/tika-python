@@ -65,55 +65,57 @@ def _parse(tarOutput):
     elif tarOutput[1] is None or tarOutput[1] == b"":
         return parsed
 
-    tarFile = tarfile.open(fileobj=BytesIO(tarOutput[1]))
+    with tarfile.open(fileobj=BytesIO(tarOutput[1])) as tarFile:
+        # get the member names
+        memberNames = list(tarFile.getnames())
 
-    # get the member names
-    memberNames = list(tarFile.getnames())
-
-    # extract the metadata
-    metadata = {}
-    if "__METADATA__" in memberNames:
-        memberNames.remove("__METADATA__")
+        # extract the metadata
+        metadata = {}
+        if "__METADATA__" in memberNames:
+            memberNames.remove("__METADATA__")
 
         metadataMember = tarFile.getmember("__METADATA__")
         if not metadataMember.issym() and metadataMember.isfile():
-            metadataFile = _text_wrapper(tarFile.extractfile(metadataMember))
-            metadataReader = csv.reader(_truncate_nulls(metadataFile))
-            for metadataLine in metadataReader:
-                # each metadata line comes as a key-value pair, with list values
-                # returned as extra values in the line - convert single values
-                # to non-list values to be consistent with parser metadata
-                assert len(metadataLine) >= 2
+            with _text_wrapper(tarFile.extractfile(metadataMember)) as metadataFile:
+                metadataReader = csv.reader(_truncate_nulls(metadataFile))
+                for metadataLine in metadataReader:
+                    # each metadata line comes as a key-value pair, with list values
+                    # returned as extra values in the line - convert single values
+                    # to non-list values to be consistent with parser metadata
+                    assert len(metadataLine) >= 2
 
-                if len(metadataLine) > 2:
-                    metadata[metadataLine[0]] = metadataLine[1:]
+                    if len(metadataLine) > 2:
+                        metadata[metadataLine[0]] = metadataLine[1:]
+                    else:
+                        metadata[metadataLine[0]] = metadataLine[1]
+
+        # get the content
+        content = ""
+        if "__TEXT__" in memberNames:
+            memberNames.remove("__TEXT__")
+
+            contentMember = tarFile.getmember("__TEXT__")
+            if not contentMember.issym() and contentMember.isfile():
+                if version_info.major >= 3:
+                    with _text_wrapper(tarFile.extractfile(contentMember), encoding='utf8') as content_file:
+                        content = content_file.read()
                 else:
-                    metadata[metadataLine[0]] = metadataLine[1]
+                    with tarFile.extractfile(contentMember) as content_file:
+                        content = content_file.read().decode('utf8')
 
-    # get the content
-    content = ""
-    if "__TEXT__" in memberNames:
-        memberNames.remove("__TEXT__")
+        # get the remaining files as attachments
+        attachments = {}
+        for attachment in memberNames:
+            attachmentMember = tarFile.getmember(attachment)
+            if not attachmentMember.issym() and attachmentMember.isfile():
+                with tarFile.extractfile(attachmentMember) as attachment_file:
+                    attachments[attachment] = attachment_file.read()
 
-        contentMember = tarFile.getmember("__TEXT__")
-        if not contentMember.issym() and contentMember.isfile():
-            if version_info.major >= 3:
-                content = _text_wrapper(tarFile.extractfile(contentMember), encoding='utf8').read()
-            else:
-                content = tarFile.extractfile(contentMember).read().decode('utf8')
+        parsed["content"] = content
+        parsed["metadata"] = metadata
+        parsed["attachments"] = attachments
 
-    # get the remaining files as attachments
-    attachments = {}
-    for attachment in memberNames:
-        attachmentMember = tarFile.getmember(attachment)
-        if not attachmentMember.issym() and attachmentMember.isfile():
-            attachments[attachment] = tarFile.extractfile(attachmentMember).read()
-
-    parsed["content"] = content
-    parsed["metadata"] = metadata
-    parsed["attachments"] = attachments
-
-    return parsed
+        return parsed
 
 
 # TODO: Remove if/when fixed. https://issues.apache.org/jira/browse/TIKA-3070
