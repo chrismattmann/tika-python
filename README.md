@@ -305,6 +305,7 @@ Contributors
 * Imraan Parker, Freelance
 * Annie K. Didier, JPL
 * Juan Elosua, TEGRA Cybersecurity Center
+* Carina de Oliveira Antunes, CERN
 
 Thanks
 ======
