@@ -146,20 +146,21 @@ import io
 import ctypes
 
 log_path = os.getenv('TIKA_LOG_PATH', tempfile.gettempdir())
-log_file = os.path.join(log_path, 'tika.log')
+log_file = os.path.join(log_path, os.getenv('TIKA_LOG_FILE', 'tika.log'))
 
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
 log = logging.getLogger('tika.tika')
 
-# File logs
-fileHandler = logging.FileHandler(log_file)
-fileHandler.setFormatter(logFormatter)
-log.addHandler(fileHandler)
+if os.getenv('TIKA_LOG_FILE', 'tika.log'):
+    # File logs
+    fileHandler = logging.FileHandler(log_file)
+    fileHandler.setFormatter(logFormatter)
+    log.addHandler(fileHandler)
 
-# Stdout logs
-consoleHandler = logging.StreamHandler()
-consoleHandler.setFormatter(logFormatter)
-log.addHandler(consoleHandler)
+    # Stdout logs
+    consoleHandler = logging.StreamHandler()
+    consoleHandler.setFormatter(logFormatter)
+    log.addHandler(consoleHandler)
 
 # Log level
 log.setLevel(logging.INFO)
