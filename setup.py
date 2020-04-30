@@ -19,11 +19,13 @@
 # $Id$
 
 import os.path
-import tika
 from io import open
+
+import tika
 
 try:
     from ez_setup import use_setuptools
+
     use_setuptools()
 except ImportError:
     pass
@@ -53,10 +55,24 @@ _classifiers = [
     'Topic :: Software Development :: Libraries :: Python Modules',
 ]
 
+
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
+
 long_description = _descr
+
+extras_require = {
+    'tests': [
+        'memory-profiler>=0.57.0',
+        'pytest-benchmark>=3.2.2'
+    ],
+    'all': [
+    ]
+}
+
+for reqs in extras_require.values():
+    extras_require['all'].extend(reqs)
 
 setup(
     name='tika',
@@ -80,7 +96,7 @@ setup(
             'tika-python = tika.tika:main'
         ],
     },
-    package_data = {
+    package_data={
         # And include any *.conf files found in the 'conf' subdirectory
         # for the package
     },
@@ -88,6 +104,5 @@ setup(
         'setuptools',
         'requests'
     ],
-    extras_require={
-    },
+    extras_require=extras_require,
 )
