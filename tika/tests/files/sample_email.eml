@@ -1,0 +1,202 @@
+Delivered-To: receiver@example.com
+Received: by 2002:ac2:424e:0:0:0:0:0 with SMTP id m14csp720478lfl;
+        Wed, 6 May 2020 00:11:14 -0700 (PDT)
+Return-Path: <sender@example.com>
+Received: from smtpe1.intersmtp.com (smtpe1.intersmtp.com. [62.239.224.235])
+        by mx.google.com with ESMTPS id z10si998090wmb.150.2020.05.06.00.11.14
+        for <receiver@example.com>
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Wed, 06 May 2020 00:11:14 -0700 (PDT)
+From: <sender@example.com>
+To: <receiver@example.com>
+Subject: Simple email with ascii7 characters and an attachment
+Thread-Topic: Simple email with ascii7 characters and an attachment
+Thread-Index: AdYjdWvCsXCoW4EeTCq8iamHMj7SRA==
+Date: Wed, 6 May 2020 07:11:10 +0000
+Accept-Language: es-ES, en-US
+Content-Language: en-US
+Content-Type: multipart/mixed; boundary="_004_LO2P123MB23518D89B0C0D3A389D316658EA40LO2P123MB2351GBRP_"
+MIME-Version: 1.0
+Return-Path: sender@example.com
+
+--_004_LO2P123MB23518D89B0C0D3A389D316658EA40LO2P123MB2351GBRP_
+Content-Type: multipart/alternative; boundary="_000_LO2P123MB23518D89B0C0D3A389D316658EA40LO2P123MB2351GBRP_"
+
+--_000_LO2P123MB23518D89B0C0D3A389D316658EA40LO2P123MB2351GBRP_
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+This email from outlook has:
+
+-          Multipart/alternative content (this text)
+And a SVG attachment
+
+--_000_LO2P123MB23518D89B0C0D3A389D316658EA40LO2P123MB2351GBRP_
+Content-Type: text/html; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=3D"urn:schemas-micr=
+osoft-com:office:office" xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" xmlns=3D"http:=
+//www.w3.org/TR/REC-html40">
+<head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dus-ascii"=
+>
+<meta name=3D"Generator" content=3D"Microsoft Word 15 (filtered medium)">
+<style><!--
+/* Font Definitions */
+@font-face
+=09{font-family:Wingdings;
+=09panose-1:5 0 0 0 0 0 0 0 0 0;}
+@font-face
+=09{font-family:"Cambria Math";
+=09panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+=09{font-family:Calibri;
+=09panose-1:2 15 5 2 2 2 4 3 2 4;}
+/* Style Definitions */
+p.MsoNormal, li.MsoNormal, div.MsoNormal
+=09{margin:0cm;
+=09margin-bottom:.0001pt;
+=09font-size:11.0pt;
+=09font-family:"Calibri",sans-serif;
+=09mso-fareast-language:EN-US;}
+a:link, span.MsoHyperlink
+=09{mso-style-priority:99;
+=09color:#0563C1;
+=09text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+=09{mso-style-priority:99;
+=09color:#954F72;
+=09text-decoration:underline;}
+p.MsoListParagraph, li.MsoListParagraph, div.MsoListParagraph
+=09{mso-style-priority:34;
+=09margin-top:0cm;
+=09margin-right:0cm;
+=09margin-bottom:0cm;
+=09margin-left:36.0pt;
+=09margin-bottom:.0001pt;
+=09font-size:11.0pt;
+=09font-family:"Calibri",sans-serif;
+=09mso-fareast-language:EN-US;}
+span.EmailStyle17
+=09{mso-style-type:personal-compose;
+=09font-family:"Calibri",sans-serif;
+=09color:windowtext;}
+.MsoChpDefault
+=09{mso-style-type:export-only;
+=09font-family:"Calibri",sans-serif;
+=09mso-fareast-language:EN-US;}
+@page WordSection1
+=09{size:612.0pt 792.0pt;
+=09margin:70.85pt 3.0cm 70.85pt 3.0cm;}
+div.WordSection1
+=09{page:WordSection1;}
+/* List Definitions */
+@list l0
+=09{mso-list-id:819731256;
+=09mso-list-type:hybrid;
+=09mso-list-template-ids:-36797088 1281632636 201981955 201981957 201981953=
+ 201981955 201981957 201981953 201981955 201981957;}
+@list l0:level1
+=09{mso-level-start-at:0;
+=09mso-level-number-format:bullet;
+=09mso-level-text:-;
+=09mso-level-tab-stop:none;
+=09mso-level-number-position:left;
+=09text-indent:-18.0pt;
+=09font-family:"Calibri",sans-serif;
+=09mso-fareast-font-family:Calibri;
+=09mso-bidi-font-family:"Times New Roman";}
+@list l0:level2
+=09{mso-level-number-format:bullet;
+=09mso-level-text:o;
+=09mso-level-tab-stop:none;
+=09mso-level-number-position:left;
+=09text-indent:-18.0pt;
+=09font-family:"Courier New";}
+@list l0:level3
+=09{mso-level-number-format:bullet;
+=09mso-level-text:\F0A7;
+=09mso-level-tab-stop:none;
+=09mso-level-number-position:left;
+=09text-indent:-18.0pt;
+=09font-family:Wingdings;}
+@list l0:level4
+=09{mso-level-number-format:bullet;
+=09mso-level-text:\F0B7;
+=09mso-level-tab-stop:none;
+=09mso-level-number-position:left;
+=09text-indent:-18.0pt;
+=09font-family:Symbol;}
+@list l0:level5
+=09{mso-level-number-format:bullet;
+=09mso-level-text:o;
+=09mso-level-tab-stop:none;
+=09mso-level-number-position:left;
+=09text-indent:-18.0pt;
+=09font-family:"Courier New";}
+@list l0:level6
+=09{mso-level-number-format:bullet;
+=09mso-level-text:\F0A7;
+=09mso-level-tab-stop:none;
+=09mso-level-number-position:left;
+=09text-indent:-18.0pt;
+=09font-family:Wingdings;}
+@list l0:level7
+=09{mso-level-number-format:bullet;
+=09mso-level-text:\F0B7;
+=09mso-level-tab-stop:none;
+=09mso-level-number-position:left;
+=09text-indent:-18.0pt;
+=09font-family:Symbol;}
+@list l0:level8
+=09{mso-level-number-format:bullet;
+=09mso-level-text:o;
+=09mso-level-tab-stop:none;
+=09mso-level-number-position:left;
+=09text-indent:-18.0pt;
+=09font-family:"Courier New";}
+@list l0:level9
+=09{mso-level-number-format:bullet;
+=09mso-level-text:\F0A7;
+=09mso-level-tab-stop:none;
+=09mso-level-number-position:left;
+=09text-indent:-18.0pt;
+=09font-family:Wingdings;}
+ol
+=09{margin-bottom:0cm;}
+ul
+=09{margin-bottom:0cm;}
+--></style><!--[if gte mso 9]><xml>
+<o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+<o:shapelayout v:ext=3D"edit">
+<o:idmap v:ext=3D"edit" data=3D"1" />
+</o:shapelayout></xml><![endif]-->
+</head>
+<body lang=3D"ES" link=3D"#0563C1" vlink=3D"#954F72">
+<div class=3D"WordSection1">
+<p class=3D"MsoNormal"><span lang=3D"EN-US">This email from outlook has:<o:=
+p></o:p></span></p>
+<p class=3D"MsoListParagraph" style=3D"text-indent:-18.0pt;mso-list:l0 leve=
+l1 lfo1"><![if !supportLists]><span lang=3D"EN-US"><span style=3D"mso-list:=
+Ignore">-<span style=3D"font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp=
+;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span lang=3D"EN-US">Multipart/alternative c=
+ontent (this text)<o:p></o:p></span></p>
+<p class=3D"MsoNormal"><span lang=3D"EN-US">And a SVG attachment<o:p></o:p>=
+</span></p>
+</div>
+</body>
+</html>
+
+--_000_LO2P123MB23518D89B0C0D3A389D316658EA40LO2P123MB2351GBRP_--
+--_004_LO2P123MB23518D89B0C0D3A389D316658EA40LO2P123MB2351GBRP_
+Content-Type: application/octet-stream; name="graphviz (1).svg"
+Content-Description: graphviz (1).svg
+Content-Disposition: attachment; filename="graphviz (1).svg"; size=4979; creation-date="Tue, 05 May 2020 14:27:11 GMT"; modification-date="Tue, 05 May 2020 14:27:12 GMT"
+Content-Transfer-Encoding: base64
+
+
+--_004_LO2P123MB23518D89B0C0D3A389D316658EA40LO2P123MB2351GBRP_--

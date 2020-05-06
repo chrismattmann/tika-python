@@ -60,5 +60,24 @@ class CreateTest(unittest.TestCase):
             '3b83ef96387f14655fc854ddc3c6bd57'
         )
 
+    def test_unpack_email_no_utf_chars_in_headers(self):
+        # Test that works on Tika-Python 1.24
+        pfile = os.path.join(os.path.dirname(__file__), 'files', 'sample_email.eml')
+        unpacked = unpack.from_file(pfile)
+        # This file has multipart/mixed content and a SVG attachment 
+        self.assertTrue(unpacked['content'])
+        self.assertIn('Simple email with ascii7 characters and an attachment',
+                      unpacked['metadata']['subject'])
+        self.assertIn(b'Multipart/alternative content', unpacked['attachments']['0.html'])
+
+    def test_unpack_email_with_utf_chars_in_headers(self):
+        # This test does not work on tika-python 1.24
+        pfile = os.path.join(os.path.dirname(__file__), 'files', 'email_with_utf8chars_in_headers.eml')
+        unpacked = unpack.from_file(pfile)
+        mailsubject = 'Sending mails with non us-ascii characters in header (like greek or cyrillic characters - Γιάνης Βαρουφάκης & Гарри Каспаров) break Tika-Python'
+        self.assertIn(mailsubject, unpacked['metadata']['subject'])
+        self.assertIn(b'Multipart/alternative content', unpacked['attachments']['0.html'])
+
+
 if __name__ == '__main__':
     unittest.main()
