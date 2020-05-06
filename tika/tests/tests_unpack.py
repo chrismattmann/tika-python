@@ -1,5 +1,6 @@
 # coding=utf8
 
+import os
 import unittest
 from tempfile import NamedTemporaryFile
 from tika import unpack
@@ -33,6 +34,14 @@ class CreateTest(unittest.TestCase):
     def test_ascii_frombuffer(self):
         parsed = unpack.from_buffer(self.text_ascii)
         self.assertEqual(parsed["content"].strip(), self.text_ascii)
+
+    def test_unpack_file(self):
+        pfile = os.path.join(os.path.dirname(__file__), 'files', 'rwservlet.pdf')
+        unpacked = unpack.from_file(pfile)
+        self.assertIn("On the $5 menu, the consumer advisory is missing for eggs",unpacked['content'])
+        self.assertTrue(unpacked['metadata'])
+        self.assertFalse(unpacked['attachments'])
+
 
 
 if __name__ == '__main__':
