@@ -26,6 +26,14 @@ class CreateTest(unittest.TestCase):
             parsed = unpack.from_file(f.name)
             self.assertEqual(parsed["content"].strip(), self.text_ascii)
 
+    def test_utf8_frombuffer(self):
+        parsed = unpack.from_buffer(self.text_utf8.encode('utf8'))
+        self.assertEqual(parsed["content"].strip(), self.text_utf8)
+
+    def test_ascii_frombuffer(self):
+        parsed = unpack.from_buffer(self.text_ascii)
+        self.assertEqual(parsed["content"].strip(), self.text_ascii)
+
 
 if __name__ == '__main__':
     unittest.main()
