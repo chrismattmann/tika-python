@@ -644,10 +644,10 @@ def startServer(tikaServerJar, java_path = TikaJava, java_args = TikaJavaArgs, s
     # setup command string
     cmd_string = ""
     if not config_path:
-        cmd_string = '%s %s -cp \'%s\' org.apache.tika.server.TikaServerCli --port %s --host %s &' \
+        cmd_string = '%s %s -cp "%s" org.apache.tika.server.TikaServerCli --port %s --host %s &' \
                      % (java_path, java_args, classpath, port, host)
     else:
-        cmd_string = '%s %s -cp \'%s\' org.apache.tika.server.TikaServerCli --port %s --host %s --config %s &' \
+        cmd_string = '%s %s -cp "%s" org.apache.tika.server.TikaServerCli --port %s --host %s --config %s &' \
                      % (java_path, java_args, classpath, port, host, config_path)
 
     # Check that we can write to log path
