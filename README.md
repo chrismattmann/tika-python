@@ -27,7 +27,7 @@ Installation (without pip)
 
 Airgap Environment Setup
 ------------------------
-To get this working in a disconnected environment, download a tika server file and set the TIKA_SERVER_JAR environment variable to TIKA_SERVER_JAR="file:///<yourpath>/tika-server.jar" which successfully tells `python-tika` to "download" this file and move it to `/tmp/tika-server.jar` and run as background process.
+To get this working in a disconnected environment, download a tika server file (both tika-server.jar and tika-server.jar.md5, which can be found [here](https://repo1.maven.org/maven2/org/apache/tika/tika-server/)) and set the TIKA_SERVER_JAR environment variable to TIKA_SERVER_JAR="file:///<yourpath>/tika-server.jar" which successfully tells `python-tika` to "download" this file and move it to `/tmp/tika-server.jar` and run as background process.
 
 This is the only way to run `python-tika` without internet access. Without this set, the default is to check the tika version and pull latest every time from Apache.
 
