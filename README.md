@@ -91,6 +91,37 @@ parsed = parser.from_file('/path/to/file', 'http://tika:9998/tika')
 string_parsed = parser.from_buffer('Good evening, Dave', 'http://tika:9998/tika')
 ```
 
+You can also pass a binary stream
+```
+with open(file, 'rb') as file_obj:
+    response = tika.parser.from_file(file_obj)
+```
+
+Gzip compression
+---------------------
+Since Tika 1.24.1 gzip compression of input and output streams is allowed. 
+
+Input compression can be achieved with gzip or zlib:
+```
+    import zlib 
+
+    with open(file, 'rb') as file_obj:
+        return tika.parser.from_buffer(zlib.compress(file_obj.read()))
+
+...
+
+    import gzip
+ 
+    with open(file, 'rb') as file_obj:
+        return tika.parser.from_buffer(gzip.compress(file_obj.read()))
+```
+
+And output with the header:
+```
+    with open(file, 'rb') as file_obj:
+        return tika.parser.from_file(file_obj, headers={'Accept-Encoding': 'gzip, deflate'})
+```
+
 Specify Output Format To XHTML
 ---------------------
 The parser interface is optionally able to output the content as XHTML rather than plain text.
