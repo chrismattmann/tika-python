@@ -285,7 +285,8 @@ def parseAndSave(option, urlOrPaths, outDir=None, serverEndpoint=ServerEndpoint,
             log.info('Writing %s' % metaPath)
             with open(metaPath, 'w', encoding='utf-8') as f:
                 f.write(parse1(option, path, serverEndpoint, verbose, tikaServerJar, \
-                                    responseMimeType, services)[1] + u"\n")
+                                    responseMimeType, #services,
+                                    )[1] + u"\n")
         metaPaths.append(metaPath)
     return metaPaths
 
