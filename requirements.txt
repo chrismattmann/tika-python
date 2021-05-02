@@ -1,5 +1,5 @@
 setuptools
 requests
-pyyaml==5.2
+pyyaml==5.4
 python-coveralls
 pytest-cov<2.6
