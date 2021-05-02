@@ -637,7 +637,11 @@ def startServer(tikaServerJar, java_path = TikaJava, java_args = TikaJavaArgs, s
         host = "0.0.0.0"
 
     if classpath:
-        classpath += ":" + tikaServerJar
+        if Windows:
+            classpath += ";" + tikaServerJar
+            classpath = "\"" + classpath + "\""
+        else:
+            classpath += ":" + tikaServerJar
     else:
         classpath = tikaServerJar
 
