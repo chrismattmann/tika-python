@@ -690,6 +690,7 @@ def startServer(tikaServerJar, java_path = TikaJava, java_args = TikaJavaArgs, s
             # check for INFO string to confirm listening endpoint
             if "Started Apache Tika server at" in tika_log_file_tmp.read():
                 is_started = True
+                break
             else:
                 log.warning("Failed to see startup log message; retrying...")
         time.sleep(TikaStartupSleep)
