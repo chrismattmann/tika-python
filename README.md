@@ -1,8 +1,8 @@
 [![Build Status](https://travis-ci.org/chrismattmann/tika-python.svg?branch=master)](https://travis-ci.org/chrismattmann/tika-python)
 [![Coverage Status](https://coveralls.io/repos/github/chrismattmann/tika-python/badge.svg?branch=master)](https://coveralls.io/github/chrismattmann/tika-python?branch=master)
 
-tika-python
-===========
+# tika-python
+
 A Python port of the [Apache Tika](http://tika.apache.org/)
 library that makes Tika available using the
 [Tika REST Server](https://cwiki.apache.org/confluence/display/TIKA/TikaServer).
@@ -16,23 +16,23 @@ background.
 
 Inspired by [Aptivate Tika](https://github.com/aptivate/python-tika).
 
-Installation (with pip)
------------------------
+## Installation (with pip)
+
 1. `pip install tika`
 
-Installation (without pip)
---------------------------
+## Installation (without pip)
+
 1. `python setup.py build`
 2. `python setup.py install`
 
-Airgap Environment Setup
-------------------------
+## Airgap Environment Setup
+
 To get this working in a disconnected environment, download a tika server file (both tika-server.jar and tika-server.jar.md5, which can be found [here](https://repo1.maven.org/maven2/org/apache/tika/tika-server/)) and set the TIKA_SERVER_JAR environment variable to TIKA_SERVER_JAR="file:///<yourpath>/tika-server.jar" which successfully tells `python-tika` to "download" this file and move it to `/tmp/tika-server.jar` and run as background process.
 
 This is the only way to run `python-tika` without internet access. Without this set, the default is to check the tika version and pull latest every time from Apache.
 
-Environment Variables
----------------------
+## Environment Variables
+
 These are read once, when tika/tika.py is initially loaded and used throughout after that.
 
 1. `TIKA_VERSION` - set to the version string, e.g., 1.12 or default to current Tika version.
@@ -49,11 +49,10 @@ These are read once, when tika/tika.py is initially loaded and used throughout a
 12. `TIKA_JAVA_ARGS` - set java runtime arguments, e.g, `-Xmx4g`
 13. `TIKA_LOG_FILE` - set the filename for the log file. default: `tika.log`. if it is an empty string (`''`), no log file is created.
 
-Testing it out
-==============
+# Testing it out
 
-Parser Interface (backwards compat prior to REST)
--------------------------------------------------
+## Parser Interface (backwards compat prior to REST)
+
 ```
 #!/usr/bin/env python
 import tika
@@ -64,8 +63,8 @@ print(parsed["metadata"])
 print(parsed["content"])
 ```
 
-Parser Interface
-----------------------
+## Parser Interface
+
 The parser interface extracts text and metadata using the /rmeta
 interface. This is one of the better ways to get the internal XHTML
 content extracted.
@@ -73,7 +72,7 @@ content extracted.
 Note:
 ![Alert Icon](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon28.png "Alert")
 The parser interface needs the following environment variable set on the console for printing of the extracted content.
-```export PYTHONIOENCODING=utf8```
+`export PYTHONIOENCODING=utf8`
 
 ```
 #!/usr/bin/env python
@@ -92,14 +91,14 @@ parsed = parser.from_file('/path/to/file', 'http://tika:9998/tika')
 string_parsed = parser.from_buffer('Good evening, Dave', 'http://tika:9998/tika')
 ```
 
-Specify Output Format To XHTML
----------------------
+## Specify Output Format To XHTML
+
 The parser interface is optionally able to output the content as XHTML rather than plain text.
 
 Note:
 ![Alert Icon](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon28.png "Alert")
 The parser interface needs the following environment variable set on the console for printing of the extracted content.
-```export PYTHONIOENCODING=utf8```
+`export PYTHONIOENCODING=utf8`
 
 ```
 #!/usr/bin/env python
@@ -112,8 +111,8 @@ print(parsed["content"])
 # Note: This is also available when parsing from the buffer.
 ```
 
-Unpack Interface
-----------------
+## Unpack Interface
+
 The unpack interface handles both metadata and text extraction in a single
 call and internally returns back a tarball of metadata and text entries that
 is internally unpacked, reducing the wire load for extraction.
@@ -125,8 +124,8 @@ from tika import unpack
 parsed = unpack.from_file('/path/to/file')
 ```
 
-Detect Interface
-----------------------
+## Detect Interface
+
 The detect interface provides a IANA MIME type classification for the
 provided file.
 
@@ -137,8 +136,8 @@ from tika import detector
 print(detector.from_file('/path/to/file'))
 ```
 
-Config Interface
-----------------------
+## Config Interface
+
 The config interface allows you to inspect the Tika Server environment's
 configuration including what parsers, mime types, and detectors the
 server has been configured with.
@@ -152,8 +151,8 @@ print(config.getMimeTypes())
 print(config.getDetectors())
 ```
 
-Language Detection Interface
----------------------------------
+## Language Detection Interface
+
 The language detection interface provides a 2 character language
 code texted based on the text in provided file.
 
@@ -163,8 +162,8 @@ from tika import language
 print(language.from_file('/path/to/file'))
 ```
 
-Translate Interface
-------------------------
+## Translate Interface
+
 The translate interface translates the text automatically extracted
 by Tika from the source language to the destination language.
 
@@ -174,17 +173,18 @@ from tika import translate
 print(translate.from_file('/path/to/spanish', 'es', 'en'))
 ```
 
-Using a Buffer
---------------
+## Using a Buffer
+
 Note you can also use a Parser and Detector
 .from_buffer(string) method to dynamically parser
 a string buffer in Python and/or detect its MIME
 type. This is useful if you've already loaded
 the content into memory.
 
-Using Client Only Mode
-----------------------
+## Using Client Only Mode
+
 You can set Tika to use Client only mode by setting
+
 ```python
 import tika
 tika.TikaClientOnly = True
@@ -194,8 +194,8 @@ Then you can run any of the methods and it will fully
 omit the check to see if the service on localhost is
 running and omit printing the check messages.
 
-Changing the Tika Classpath
----------------------------
+## Changing the Tika Classpath
+
 You can update the classpath that Tika server uses by
 setting the classpath as a set of ':' delimited strings.
 For example if you want to get Tika-Python working with
@@ -221,8 +221,8 @@ parsed = parser.from_file(home + '/git/geotopicparser-utils/geotopics/polar.geot
 print parsed["metadata"]
 ```
 
-Customizing the Tika Server Request
----------------------------
+## Customizing the Tika Server Request
+
 You may customize the outgoing HTTP request to Tika server by setting `requestOptions` on the `.from_file` and `.from_buffer` methods (Parser, Unpack , Detect, Config, Language, Translate). It should be a dictionary of arguments that will be passed to the request method. The [request method documentation](https://requests.kennethreitz.org/en/master/api/#requests.request) specifies valid arguments. This will override any defaults except for `url` and `params `/`data`.
 
 ```
@@ -230,8 +230,12 @@ from tika import parser
 parsed = parser.from_file('/path/to/file', requestOptions={'timeout': 120})
 ```
 
-New Command Line Client Tool
-============================
+## Returning raw metadata for embedded files
+
+You may choose to return raw metadata while parsing files by passing `raw_response=True` as an argument to the `.from_file` and `.from_buffer` methods. This is especially useful for cases with embedded files as it allows to see which metadata goes with the primary file and which metadata goes with embedded files.
+
+# New Command Line Client Tool
+
 When you install Tika-Python you also get a new command
 line client tool, `tika-python` installed in your /path/to/python/bin
 directory.
@@ -283,35 +287,36 @@ Example usage as python client:
 -- jsonOutput = parse1('all', filename)
 ```
 
-Questions, comments?
-===================
+# Questions, comments?
+
 Send them to [Chris A. Mattmann](mailto:chris.a.mattmann@jpl.nasa.gov).
 
-Contributors
-============
-* Chris A. Mattmann, JPL
-* Brian D. Wilson, JPL
-* Dongni Zhao, USC
-* Kenneth Durri, University of Maryland
-* Tyler Palsulich, New York University & Google
-* Joe Germuska, Northwestern University
-* Vlad Shvedov, Profinda.com
-* Diogo Vieira, Globo.com
-* Aron Ahmadia, Continuum Analytics
-* Karanjeet Singh, USC
-* Renat Nasyrov, Yandex
-* James Brooking, Blackbeard
-* Yash Tanna, USC
-* Igor Tokarev, Freelance
-* Imraan Parker, Freelance
-* Annie K. Didier, JPL
-* Juan Elosua, TEGRA Cybersecurity Center
-* Carina de Oliveira Antunes, CERN
+# Contributors
 
-Thanks
-======
+- Chris A. Mattmann, JPL
+- Brian D. Wilson, JPL
+- Dongni Zhao, USC
+- Kenneth Durri, University of Maryland
+- Tyler Palsulich, New York University & Google
+- Joe Germuska, Northwestern University
+- Vlad Shvedov, Profinda.com
+- Diogo Vieira, Globo.com
+- Aron Ahmadia, Continuum Analytics
+- Karanjeet Singh, USC
+- Renat Nasyrov, Yandex
+- James Brooking, Blackbeard
+- Yash Tanna, USC
+- Igor Tokarev, Freelance
+- Imraan Parker, Freelance
+- Annie K. Didier, JPL
+- Juan Elosua, TEGRA Cybersecurity Center
+- Carina de Oliveira Antunes, CERN
+- Anastasija Mensikova, JPL
+
+# Thanks
+
 Thanks to the [DARPA MEMEX](http://memex.jpl.nasa.gov) program for funding most of the original portions of this work.
 
-License
-=======
+# License
+
 [Apache License, version 2](http://www.apache.org/licenses/LICENSE-2.0)

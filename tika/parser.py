@@ -17,10 +17,14 @@
 #
 
 from .tika import parse1, callServer, ServerEndpoint
+import logging
 import os
 import json
 
-def from_file(filename, serverEndpoint=ServerEndpoint, service='all', xmlContent=False, headers=None, config_path=None, requestOptions={}):
+log = logging.getLogger('tika.parser')
+
+
+def from_file(filename, serverEndpoint=ServerEndpoint, service='all', xmlContent=False, headers=None, config_path=None, requestOptions={}, raw_response=False):
     '''
     Parses a file for metadata and content
     :param filename: path to file which needs to be parsed or binary file using open(path,'rb')
@@ -36,15 +40,18 @@ def from_file(filename, serverEndpoint=ServerEndpoint, service='all', xmlContent
     :return: dictionary having 'metadata' and 'content' keys.
             'content' has a str value and metadata has a dict type value.
     '''
-    if not xmlContent:
-        output = parse1(service, filename, serverEndpoint, headers=headers, config_path=config_path, requestOptions=requestOptions)
-    else:
-        output = parse1(service, filename, serverEndpoint, services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta/xml'},
-                            headers=headers, config_path=config_path, requestOptions=requestOptions)
+    services = {'meta': '/meta', 'text': '/tika', 'all': '/rmeta/text'}
+    if xmlContent:
+        services['all'] = '/rmeta/xml'
+
+    output = parse1(service, filename, serverEndpoint, services=services,
+                    headers=headers, config_path=config_path, requestOptions=requestOptions)
+    if raw_response:
+        return output
     return _parse(output, service)
 
 
-def from_buffer(string, serverEndpoint=ServerEndpoint, xmlContent=False, headers=None, config_path=None, requestOptions={}):
+def from_buffer(string, serverEndpoint=ServerEndpoint, xmlContent=False, headers=None, config_path=None, requestOptions={}, raw_response=False):
     '''
     Parses the content from buffer
     :param string: Buffer value
@@ -58,12 +65,19 @@ def from_buffer(string, serverEndpoint=ServerEndpoint, xmlContent=False, headers
     headers = headers or {}
     headers.update({'Accept': 'application/json'})
 
-    if not xmlContent:
-        status, response = callServer('put', serverEndpoint, '/rmeta/text', string, headers, False, config_path=config_path, requestOptions=requestOptions)
-    else:
-        status, response = callServer('put', serverEndpoint, '/rmeta/xml', string, headers, False, config_path=config_path, requestOptions=requestOptions)
+    service = '/rmeta/text'
 
-    return _parse((status,response))
+    if xmlContent:
+        service = '/rmeta/xml'
+
+    status, response = callServer('put', serverEndpoint, service, string,
+                                  headers, False, config_path=config_path, requestOptions=requestOptions)
+
+    if raw_response:
+        return (status, response)
+
+    return _parse((status, response))
+
 
 def _parse(output, service='all'):
     '''
@@ -75,7 +89,7 @@ def _parse(output, service='all'):
                     'text' returns only content
     :return: a dictionary having 'metadata' and 'content' values
     '''
-    parsed={'metadata': None, 'content': None}
+    parsed = {'metadata': None, 'content': None}
     if not output:
         return parsed
 
@@ -105,6 +119,7 @@ def _parse(output, service='all'):
 
     parsed["content"] = content
 
+    embeddedFile = []
     for js in realJson:
         for n in js:
             if n != "X-TIKA:content":
@@ -114,5 +129,11 @@ def _parse(output, service='all'):
                     parsed["metadata"][n].append(js[n])
                 else:
                     parsed["metadata"][n] = js[n]
+
+                if n == "embeddedRelationshipId" and n["embeddedRelationshipId"]:
+                    embeddedFile.append(n["embeddedRelationshipId"])
+
+    if embeddedFile:
+        log.info("Embedded files {}", embeddedFile)
 
     return parsed
