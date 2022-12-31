@@ -53,7 +53,6 @@ These are read once, when tika/tika.py is initially loaded and used throughout a
 
 ## Parser Interface (backwards compat prior to REST)
 
-```
 #!/usr/bin/env python
 import tika
 tika.initVM()
@@ -74,7 +73,7 @@ Note:
 The parser interface needs the following environment variable set on the console for printing of the extracted content.
 `export PYTHONIOENCODING=utf8`
 
-```
+```python
 #!/usr/bin/env python
 import tika
 from tika import parser
@@ -86,13 +85,13 @@ print(parsed["content"])
 Optionally, you can pass Tika server URL along with the call
 what's useful for multi-instance execution or when Tika is dockerzed/linked.
 
-```
+```python
 parsed = parser.from_file('/path/to/file', 'http://tika:9998/tika')
 string_parsed = parser.from_buffer('Good evening, Dave', 'http://tika:9998/tika')
 ```
 
-## Specify Output Format To XHTML
-
+Specify Output Format To XHTML
+---------------------
 The parser interface is optionally able to output the content as XHTML rather than plain text.
 
 Note:
@@ -100,7 +99,7 @@ Note:
 The parser interface needs the following environment variable set on the console for printing of the extracted content.
 `export PYTHONIOENCODING=utf8`
 
-```
+```python
 #!/usr/bin/env python
 import tika
 from tika import parser
@@ -117,7 +116,7 @@ The unpack interface handles both metadata and text extraction in a single
 call and internally returns back a tarball of metadata and text entries that
 is internally unpacked, reducing the wire load for extraction.
 
-```
+```python
 #!/usr/bin/env python
 import tika
 from tika import unpack
@@ -129,7 +128,7 @@ parsed = unpack.from_file('/path/to/file')
 The detect interface provides a IANA MIME type classification for the
 provided file.
 
-```
+```python
 #!/usr/bin/env python
 import tika
 from tika import detector
@@ -142,7 +141,7 @@ The config interface allows you to inspect the Tika Server environment's
 configuration including what parsers, mime types, and detectors the
 server has been configured with.
 
-```
+```python
 #!/usr/bin/env python
 import tika
 from tika import config
@@ -156,7 +155,7 @@ print(config.getDetectors())
 The language detection interface provides a 2 character language
 code texted based on the text in provided file.
 
-```
+```python
 #!/usr/bin/env python
 from tika import language
 print(language.from_file('/path/to/file'))
@@ -167,7 +166,7 @@ print(language.from_file('/path/to/file'))
 The translate interface translates the text automatically extracted
 by Tika from the source language to the destination language.
 
-```
+```python
 #!/usr/bin/env python
 from tika import translate
 print(translate.from_file('/path/to/spanish', 'es', 'en'))
@@ -225,7 +224,7 @@ print parsed["metadata"]
 
 You may customize the outgoing HTTP request to Tika server by setting `requestOptions` on the `.from_file` and `.from_buffer` methods (Parser, Unpack , Detect, Config, Language, Translate). It should be a dictionary of arguments that will be passed to the request method. The [request method documentation](https://requests.kennethreitz.org/en/master/api/#requests.request) specifies valid arguments. This will override any defaults except for `url` and `params `/`data`.
 
-```
+```python
 from tika import parser
 parsed = parser.from_file('/path/to/file', requestOptions={'timeout': 120})
 ```
@@ -244,7 +243,7 @@ The options and help for the command line tool can be seen by typing
 `tika-python` without any arguments. This will also download a copy of
 the tika-server jar and start it if you haven't done so already.
 
-```
+```bash
 tika.py [-v] [-o <outputDir>] [--server <TikaServerEndpoint>] [--install <UrlToTikaServerJar>] [--port <portNumber>] <command> <option> <urlOrPathToFile>
 
 tika.py parse all test.pdf test2.pdf                   (write output JSON metadata files for test1.pdf_meta.json and test2.pdf_meta.json)
