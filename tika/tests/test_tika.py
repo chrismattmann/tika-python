@@ -18,8 +18,10 @@
 # python -m unittest tests.tests
 import os
 import unittest
+
 import tika.parser
 import tika.tika
+from tika.tests.utils import HTTPStatusOk
 
 
 class CreateTest(unittest.TestCase):
@@ -50,6 +52,10 @@ class CreateTest(unittest.TestCase):
         with open(file, 'rb') as file_obj:
             self.assertTrue(tika.parser.from_file(file_obj))
 
+    def test_local_buffer(self):
+        response = tika.parser.from_buffer('Good evening, Dave')
+        self.assertEqual(response['status'], HTTPStatusOk)
+
     def test_local_path(self):
         """parse file path"""
         file = os.path.join(os.path.dirname(__file__), 'files', 'rwservlet.pdf')
@@ -61,6 +67,7 @@ class CreateTest(unittest.TestCase):
         with open(file, 'rb') as file_obj:
             tika.parser.from_file(file_obj)
         self.assertIsNone(tika.tika.killServer())
+
 
 if __name__ == '__main__':
     unittest.main()
