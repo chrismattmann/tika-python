@@ -208,10 +208,15 @@ print(translate.from_file('/path/to/spanish', 'es', 'en'))
 Using a Buffer
 --------------
 Note you can also use a Parser and Detector
-.from_buffer(string) method to dynamically parser
-a string buffer in Python and/or detect its MIME
+.from_buffer(string|BufferedIOBase) method to dynamically parser
+a string or bytes buffer in Python and/or detect its MIME
 type. This is useful if you've already loaded
 the content into memory.
+```python
+string_parsed = parser.from_buffer('Good evening, Dave')
+byte_data: bytes = b'B\xc3\xa4ume'
+parsed = parser.from_buffer(io.BytesIO(byte_data))
+```
 
 Using Client Only Mode
 ----------------------
