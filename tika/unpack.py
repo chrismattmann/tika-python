@@ -29,7 +29,7 @@ from sys import version_info
 _text_wrapper = TextIOWrapper if version_info.major >= 3 else lambda x: x
 
 
-def from_file(filename, serverEndpoint=ServerEndpoint, requestOptions={}):
+def from_file(filename, serverEndpoint=ServerEndpoint, headers=None, requestOptions={}):
     '''
     Parse from file
     :param filename: file
@@ -53,7 +53,7 @@ def from_buffer(string, serverEndpoint=ServerEndpoint, requestOptions={}):
     '''
     status, response = callServer('put', serverEndpoint, '/unpack/all', string,
                                   {'Accept': 'application/x-tar'}, False,
-                                  rawResponse=True, requestOptions=requestOptions)
+                                  rawResponse=True, headers=headers, requestOptions=requestOptions)
 
     return _parse((status, response))
 
