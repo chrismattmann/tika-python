@@ -21,6 +21,7 @@ import tarfile
 from io import BytesIO, TextIOWrapper
 import csv
 from sys import version_info
+from contextlib import closing
 
 # Python 3 introduced .readable() to tarfile extracted files objects - this
 # is required to wrap a TextIOWrapper around the object. However, wrapping
@@ -76,7 +77,7 @@ def _parse(tarOutput):
 
         metadataMember = tarFile.getmember("__METADATA__")
         if not metadataMember.issym() and metadataMember.isfile():
-            with _text_wrapper(tarFile.extractfile(metadataMember)) as metadataFile:
+            with closing(_text_wrapper(tarFile.extractfile(metadataMember))) as metadataFile:
                 metadataReader = csv.reader(_truncate_nulls(metadataFile))
                 for metadataLine in metadataReader:
                     # each metadata line comes as a key-value pair, with list values
@@ -97,10 +98,10 @@ def _parse(tarOutput):
             contentMember = tarFile.getmember("__TEXT__")
             if not contentMember.issym() and contentMember.isfile():
                 if version_info.major >= 3:
-                    with _text_wrapper(tarFile.extractfile(contentMember), encoding='utf8') as content_file:
+                    with closing(_text_wrapper(tarFile.extractfile(contentMember), encoding='utf8')) as content_file:
                         content = content_file.read()
                 else:
-                    with tarFile.extractfile(contentMember) as content_file:
+                    with closing(tarFile.extractfile(contentMember)) as content_file:
                         content = content_file.read().decode('utf8')
 
         # get the remaining files as attachments
@@ -108,7 +109,7 @@ def _parse(tarOutput):
         for attachment in memberNames:
             attachmentMember = tarFile.getmember(attachment)
             if not attachmentMember.issym() and attachmentMember.isfile():
-                with tarFile.extractfile(attachmentMember) as attachment_file:
+                with closing(tarFile.extractfile(attachmentMember)) as attachment_file:
                     attachments[attachment] = attachment_file.read()
 
         parsed["content"] = content
