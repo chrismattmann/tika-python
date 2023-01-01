@@ -20,7 +20,7 @@ from .tika import parse1, callServer, ServerEndpoint
 import os
 import json
 
-def from_file(filename, serverEndpoint=ServerEndpoint, service='all', xmlContent=False, headers=None, config_path=None, requestOptions={}):
+def from_file(filename, serverEndpoint=ServerEndpoint, service='all', xmlContent=False, headers=None, config_path=None, requestOptions={}, raw_response=False):
     '''
     Parses a file for metadata and content
     :param filename: path to file which needs to be parsed or binary file using open(path,'rb')
@@ -41,10 +41,13 @@ def from_file(filename, serverEndpoint=ServerEndpoint, service='all', xmlContent
     else:
         output = parse1(service, filename, serverEndpoint, services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta/xml'},
                             headers=headers, config_path=config_path, requestOptions=requestOptions)
-    return _parse(output, service)
+    if raw_response:
+        return output
+    else:
+        return _parse(output, service)
 
 
-def from_buffer(string, serverEndpoint=ServerEndpoint, xmlContent=False, headers=None, config_path=None, requestOptions={}):
+def from_buffer(string, serverEndpoint=ServerEndpoint, xmlContent=False, headers=None, config_path=None, requestOptions={}, raw_response=False):
     '''
     Parses the content from buffer
     :param string: Buffer value
@@ -63,7 +66,10 @@ def from_buffer(string, serverEndpoint=ServerEndpoint, xmlContent=False, headers
     else:
         status, response = callServer('put', serverEndpoint, '/rmeta/xml', string, headers, False, config_path=config_path, requestOptions=requestOptions)
 
-    return _parse((status,response))
+    if raw_response:
+        return (status, response)
+    else:
+        return _parse((status,response))
 
 def _parse(output, service='all'):
     '''
