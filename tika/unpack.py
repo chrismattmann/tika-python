@@ -30,7 +30,7 @@ from contextlib import closing
 _text_wrapper = TextIOWrapper if version_info.major >= 3 else lambda x: x
 
 
-def from_file(filename, serverEndpoint=ServerEndpoint, headers=None, requestOptions={}):
+def from_file(filename, serverEndpoint=ServerEndpoint, requestOptions={}):
     '''
     Parse from file
     :param filename: file
@@ -45,7 +45,7 @@ def from_file(filename, serverEndpoint=ServerEndpoint, headers=None, requestOpti
     return _parse(tarOutput)
 
 
-def from_buffer(string, serverEndpoint=ServerEndpoint, requestOptions={}):
+def from_buffer(string, serverEndpoint=ServerEndpoint, headers=None, requestOptions={}):
     '''
     Parse from buffered content
     :param string:  buffered content
