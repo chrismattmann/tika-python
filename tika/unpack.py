@@ -52,9 +52,13 @@ def from_buffer(string, serverEndpoint=ServerEndpoint, headers=None, requestOpti
     :param serverEndpoint: Tika server URL (Optional)
     :return: parsed content
     '''
+
+    headers = headers or {}
+    headers.update({'Accept': 'application/x-tar'})
+
     status, response = callServer('put', serverEndpoint, '/unpack/all', string,
-                                  {'Accept': 'application/x-tar'}, False,
-                                  rawResponse=True, headers=headers, requestOptions=requestOptions)
+                                  headers, False,
+                                  rawResponse=True, requestOptions=requestOptions)
 
     return _parse((status, response))
 

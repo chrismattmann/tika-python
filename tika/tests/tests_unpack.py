@@ -26,6 +26,18 @@ class CreateTest(unittest.TestCase):
             parsed = unpack.from_file(f.name)
             self.assertEqual(parsed["content"].strip(), self.text_ascii)
 
+    def test_from_buffer(self):
+        parsed = unpack.from_buffer('what?')
+        self.assertIsNotNone(parsed)
+        self.assertIsNotNone(parsed["metadata"])
+        self.assertEqual(parsed["metadata"]["Content-Length"], "5")
+
+    def test_from_buffer_with_headers(self):
+        parsed = unpack.from_buffer('what?', headers={'Param': 'whatever'})
+        self.assertIsNotNone(parsed)
+        self.assertIsNotNone(parsed["metadata"])
+        self.assertEqual(parsed["metadata"]["Content-Length"], "5")
+
 
 if __name__ == '__main__':
     unittest.main()
