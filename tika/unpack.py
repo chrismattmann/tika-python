@@ -81,18 +81,33 @@ def _parse(tarOutput):
 
         metadataMember = tarFile.getmember("__METADATA__")
         if not metadataMember.issym() and metadataMember.isfile():
-            with closing(_text_wrapper(tarFile.extractfile(metadataMember))) as metadataFile:
-                metadataReader = csv.reader(_truncate_nulls(metadataFile))
-                for metadataLine in metadataReader:
-                    # each metadata line comes as a key-value pair, with list values
-                    # returned as extra values in the line - convert single values
-                    # to non-list values to be consistent with parser metadata
-                    assert len(metadataLine) >= 2
+            if version_info.major >= 3:
+                with closing(_text_wrapper(tarFile.extractfile(metadataMember), encoding=tarFile.encoding)) as metadataFile:
+                    metadataReader = csv.reader(_truncate_nulls(metadataFile))
+                    for metadataLine in metadataReader:
+                        # each metadata line comes as a key-value pair, with list values
+                        # returned as extra values in the line - convert single values
+                        # to non-list values to be consistent with parser metadata
+                        assert len(metadataLine) >= 2
 
-                    if len(metadataLine) > 2:
-                        metadata[metadataLine[0]] = metadataLine[1:]
-                    else:
-                        metadata[metadataLine[0]] = metadataLine[1]
+                        if len(metadataLine) > 2:
+                            metadata[metadataLine[0]] = metadataLine[1:]
+                        else:
+                            metadata[metadataLine[0]] = metadataLine[1]
+            else:
+                with closing(_text_wrapper(tarFile.extractfile(metadataMember))) as metadataFile:
+                    metadataReader = csv.reader(_truncate_nulls(metadataFile))
+                    for metadataLine in metadataReader:
+                        # each metadata line comes as a key-value pair, with list values
+                        # returned as extra values in the line - convert single values
+                        # to non-list values to be consistent with parser metadata
+                        assert len(metadataLine) >= 2
+
+                        if len(metadataLine) > 2:
+                            metadata[metadataLine[0]] = metadataLine[1:]
+                        else:
+                            metadata[metadataLine[0]] = metadataLine[1]
+
 
         # get the content
         content = ""
