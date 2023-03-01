@@ -172,7 +172,7 @@ TikaFilesPath = tempfile.gettempdir()
 TikaServerLogFilePath = log_path
 TikaServerJar = os.getenv(
     'TIKA_SERVER_JAR',
-    "http://search.maven.org/remotecontent?filepath=org/apache/tika/tika-server-standard/"+TikaVersion+"/tika-server-standard-"+TikaVersion+".jar")
+    f"https://dlcdn.apache.org/tika/{TikaVersion}/tika-server-standard-{TikaVersion}.jar")
 ServerHost = "localhost"
 Port = "9998"
 ServerEndpoint = os.getenv(
