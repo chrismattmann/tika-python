@@ -609,13 +609,13 @@ def checkJarSig(tikaServerJar, jarPath):
     :param jarPath:
     :return: ``True`` if the signature of the jar matches
     '''
-    if not os.path.isfile(jarPath + ".md5"):
-        getRemoteJar(tikaServerJar + ".md5", jarPath + ".md5")
-    m = hashlib.md5()
+    if not os.path.isfile(jarPath + ".sha1"):
+        getRemoteJar(tikaServerJar + ".sha1", jarPath + ".sha1")
+    m = hashlib.sha1()
     with open(jarPath, 'rb') as f:
         binContents = f.read()
         m.update(binContents)
-        with open(jarPath + ".md5", "r") as em:
+        with open(jarPath + ".sha1", "r") as em:
             existingContents = em.read()
             return existingContents == m.hexdigest()
 
