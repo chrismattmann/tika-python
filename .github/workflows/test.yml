@@ -1,0 +1,40 @@
+name: Run Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+
+  tests-backend:
+    name: "Tests (${{ matrix.python-version }})"
+    # TODO: ubuntu-22.04 results in SSL negotation issues with test_from_file_service.py
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        # TODO: 3.10 fails SSL negotation with test_from_file_service.py
+        python-version: ['3.7', '3.8', '3.9']
+      fail-fast: false
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v3
+      -
+        name: Set up Python
+        id: setup-python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "${{ matrix.python-version }}"
+      -
+        name: Install Python dependencies
+        run: |
+            pip3 install --requirement requirements.txt
+            pip install --editable .[all]
+      -
+        name: List installed Python dependencies
+        run: |
+          pip list
+      -
+        name: Tests
+        run: |
+            py.test --cov=tika
