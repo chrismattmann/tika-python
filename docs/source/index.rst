@@ -7,7 +7,7 @@ Welcome to tika-python's documentation!
 =======================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 7
    :caption: Contents:
 
    readme
