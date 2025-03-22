@@ -3,3 +3,4 @@ requests
 pyyaml==5.2
 python-coveralls
 pytest-cov<2.6
+memory_profiler

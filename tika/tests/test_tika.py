@@ -44,7 +44,7 @@ class CreateTest(unittest.TestCase):
     def test_remote_jpg(self):
         """parse remote jpg"""
         self.assertTrue(tika.parser.from_file(
-            'https://www.nasa.gov/sites/default/files/thumbnails/image/j2m-shareable.jpg'))
+            'https://upload.wikimedia.org/wikipedia/commons/b/b7/X_logo.jpg'))
 
     def test_local_binary(self):
         """parse file binary"""

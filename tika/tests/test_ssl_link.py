@@ -23,7 +23,7 @@ class CreateTest(unittest.TestCase):
             shutil.rmtree(self.folder)
 
     def test_url(self):
-        url = 'https://www.nasa.gov/sites/default/files/thumbnails/image/j2m-shareable.jpg'
+        url = 'https://upload.wikimedia.org/wikipedia/commons/b/b7/X_logo.jpg'
         path = os.path.join(self.folder, "pic.jpg")    
         urlretrieve(url, path)
         self.assertTrue(os.path.exists(path)) 
