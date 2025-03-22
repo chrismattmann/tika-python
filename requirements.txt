@@ -1,6 +1,6 @@
 setuptools
 requests
-pyyaml==5.2
+pyyaml==5.4.1
 python-coveralls
 pytest-cov<2.6
 memory_profiler
