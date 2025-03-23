@@ -222,7 +222,7 @@ Using Client Only Mode
 ----------------------
 You can set Tika to use Client only mode by setting
 ```python
-import tika
+import tika from tika
 tika.TikaClientOnly = True
 ```
 
