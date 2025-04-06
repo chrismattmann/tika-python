@@ -173,6 +173,7 @@ TikaServerLogFilePath = log_path
 TikaServerJar = os.getenv(
     'TIKA_SERVER_JAR',
     "http://search.maven.org/remotecontent?filepath=org/apache/tika/tika-server-standard/"+TikaVersion+"/tika-server-standard-"+TikaVersion+".jar")
+TikaJarHashAlgo=os.getenv('TIKA_JAR_HASH_ALGO', 'md5')
 ServerHost = "localhost"
 Port = "9998"
 ServerEndpoint = os.getenv(
@@ -609,9 +610,11 @@ def checkJarSig(tikaServerJar, jarPath):
     :param jarPath:
     :return: ``True`` if the signature of the jar matches
     '''
-    if not os.path.isfile(jarPath + ".md5"):
-        getRemoteJar(tikaServerJar + ".md5", jarPath + ".md5")
-    m = hashlib.md5()
+    localChecksumPath = '.'.join([jarPath, TikaJarHashAlgo])
+    if not os.path.isfile(localChecksumPath):
+        remoteChecksum = '.'.join([tikaServerJar, TikaJarHashAlgo])
+        getRemoteJar(remoteChecksum, localChecksumPath)
+    m = hashlib.new(TikaJarHashAlgo)
     with open(jarPath, 'rb') as f:
         binContents = f.read()
         m.update(binContents)
