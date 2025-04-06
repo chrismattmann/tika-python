@@ -324,7 +324,7 @@ Example usage as python client:
 
 Questions, comments?
 ===================
-Send them to [Chris A. Mattmann](mailto:chris.a.mattmann@jpl.nasa.gov).
+Send them to [Chris A. Mattmann](mailto:chris.mattmann@gmail.com).
 
 Contributors
 ============
