@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-import .tika.parser
+from tika import parser
 from io import StringIO
 from bs4 import BeautifulSoup
 

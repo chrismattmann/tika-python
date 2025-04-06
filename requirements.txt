@@ -4,3 +4,4 @@ pyyaml==5.4.1
 python-coveralls
 pytest-cov<2.6
 memory_profiler
+beautifulsoup4==4.13.3
