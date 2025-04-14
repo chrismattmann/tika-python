@@ -10,7 +10,7 @@ library that makes Tika available using the
 This makes Apache Tika available as a Python library,
 installable via Setuptools, Pip and Easy Install.
 
-To use this library, you need to have Java 7+ installed on your
+To use this library, you need to have Java 11+ installed on your
 system as tika-python starts up the Tika REST server in the
 background.
 
