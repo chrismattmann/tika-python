@@ -30,10 +30,7 @@ try:
 except ImportError:
     pass
 
-try:
-    from setuptools import setup, find_packages
-except ImportError:
-    from distutils.core import setup, find_packages
+from setuptools import setup, find_packages, find_namespace_packages
 
 version = tika.__version__
 
@@ -87,7 +84,7 @@ setup(
     url='http://github.com/chrismattmann/tika-python',
     download_url='http://github.com/chrismattmann/tika-python',
     license='Apache License version 2 ("ALv2")',
-    packages=find_packages(exclude=['ez_setup']),
+    packages=find_packages(exclude=['ez_setup']) + find_namespace_packages(include=['tika.tests']),
     include_package_data=True,
     zip_safe=True,
     test_suite='tika.tests',
@@ -101,7 +98,7 @@ setup(
         # for the package
     },
     install_requires=[
-        'setuptools',
+        'setuptools>=40.1',
         'requests'
     ],
     extras_require=extras_require,

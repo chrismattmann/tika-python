@@ -10,4 +10,4 @@
 .DS_Store
 /setup.cfg
 .idea
-
+__pycache__/
