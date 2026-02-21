@@ -219,7 +219,7 @@ def runCommand(cmd, option, urlOrPaths, port, outDir=None,
     :return: response for the command, usually a ``dict``
     '''
     # import pdb; pdb.set_trace()
-    if (cmd in 'parse' or cmd in 'detect') and (urlOrPaths == [] or urlOrPaths == None):
+    if (cmd in 'parse' or cmd in 'detect') and (urlOrPaths == [] or urlOrPaths is None):
         log.exception('No URLs/paths specified.')
         raise TikaException('No URLs/paths specified.')
     serverEndpoint = 'http://' + serverHost + ':' + port
