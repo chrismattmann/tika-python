@@ -618,7 +618,7 @@ def checkJarSig(tikaServerJar, jarPath):
     with open(jarPath, 'rb') as f:
         binContents = f.read()
         m.update(binContents)
-        with open(jarPath + ".md5", "r") as em:
+        with open(f"{jarPath}.{TikaJarHashAlgo}", "r") as em:
             existingContents = em.read()
             return existingContents == m.hexdigest()
 
