@@ -1,0 +1,62 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = [ "setuptools" ]
+
+[project]
+name = "tika"
+description = "Apache Tika Python library"
+readme = "README.md"
+keywords = [ "tika", "digital", "babel fish", "apache" ]
+license = "Apache-2.0"
+authors = [ { name = "Chris Mattmann", email = "chris.a.mattmann@jpl.nasa.gov" } ]
+requires-python = ">=3.10"
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Information Technology",
+  "Intended Audience :: Science/Research",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Database :: Front-Ends",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dynamic = [ "version" ]
+dependencies = [
+  "beautifulsoup4==4.13.3",
+  "requests",
+]
+
+[project.optional-dependencies]
+all = [
+  "tika[tests]",
+]
+tests = [
+  "coveralls",
+  "memory-profiler>=0.57",
+  "pytest-benchmark>=3.2.2",
+  "pytest-cov",
+]
+
+[project.urls]
+homepage = "http://github.com/chrismattmann/tika-python"
+repository = "http://github.com/chrismattmann/tika-python.git"
+
+[project.scripts]
+tika-python = "tika.tika:main"
+
+[tool.setuptools]
+packages.find.include = [
+  "tika*",
+]
+packages.find.exclude = [ "tika.tests*" ]
+
+[tool.setuptools.dynamic]
+version = {attr = "tika.__version__"}
