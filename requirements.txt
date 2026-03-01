@@ -1,7 +1,7 @@
 setuptools
 requests
 pyyaml==5.4.1
-python-coveralls
-pytest-cov<2.6
+coveralls
+pytest-cov
 memory_profiler
 beautifulsoup4==4.13.3
