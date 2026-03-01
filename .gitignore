@@ -11,3 +11,4 @@
 /setup.cfg
 .idea
 __pycache__/
+.coverage
