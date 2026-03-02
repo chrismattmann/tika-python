@@ -14,8 +14,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# 
-# python -m unittest tests.tests
+
 import os
 import unittest
 
@@ -30,7 +29,7 @@ class CreateTest(unittest.TestCase):
     def test_remote_pdf(self):
         """parse remote PDF"""
         self.assertTrue(tika.parser.from_file(
-            'http://appsrv.achd.net/reports/rwservlet?food_rep_insp&P_ENCOUNTER=201504160015'))
+            'https://upload.wikimedia.org/wikipedia/commons/4/42/Article_feedback_flow_B_-_Thank_editors.pdf'))
 
     def test_remote_html(self):
         """parse remote HTML"""
