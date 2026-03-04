@@ -32,10 +32,10 @@ jobs:
     - name: Coveralls parallel
       uses: coverallsapp/github-action@v2
       with:
-        flag-name: run-${{ matrix.python-version }}
+        flag-name: coverage-python-${{ matrix.python-version }}
         parallel: true
 
-  finish:
+  finish-coverage:
     needs: test
     if: ${{ always() }}
     runs-on: ubuntu-slim
