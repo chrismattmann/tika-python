@@ -27,11 +27,20 @@ jobs:
         python -m pip install -e .[all]
 
     - name: Run tests
-      run: pytest -ra --cov=tika
+      run: pytest -ra --cov
 
-    - name: Upload coverage to Coveralls
-      if: success()
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        coveralls
+    - name: Coveralls parallel
+      uses: coverallsapp/github-action@v2
+      with:
+        flag-name: run-${{ matrix.python-version }}
+        parallel: true
+
+  finish:
+    needs: test
+    if: ${{ always() }}
+    runs-on: ubuntu-slim
+    steps:
+    - name: Coveralls finished
+      uses: coverallsapp/github-action@v2
+      with:
+        parallel-finished: true
