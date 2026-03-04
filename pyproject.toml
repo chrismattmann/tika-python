@@ -39,9 +39,9 @@ all = [
   "tika[tests]",
 ]
 tests = [
-  "coveralls",
-  "memory-profiler>=0.57",
-  "pytest-benchmark>=3.2.2",
+  # "coveralls",
+  "memory-profiler",
+  "pytest-benchmark",
   "pytest-cov",
 ]
 
@@ -60,3 +60,7 @@ packages.find.exclude = [ "tika.tests*" ]
 
 [tool.setuptools.dynamic]
 version = {attr = "tika.__version__"}
+
+[tool.coverage.run]
+source = [ "tika" ]
+branch = true
