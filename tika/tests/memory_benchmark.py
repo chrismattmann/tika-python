@@ -19,13 +19,10 @@
 # python tika/tests/memory_benchmark.py
 import os
 import zlib
-
+import gzip
 
 import tika.parser
-import tika.tika
 from memory_profiler import profile
-
-from tika.tests.utils import gzip_compress
 
 
 @profile
@@ -62,7 +59,7 @@ def test_parser_gzip():
     file = os.path.join(os.path.dirname(__file__), 'files', 'rwservlet.pdf')
 
     with open(file, 'rb') as file_obj:
-        response = tika.parser.from_buffer(gzip_compress(file_obj.read()), headers={'Accept-Encoding': 'gzip, deflate'})
+        response = tika.parser.from_buffer(gzip.compress(file_obj.read()), headers={'Accept-Encoding': 'gzip, deflate'})
 
 if __name__ == '__main__':
     test_parser_buffer()

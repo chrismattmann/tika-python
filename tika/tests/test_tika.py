@@ -17,10 +17,10 @@
 
 import os
 import unittest
+from http import HTTPStatus
 
 import tika.parser
 import tika.tika
-from tika.tests.utils import HTTPStatusOk
 
 
 class CreateTest(unittest.TestCase):
@@ -53,7 +53,7 @@ class CreateTest(unittest.TestCase):
 
     def test_local_buffer(self):
         response = tika.parser.from_buffer('Good evening, Dave')
-        self.assertEqual(response['status'], HTTPStatusOk)
+        self.assertEqual(response['status'], HTTPStatus.OK)
 
     def test_local_path(self):
         """parse file path"""
