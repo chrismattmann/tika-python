@@ -39,7 +39,6 @@ all = [
   "tika[tests]",
 ]
 tests = [
-  # "coveralls",
   "memory-profiler",
   "pytest-benchmark",
   "pytest-cov",
