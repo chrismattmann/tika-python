@@ -105,17 +105,13 @@ Example usage as python client:
 """
 
 import sys, os, getopt, time, codecs, re
+from pathlib import Path
 try:
     unicode_string = unicode 
     binary_string = str
 except NameError:
     unicode_string = str
     binary_string = bytes
-
-try:
-    from urllib import urlretrieve
-except ImportError:
-    from urllib.request import urlretrieve
 try:
     from urlparse import urlparse
 except ImportError:
@@ -757,6 +753,62 @@ def _is_file_object(f):
 
     return isinstance(f, file_types)
 
+
+def _urlretrieve(
+    url: str,
+    filename: str,
+    chunk_size: int = 8192,
+    timeout: int = 30,
+    verify_ssl: bool = True,
+) -> str:
+    """
+    Download a file from a URL using requests with streaming support.
+
+    Args:
+        url: The URL to download from.
+        filepath: The local file path where the file will be saved.
+        chunk_size: Size of chunks to download at a time in bytes (default: 8192).
+        timeout: Request timeout in seconds (default: 30).
+        verify_ssl: Whether to verify SSL certificates (default: True).
+
+    Returns:
+        The filepath where the file was saved.
+
+    Raises:
+        requests.RequestException: If the download fails.
+        IOError: If there's an issue writing to the file.
+    """
+    headers = {"user-agent": "tika-python"}
+
+    # Ensure the directory exists
+    Path(filename).parent.mkdir(parents=True, exist_ok=True)
+
+    try:
+        response = requests.get(
+            url,
+            headers=headers,
+            stream=True,
+            timeout=timeout,
+            verify=verify_ssl,
+        )
+        response.raise_for_status()
+
+        bytes_downloaded = 0
+        with open(filename, "wb") as f:
+            for chunk in response.iter_content(chunk_size=chunk_size):
+                if chunk:  # Filter out keep-alive chunks
+                    f.write(chunk)
+                    bytes_downloaded += len(chunk)
+
+        return filename
+
+    except requests.RequestException as e:
+        # Clean up partial file on error
+        if os.path.exists(filename):
+            os.remove(filename)
+        raise RuntimeError(f"Failed to download {url}: {e}") from e
+
+
 def getRemoteFile(urlOrPath, destPath):
     '''
     Fetches URL to local path or just returns absolute path.
@@ -777,18 +829,7 @@ def getRemoteFile(urlOrPath, destPath):
         filename = toFilename(urlOrPath)
         destPath = destPath + '/' + filename
         log.info('Retrieving %s to %s.' % (urlOrPath, destPath))
-        try:
-            urlretrieve(urlOrPath, destPath)
-        except IOError:
-            # monkey patch fix for SSL/Windows per Tika-Python #54 
-            # https://github.com/chrismattmann/tika-python/issues/54
-            import ssl
-            if hasattr(ssl, '_create_unverified_context'):
-                ssl._create_default_https_context = ssl._create_unverified_context
-            # delete whatever we had there
-            if os.path.exists(destPath) and os.path.isfile(destPath):
-                os.remove(destPath)
-            urlretrieve(urlOrPath, destPath)
+        _urlretrieve(urlOrPath, destPath)
         return (destPath, 'remote')
 
 def getRemoteJar(urlOrPath, destPath):
@@ -803,19 +844,7 @@ def getRemoteJar(urlOrPath, destPath):
         return (os.path.abspath(urlOrPath), 'local')
     else:
         log.info('Retrieving %s to %s.' % (urlOrPath, destPath))
-        try:
-            urlretrieve(urlOrPath, destPath)
-        except IOError:
-            # monkey patch fix for SSL/Windows per Tika-Python #54 
-            # https://github.com/chrismattmann/tika-python/issues/54
-            import ssl
-            if hasattr(ssl, '_create_unverified_context'):
-                ssl._create_default_https_context = ssl._create_unverified_context
-            # delete whatever we had there
-            if os.path.exists(destPath) and os.path.isfile(destPath):
-                os.remove(destPath)
-            urlretrieve(urlOrPath, destPath) 
-               
+        _urlretrieve(urlOrPath, destPath)
         return (destPath, 'remote')
     
 def checkPortIsOpen(remoteServerHost=ServerHost, port = Port):
