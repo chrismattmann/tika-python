@@ -20,10 +20,10 @@
 import os
 import unittest
 import zlib
+import gzip
+from http import HTTPStatus
 
 import tika.parser
-import tika.tika
-from tika.tests.utils import HTTPStatusOk, gzip_compress
 
 
 def test_local_binary(benchmark):
@@ -31,7 +31,7 @@ def test_local_binary(benchmark):
     file = os.path.join(os.path.dirname(__file__), 'files', 'rwservlet.pdf')
     response = benchmark(tika_from_binary, file)
 
-    assert response['status'] == HTTPStatusOk
+    assert response['status'] == HTTPStatus.OK
 
 
 def test_parser_buffer(benchmark):
@@ -39,7 +39,7 @@ def test_parser_buffer(benchmark):
     file = os.path.join(os.path.dirname(__file__), 'files', 'rwservlet.pdf')
     response = benchmark(tika_from_buffer, file)
 
-    assert response['status'] == HTTPStatusOk
+    assert response['status'] == HTTPStatus.OK
 
 
 def test_parser_buffer_zlib_input(benchmark):
@@ -48,7 +48,7 @@ def test_parser_buffer_zlib_input(benchmark):
 
     response = benchmark(tika_from_buffer_zlib, file)
 
-    assert response['status'] == HTTPStatusOk
+    assert response['status'] == HTTPStatus.OK
 
 
 def test_parser_buffer_gzip_input(benchmark):
@@ -56,7 +56,7 @@ def test_parser_buffer_gzip_input(benchmark):
     file = os.path.join(os.path.dirname(__file__), 'files', 'rwservlet.pdf')
     response = benchmark(tika_from_buffer_gzip, file)
 
-    assert response['status'] == HTTPStatusOk
+    assert response['status'] == HTTPStatus.OK
 
 
 def test_local_binary_with_gzip_output(benchmark):
@@ -64,7 +64,7 @@ def test_local_binary_with_gzip_output(benchmark):
     file = os.path.join(os.path.dirname(__file__), 'files', 'rwservlet.pdf')
     response = benchmark(tika_from_binary, file, headers={'Accept-Encoding': 'gzip, deflate'})
 
-    assert response['status'] == HTTPStatusOk
+    assert response['status'] == HTTPStatus.OK
 
 
 def test_parser_buffer_with_gzip_output(benchmark):
@@ -72,7 +72,7 @@ def test_parser_buffer_with_gzip_output(benchmark):
     file = os.path.join(os.path.dirname(__file__), 'files', 'rwservlet.pdf')
     response = benchmark(tika_from_buffer, file, headers={'Accept-Encoding': 'gzip, deflate'})
 
-    assert response['status'] == HTTPStatusOk
+    assert response['status'] == HTTPStatus.OK
 
 
 def test_parser_buffer_zlib_input_and_gzip_output(benchmark):
@@ -81,7 +81,7 @@ def test_parser_buffer_zlib_input_and_gzip_output(benchmark):
 
     response = benchmark(tika_from_buffer_zlib, file, headers={'Accept-Encoding': 'gzip, deflate'})
 
-    assert response['status'] == HTTPStatusOk
+    assert response['status'] == HTTPStatus.OK
 
 
 def test_parser_buffer_gzip_input_and_gzip_output(benchmark):
@@ -89,7 +89,7 @@ def test_parser_buffer_gzip_input_and_gzip_output(benchmark):
     file = os.path.join(os.path.dirname(__file__), 'files', 'rwservlet.pdf')
     response = benchmark(tika_from_buffer_gzip, file, headers={'Accept-Encoding': 'gzip, deflate'})
 
-    assert response['status'] == HTTPStatusOk
+    assert response['status'] == HTTPStatus.OK
 
 
 def tika_from_buffer_zlib(file, headers=None):
@@ -99,7 +99,7 @@ def tika_from_buffer_zlib(file, headers=None):
 
 def tika_from_buffer_gzip(file, headers=None):
     with open(file, 'rb') as file_obj:
-        return tika.parser.from_buffer(gzip_compress(file_obj.read()), headers=headers)
+        return tika.parser.from_buffer(gzip.compress(file_obj.read()), headers=headers)
 
 
 def tika_from_buffer(file, headers=None):
