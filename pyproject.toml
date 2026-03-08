@@ -55,7 +55,6 @@ tika-python = "tika.tika:main"
 packages.find.include = [
   "tika*",
 ]
-packages.find.exclude = [ "tika.tests*" ]
 
 [tool.setuptools.dynamic]
 version = {attr = "tika.__version__"}
