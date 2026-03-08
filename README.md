@@ -8,7 +8,7 @@ library that makes Tika available using the
 [Tika REST Server](https://cwiki.apache.org/confluence/display/TIKA/TikaServer).
 
 This makes Apache Tika available as a Python library,
-installable via Setuptools, Pip and Easy Install.
+installable via pip.
 
 To use this library, you need to have Java 11+ installed on your
 system as tika-python starts up the Tika REST server in the
