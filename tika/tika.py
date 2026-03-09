@@ -111,17 +111,7 @@ import re
 import sys
 import time
 from pathlib import Path
-
-try:
-    unicode_string = unicode
-    binary_string = str
-except NameError:
-    unicode_string = str
-    binary_string = bytes
-try:
-    from urlparse import urlparse
-except ImportError:
-    from urllib.parse import urlparse as urlparse
+from urllib.parse import urlparse as urlparse
 
 try:
     from rfc6266 import build_header
@@ -197,7 +187,7 @@ TikaServerProcess = False
 class TikaException(Exception):
     pass
 
-def echo2(*s): sys.stderr.write(unicode_string('tika.py: %s\n') % unicode_string(' ').join(map(unicode_string, s)))
+def echo2(*s): sys.stderr.write(str('tika.py: %s\n') % str(' ').join(map(str, s)))
 def warn(*s):  echo2('Warn:', *s)
 def die(*s):   warn('Error:',  *s); echo2(USAGE); sys.exit()
 
@@ -246,7 +236,7 @@ def getPaths(urlOrPaths):
     :param urlOrPaths: the url or path to be scanned
     :return: ``list`` of paths
     '''
-    if isinstance(urlOrPaths, unicode_string):
+    if isinstance(urlOrPaths, str):
         urlOrPaths = [urlOrPaths]  # do not recursively walk over letters of a single path which can include "/"
     paths = []
     for eachUrlOrPaths in urlOrPaths:
@@ -326,13 +316,13 @@ def parse1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, ti
     headers = headers or {}
 
     path, file_type = getRemoteFile(urlOrPath, TikaFilesPath)
-    headers.update({'Accept': responseMimeType, 'Content-Disposition': make_content_disposition_header(path.encode('utf-8') if type(path) is unicode_string else path)})
+    headers.update({'Accept': responseMimeType, 'Content-Disposition': make_content_disposition_header(path.encode('utf-8') if type(path) is str else path)})
 
     if option not in services:
         log.warning('config option must be one of meta, text, or all; using all.')
     service = services.get(option, services['all'])
     if service == '/tika': responseMimeType = 'text/plain'
-    headers.update({'Accept': responseMimeType, 'Content-Disposition': make_content_disposition_header(path.encode('utf-8') if type(path) is unicode_string else path)})
+    headers.update({'Accept': responseMimeType, 'Content-Disposition': make_content_disposition_header(path.encode('utf-8') if type(path) is str else path)})
     with urlOrPath if _is_file_object(urlOrPath) else open(path, 'rb') as f:
         status, response = callServer('put', serverEndpoint, service, f,
                                       headers, verbose, tikaServerJar, config_path=config_path,
@@ -375,8 +365,8 @@ def detectLang1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbos
     '''
     path, mode = getRemoteFile(urlOrPath, TikaFilesPath)
     if option not in services:
-        log.exception('Language option must be one of %s ' % binary_string(services.keys()))
-        raise TikaException('Language option must be one of %s ' % binary_string(services.keys()))
+        log.exception('Language option must be one of %s ' % bytes(services.keys()))
+        raise TikaException('Language option must be one of %s ' % bytes(services.keys()))
     service = services[option]
     status, response = callServer('put', serverEndpoint, service, open(path, 'rb'),
             {'Accept': responseMimeType}, verbose, tikaServerJar, requestOptions=requestOptions)
@@ -471,13 +461,13 @@ def detectType1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbos
     '''
     path, mode = getRemoteFile(urlOrPath, TikaFilesPath)
     if option not in services:
-        log.exception('Detect option must be one of %s' % binary_string(services.keys()))
-        raise TikaException('Detect option must be one of %s' % binary_string(services.keys()))
+        log.exception('Detect option must be one of %s' % bytes(services.keys()))
+        raise TikaException('Detect option must be one of %s' % bytes(services.keys()))
     service = services[option]
     status, response = callServer('put', serverEndpoint, service, open(path, 'rb'),
             {
                 'Accept': responseMimeType,
-                'Content-Disposition': make_content_disposition_header(path.encode('utf-8') if type(path) is unicode_string else path)
+                'Content-Disposition': make_content_disposition_header(path.encode('utf-8') if type(path) is str else path)
             },
             verbose, tikaServerJar, config_path=config_path, requestOptions=requestOptions)
     if csvOutput == 1:
@@ -533,15 +523,15 @@ def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, ti
 
     serviceUrl  = serverEndpoint + service
     if verb not in httpVerbs:
-        log.exception('Tika Server call must be one of %s' % binary_string(httpVerbs.keys()))
-        raise TikaException('Tika Server call must be one of %s' % binary_string(httpVerbs.keys()))
+        log.exception('Tika Server call must be one of %s' % bytes(httpVerbs.keys()))
+        raise TikaException('Tika Server call must be one of %s' % bytes(httpVerbs.keys()))
     verbFn = httpVerbs[verb]
 
     if Windows and hasattr(data, "read"):
         data = data.read()
 
     encodedData = data
-    if type(data) is unicode_string:
+    if type(data) is str:
         encodedData = data.encode('utf-8')
 
     requestOptionsDefault = {
