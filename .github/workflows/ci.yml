@@ -11,15 +11,16 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9"]
+        python-version: ["3.10", "3.12", "3.14"]
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
+        cache: pip
 
     - name: Install dependencies
       run: |
@@ -30,9 +31,18 @@ jobs:
     - name: Run tests
       run: pytest -ra --cov=tika
 
-    - name: Upload coverage to Coveralls
-      if: success()
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        coveralls
+    - name: Coveralls parallel
+      uses: coverallsapp/github-action@v2
+      with:
+        flag-name: coverage-python-${{ matrix.python-version }}
+        parallel: true
+
+  finish-coverage:
+    needs: test
+    if: always()
+    runs-on: ubuntu-slim
+    steps:
+    - name: Coveralls finished
+      uses: coverallsapp/github-action@v2
+      with:
+        parallel-finished: true
