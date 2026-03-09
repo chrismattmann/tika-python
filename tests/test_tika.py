@@ -33,7 +33,7 @@ def test_remote_pdf():
 
 def test_remote_html():
     """parse remote HTML"""
-    assert tika.parser.from_file("http://neverssl.com/index.html")
+    assert tika.parser.from_file("http://nossl.sh")
 
 
 def test_remote_mp3():
