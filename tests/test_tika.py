@@ -33,7 +33,7 @@ class CreateTest(unittest.TestCase):
 
     def test_remote_html(self):
         """parse remote HTML"""
-        self.assertTrue(tika.parser.from_file('http://neverssl.com/index.html'))
+        self.assertTrue(tika.parser.from_file('http://nossl.sh'))
 
     def test_remote_mp3(self):
         """parse remote mp3"""
