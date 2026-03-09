@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# encoding: utf-8
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -16,11 +15,10 @@
 # limitations under the License.
 #
 # pytest --benchmark-enable --benchmark-timer=time.process_time tika/tests/test_benchmark.py
-# pytest --benchmark-enable --benchmark-timer=time.process_time tika/tests/test_benchmark.py
+import gzip
 import os
 import unittest
 import zlib
-import gzip
 from http import HTTPStatus
 
 import tika.parser

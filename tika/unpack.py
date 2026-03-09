@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# encoding: utf-8
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -16,12 +15,13 @@
 # limitations under the License.
 #
 
-from .tika import parse1, callServer, ServerEndpoint
-import tarfile
-from io import BytesIO, TextIOWrapper
 import csv
-from sys import version_info
+import tarfile
 from contextlib import closing
+from io import BytesIO, TextIOWrapper
+from sys import version_info
+
+from .tika import ServerEndpoint, callServer, parse1
 
 # Python 3 introduced .readable() to tarfile extracted files objects - this
 # is required to wrap a TextIOWrapper around the object. However, wrapping
