@@ -131,9 +131,6 @@ except ImportError:
     def make_content_disposition_header(fn):
         return 'attachment; filename=%s' % os.path.basename(fn)
 
-if sys.version_info[0] < 3:
-    open = codecs.open
-
 import ctypes
 import hashlib
 import io
