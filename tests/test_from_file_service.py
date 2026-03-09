@@ -17,13 +17,9 @@
 #
 # python -m unittest tika.tests.test_from_file_service
 
-import sys
 import unittest
+from unittest import mock
 
-if sys.version_info >= (3, 3):
-    from unittest import mock
-else:
-    import mock
 import tika.parser
 
 
