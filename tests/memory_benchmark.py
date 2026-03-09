@@ -17,12 +17,13 @@
 #
 # To run:
 # python tika/tests/memory_benchmark.py
+import gzip
 import os
 import zlib
-import gzip
+
+from memory_profiler import profile
 
 import tika.parser
-from memory_profiler import profile
 
 
 @profile

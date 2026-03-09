@@ -16,7 +16,8 @@
 # limitations under the License.
 # 
 
-from .tika import detectLang1, callServer, ServerEndpoint
+from .tika import ServerEndpoint, callServer, detectLang1
+
 
 def from_file(filename, requestOptions={}):
     '''

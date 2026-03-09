@@ -104,8 +104,14 @@ Example usage as python client:
 
 """
 
-import sys, os, getopt, time, codecs, re
+import codecs
+import getopt
+import os
+import re
+import sys
+import time
 from pathlib import Path
+
 try:
     unicode_string = unicode 
     binary_string = str
@@ -128,18 +134,18 @@ except ImportError:
 if sys.version_info[0] < 3:
     open = codecs.open
 
-import requests
-import socket 
-import tempfile
-import hashlib
-import platform
-from subprocess import Popen
-from subprocess import STDOUT
-from os import walk
-import signal
-import logging
-import io
 import ctypes
+import hashlib
+import io
+import logging
+import platform
+import signal
+import socket
+import tempfile
+from os import walk
+from subprocess import STDOUT, Popen
+
+import requests
 
 log_path = os.getenv('TIKA_LOG_PATH', tempfile.gettempdir())
 log_file = os.path.join(log_path, os.getenv('TIKA_LOG_FILE', 'tika.log'))

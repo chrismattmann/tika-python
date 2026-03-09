@@ -15,11 +15,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# pytest --benchmark-enable --benchmark-timer=time.process_time tests/test_benchmark.py
-
-from pathlib import Path
-import zlib
+# pytest --benchmark-enable --benchmark-timer=time.process_time tika/tests/test_benchmark.py
+import os
 import gzip
+from pathlib import Path
+import unittest
+import zlib
 from http import HTTPStatus
 
 import tika.parser

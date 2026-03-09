@@ -16,7 +16,8 @@
 # limitations under the License.
 # 
 
-from .tika import doTranslate1, callServer, Translator, ServerEndpoint
+from .tika import ServerEndpoint, Translator, callServer, doTranslate1
+
 
 def from_file(filename, srcLang, destLang, serverEndpoint=ServerEndpoint, requestOptions={}):
     '''

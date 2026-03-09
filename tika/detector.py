@@ -16,7 +16,8 @@
 # limitations under the License.
 # 
 
-from .tika import detectType1, callServer, ServerEndpoint
+from .tika import ServerEndpoint, callServer, detectType1
+
 
 def from_file(filename, config_path=None, requestOptions={}):
     '''
