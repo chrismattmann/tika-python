@@ -25,7 +25,9 @@
 
 import csv
 import unittest
+
 import tika.parser
+
 
 class CreateTest(unittest.TestCase):
     "test for file types"

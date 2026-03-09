@@ -16,11 +16,10 @@
 # limitations under the License.
 #
 # pytest --benchmark-enable --benchmark-timer=time.process_time tika/tests/test_benchmark.py
-# pytest --benchmark-enable --benchmark-timer=time.process_time tika/tests/test_benchmark.py
+import gzip
 import os
 import unittest
 import zlib
-import gzip
 from http import HTTPStatus
 
 import tika.parser

@@ -16,9 +16,12 @@
 # limitations under the License.
 #
 
-from tika import parser
 from io import StringIO
+
 from bs4 import BeautifulSoup
+
+from tika import parser
+
 
 def text_from_pdf_pages(filename):
     pages_txt = []

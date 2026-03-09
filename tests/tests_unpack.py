@@ -2,6 +2,7 @@
 
 import unittest
 from tempfile import NamedTemporaryFile
+
 from tika import unpack
 
 

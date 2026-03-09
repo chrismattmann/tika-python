@@ -18,6 +18,7 @@
 
 from .tika import getConfig
 
+
 def getParsers():
     return getConfig('parsers')[1]
 
