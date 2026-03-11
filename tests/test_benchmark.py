@@ -15,10 +15,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# pytest --benchmark-enable --benchmark-timer=time.process_time tika/tests/test_benchmark.py
-# pytest --benchmark-enable --benchmark-timer=time.process_time tika/tests/test_benchmark.py
-import os
-import unittest
+# pytest --benchmark-enable --benchmark-timer=time.process_time tests/test_benchmark.py
+
+from pathlib import Path
 import zlib
 import gzip
 from http import HTTPStatus
@@ -26,91 +25,73 @@ from http import HTTPStatus
 import tika.parser
 
 
+TEST_FILE_PATH = Path(__file__).parent / "files" / "rwservlet.pdf"
+HEADERS = {"Accept-Encoding": "gzip, deflate"}
+
+
 def test_local_binary(benchmark):
     """parse file binary"""
-    file = os.path.join(os.path.dirname(__file__), 'files', 'rwservlet.pdf')
-    response = benchmark(tika_from_binary, file)
-
-    assert response['status'] == HTTPStatus.OK
+    response = benchmark(tika_from_binary, TEST_FILE_PATH)
+    assert response["status"] == HTTPStatus.OK
 
 
 def test_parser_buffer(benchmark):
     """example how to send gzip file"""
-    file = os.path.join(os.path.dirname(__file__), 'files', 'rwservlet.pdf')
-    response = benchmark(tika_from_buffer, file)
-
-    assert response['status'] == HTTPStatus.OK
+    response = benchmark(tika_from_buffer, TEST_FILE_PATH)
+    assert response["status"] == HTTPStatus.OK
 
 
 def test_parser_buffer_zlib_input(benchmark):
     """example how to send gzip file"""
-    file = os.path.join(os.path.dirname(__file__), 'files', 'rwservlet.pdf')
-
-    response = benchmark(tika_from_buffer_zlib, file)
-
-    assert response['status'] == HTTPStatus.OK
+    response = benchmark(tika_from_buffer_zlib, TEST_FILE_PATH)
+    assert response["status"] == HTTPStatus.OK
 
 
 def test_parser_buffer_gzip_input(benchmark):
     """parse file binary"""
-    file = os.path.join(os.path.dirname(__file__), 'files', 'rwservlet.pdf')
-    response = benchmark(tika_from_buffer_gzip, file)
-
-    assert response['status'] == HTTPStatus.OK
+    response = benchmark(tika_from_buffer_gzip, TEST_FILE_PATH)
+    assert response["status"] == HTTPStatus.OK
 
 
 def test_local_binary_with_gzip_output(benchmark):
     """parse file binary"""
-    file = os.path.join(os.path.dirname(__file__), 'files', 'rwservlet.pdf')
-    response = benchmark(tika_from_binary, file, headers={'Accept-Encoding': 'gzip, deflate'})
-
-    assert response['status'] == HTTPStatus.OK
+    response = benchmark(tika_from_binary, TEST_FILE_PATH, headers=HEADERS)
+    assert response["status"] == HTTPStatus.OK
 
 
 def test_parser_buffer_with_gzip_output(benchmark):
     """example how to send gzip file"""
-    file = os.path.join(os.path.dirname(__file__), 'files', 'rwservlet.pdf')
-    response = benchmark(tika_from_buffer, file, headers={'Accept-Encoding': 'gzip, deflate'})
-
-    assert response['status'] == HTTPStatus.OK
+    response = benchmark(tika_from_buffer, TEST_FILE_PATH, headers=HEADERS)
+    assert response["status"] == HTTPStatus.OK
 
 
 def test_parser_buffer_zlib_input_and_gzip_output(benchmark):
     """example how to send gzip file"""
-    file = os.path.join(os.path.dirname(__file__), 'files', 'rwservlet.pdf')
-
-    response = benchmark(tika_from_buffer_zlib, file, headers={'Accept-Encoding': 'gzip, deflate'})
-
-    assert response['status'] == HTTPStatus.OK
+    response = benchmark(tika_from_buffer_zlib, TEST_FILE_PATH, headers=HEADERS)
+    assert response["status"] == HTTPStatus.OK
 
 
 def test_parser_buffer_gzip_input_and_gzip_output(benchmark):
     """parse file binary"""
-    file = os.path.join(os.path.dirname(__file__), 'files', 'rwservlet.pdf')
-    response = benchmark(tika_from_buffer_gzip, file, headers={'Accept-Encoding': 'gzip, deflate'})
-
-    assert response['status'] == HTTPStatus.OK
+    response = benchmark(tika_from_buffer_gzip, TEST_FILE_PATH, headers=HEADERS)
+    assert response["status"] == HTTPStatus.OK
 
 
 def tika_from_buffer_zlib(file, headers=None):
-    with open(file, 'rb') as file_obj:
+    with open(file, "rb") as file_obj:
         return tika.parser.from_buffer(zlib.compress(file_obj.read()), headers=headers)
 
 
 def tika_from_buffer_gzip(file, headers=None):
-    with open(file, 'rb') as file_obj:
+    with open(file, "rb") as file_obj:
         return tika.parser.from_buffer(gzip.compress(file_obj.read()), headers=headers)
 
 
 def tika_from_buffer(file, headers=None):
-    with open(file, 'rb') as file_obj:
+    with open(file, "rb") as file_obj:
         return tika.parser.from_buffer(file_obj.read(), headers=headers)
 
 
 def tika_from_binary(file, headers=None):
-    with open(file, 'rb') as file_obj:
+    with open(file, "rb") as file_obj:
         return tika.parser.from_file(file_obj, headers=headers)
-
-
-if __name__ == '__main__':
-    unittest.main()
