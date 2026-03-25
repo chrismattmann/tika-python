@@ -15,58 +15,57 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import unittest
+from pathlib import Path
 from http import HTTPStatus
 
 import tika.parser
 import tika.tika
 
 
-class CreateTest(unittest.TestCase):
-    """test for file types"""
-
-    def test_remote_pdf(self):
-        """parse remote PDF"""
-        self.assertTrue(tika.parser.from_file(
-            'https://upload.wikimedia.org/wikipedia/commons/4/42/Article_feedback_flow_B_-_Thank_editors.pdf'))
-
-    def test_remote_html(self):
-        """parse remote HTML"""
-        self.assertTrue(tika.parser.from_file('http://neverssl.com/index.html'))
-
-    def test_remote_mp3(self):
-        """parse remote mp3"""
-        self.assertTrue(tika.parser.from_file(
-            'https://archive.org/download/Ainst-Spaceshipdemo.mp3/Ainst-Spaceshipdemo.mp3'))
-
-    def test_remote_jpg(self):
-        """parse remote jpg"""
-        self.assertTrue(tika.parser.from_file(
-            'https://upload.wikimedia.org/wikipedia/commons/b/b7/X_logo.jpg'))
-
-    def test_local_binary(self):
-        """parse file binary"""
-        file = os.path.join(os.path.dirname(__file__), 'files', 'rwservlet.pdf')
-        with open(file, 'rb') as file_obj:
-            self.assertTrue(tika.parser.from_file(file_obj))
-
-    def test_local_buffer(self):
-        response = tika.parser.from_buffer('Good evening, Dave')
-        self.assertEqual(response['status'], HTTPStatus.OK)
-
-    def test_local_path(self):
-        """parse file path"""
-        file = os.path.join(os.path.dirname(__file__), 'files', 'rwservlet.pdf')
-        self.assertTrue(tika.parser.from_file(file))
-
-    def test_kill_server(self):
-        """parse some file then kills server"""
-        file = os.path.join(os.path.dirname(__file__), 'files', 'rwservlet.pdf')
-        with open(file, 'rb') as file_obj:
-            tika.parser.from_file(file_obj)
-        self.assertIsNone(tika.tika.killServer())
+TEST_FILE_PATH = Path(__file__).parent / "files" / "rwservlet.pdf"
 
 
-if __name__ == '__main__':
-    unittest.main()
+def test_remote_pdf():
+    """parse remote PDF"""
+    assert tika.parser.from_file(
+        "https://upload.wikimedia.org/wikipedia/commons/4/42/Article_feedback_flow_B_-_Thank_editors.pdf")
+
+
+def test_remote_html():
+    """parse remote HTML"""
+    assert tika.parser.from_file("http://neverssl.com/index.html")
+
+
+def test_remote_mp3():
+    """parse remote mp3"""
+    assert tika.parser.from_file(
+        "https://archive.org/download/Ainst-Spaceshipdemo.mp3/Ainst-Spaceshipdemo.mp3")
+
+
+def test_remote_jpg():
+    """parse remote jpg"""
+    assert tika.parser.from_file(
+        "https://upload.wikimedia.org/wikipedia/commons/b/b7/X_logo.jpg")
+
+
+def test_local_binary():
+    """parse file binary"""
+    with open(TEST_FILE_PATH, "rb") as file_obj:
+        assert tika.parser.from_file(file_obj)
+
+
+def test_local_buffer():
+    response = tika.parser.from_buffer("Good evening, Dave")
+    assert response["status"] == HTTPStatus.OK
+
+
+def test_local_path():
+    """parse file path"""
+    assert tika.parser.from_file(str(TEST_FILE_PATH))
+
+
+def test_kill_server():
+    """parse some file then kills server"""
+    with open(TEST_FILE_PATH, "rb") as file_obj:
+        tika.parser.from_file(file_obj)
+    assert tika.tika.killServer() is None
