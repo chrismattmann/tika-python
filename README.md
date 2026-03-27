@@ -58,7 +58,6 @@ Testing it out
 Parser Interface (backwards compat prior to REST)
 -------------------------------------------------
 ```python
-#!/usr/bin/env python
 import tika
 tika.initVM()
 from tika import parser
@@ -79,8 +78,6 @@ The parser interface needs the following environment variable set on the console
 ```export PYTHONIOENCODING=utf8```
 
 ```python
-#!/usr/bin/env python
-import tika
 from tika import parser
 parsed = parser.from_file('/path/to/file')
 print(parsed["metadata"])
@@ -96,34 +93,35 @@ string_parsed = parser.from_buffer('Good evening, Dave', 'http://tika:9998/tika'
 ```
 
 You can also pass a binary stream
-```
+
+```python
 with open(file, 'rb') as file_obj:
     response = tika.parser.from_file(file_obj)
 ```
 
 Gzip compression
 ---------------------
-Since Tika 1.24.1 gzip compression of input and output streams is allowed. 
+Since Tika 1.24.1 gzip compression of input and output streams is allowed.
 
 Input compression can be achieved with gzip or zlib:
-```
-    import zlib 
+```python
+import zlib
 
-    with open(file, 'rb') as file_obj:
-        return tika.parser.from_buffer(zlib.compress(file_obj.read()))
+with open(file, 'rb') as file_obj:
+    return tika.parser.from_buffer(zlib.compress(file_obj.read()))
 
 ...
 
-    import gzip
- 
-    with open(file, 'rb') as file_obj:
-        return tika.parser.from_buffer(gzip.compress(file_obj.read()))
+import gzip
+
+with open(file, 'rb') as file_obj:
+    return tika.parser.from_buffer(gzip.compress(file_obj.read()))
 ```
 
 And output with the header:
-```
-    with open(file, 'rb') as file_obj:
-        return tika.parser.from_file(file_obj, headers={'Accept-Encoding': 'gzip, deflate'})
+```python
+with open(file, 'rb') as file_obj:
+    return tika.parser.from_file(file_obj, headers={'Accept-Encoding': 'gzip, deflate'})
 ```
 
 Specify Output Format To XHTML
@@ -136,8 +134,6 @@ The parser interface needs the following environment variable set on the console
 ```export PYTHONIOENCODING=utf8```
 
 ```python
-#!/usr/bin/env python
-import tika
 from tika import parser
 parsed = parser.from_file('/path/to/file', xmlContent=True)
 print(parsed["metadata"])
@@ -153,8 +149,6 @@ call and internally returns back a tarball of metadata and text entries that
 is internally unpacked, reducing the wire load for extraction.
 
 ```python
-#!/usr/bin/env python
-import tika
 from tika import unpack
 parsed = unpack.from_file('/path/to/file')
 ```
@@ -165,8 +159,6 @@ The detect interface provides a IANA MIME type classification for the
 provided file.
 
 ```python
-#!/usr/bin/env python
-import tika
 from tika import detector
 print(detector.from_file('/path/to/file'))
 ```
@@ -178,8 +170,6 @@ configuration including what parsers, mime types, and detectors the
 server has been configured with.
 
 ```python
-#!/usr/bin/env python
-import tika
 from tika import config
 print(config.getParsers())
 print(config.getMimeTypes())
@@ -192,7 +182,6 @@ The language detection interface provides a 2 character language
 code texted based on the text in provided file.
 
 ```python
-#!/usr/bin/env python
 from tika import language
 print(language.from_file('/path/to/file'))
 ```
@@ -203,7 +192,6 @@ The translate interface translates the text automatically extracted
 by Tika from the source language to the destination language.
 
 ```python
-#!/usr/bin/env python
 from tika import translate
 print(translate.from_file('/path/to/spanish', 'es', 'en'))
 ```
@@ -215,6 +203,7 @@ Note you can also use a Parser and Detector
 a string or bytes buffer in Python and/or detect its MIME
 type. This is useful if you've already loaded
 the content into memory.
+
 ```python
 string_parsed = parser.from_buffer('Good evening, Dave')
 byte_data: bytes = b'B\xc3\xa4ume'
@@ -224,9 +213,10 @@ parsed = parser.from_buffer(io.BytesIO(byte_data))
 Using Client Only Mode
 ----------------------
 You can set Tika to use Client only mode by setting
+
 ```python
-import tika from tika
-tika.TikaClientOnly = True
+import tika.tika
+tika.tika.TikaClientOnly = True
 ```
 
 Then you can run any of the methods and it will fully
@@ -251,8 +241,8 @@ kill -9 PID
 ```
 
 ```python
-import tika.tika
 import os
+import tika.tika
 from tika import parser
 home = os.getenv('HOME')
 tika.tika.TikaServerClasspath = home + '/git/geotopicparser-utils/mime:'+home+'/git/geotopicparser-utils/models/polar'
