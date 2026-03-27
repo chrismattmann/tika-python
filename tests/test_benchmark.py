@@ -15,15 +15,12 @@
 # limitations under the License.
 #
 # pytest --benchmark-enable --benchmark-timer=time.process_time tika/tests/test_benchmark.py
-import os
 import gzip
-from pathlib import Path
-import unittest
 import zlib
 from http import HTTPStatus
+from pathlib import Path
 
 import tika.parser
-
 
 TEST_FILE_PATH = Path(__file__).parent / "files" / "rwservlet.pdf"
 HEADERS = {"Accept-Encoding": "gzip, deflate"}
