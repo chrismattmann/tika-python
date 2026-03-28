@@ -1,6 +1,0 @@
-setuptools
-requests
-coveralls
-pytest-cov
-memory_profiler
-beautifulsoup4==4.13.3
