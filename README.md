@@ -337,6 +337,7 @@ Contributors
 * Juan Elosua, TEGRA Cybersecurity Center
 * Carina de Oliveira Antunes, CERN
 * Ana Mensikova, JPL
+* Heinz-Alexander Fütterer, WZB Berlin Social Science Center
 
 Thanks
 ======
