@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# encoding: utf-8
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -15,15 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# pytest --benchmark-enable --benchmark-timer=time.process_time tests/test_benchmark.py
-
-from pathlib import Path
-import zlib
+# pytest --benchmark-enable --benchmark-timer=time.process_time tika/tests/test_benchmark.py
 import gzip
+import zlib
 from http import HTTPStatus
+from pathlib import Path
 
 import tika.parser
-
 
 TEST_FILE_PATH = Path(__file__).parent / "files" / "rwservlet.pdf"
 HEADERS = {"Accept-Encoding": "gzip, deflate"}

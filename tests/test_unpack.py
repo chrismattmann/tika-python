@@ -2,7 +2,6 @@ from tempfile import NamedTemporaryFile
 
 from tika import unpack
 
-
 # Test data
 TEXT_UTF8 = "Hello, world!! 😎 👽"
 TEXT_ASCII = "Hello, world!!"

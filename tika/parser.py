@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# encoding: utf-8
+
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -16,8 +16,10 @@
 # limitations under the License.
 #
 
-from .tika import parse1, callServer, ServerEndpoint
 import json
+
+from .tika import ServerEndpoint, callServer, parse1
+
 
 def from_file(filename, serverEndpoint=ServerEndpoint, service='all', xmlContent=False, headers=None, config_path=None, requestOptions={}, raw_response=False):
     '''

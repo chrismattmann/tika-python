@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# encoding: utf-8
+
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -19,13 +19,15 @@
 #https://docs.python.org/2/library/unittest.html
 #http://eli.thegreenplace.net/2011/08/02/python-unit-testing-parametrized-test-cases
 #public domain license reference: http://eli.thegreenplace.net/pages/code
- 
+
 #Run
 #python tika/tests/tests_params.py
 
 import csv
 import unittest
+
 import tika.parser
+
 
 class CreateTest(unittest.TestCase):
     "test for file types"
@@ -64,15 +66,15 @@ def test_suite():
         try:
             suite.addTest(CreateTest.parameterize(RemoteTest,param1=x))
         except IOError as e:
-            print(e.strerror)    
-    return suite        
+            print(e.strerror)
+    return suite
 
 def test_url():
     with open('tika/tests/arguments/test_remote_content.csv', 'r') as csvfile:
             urlread = csv.reader(csvfile)
             for url in urlread:
                 yield url[1]
-                
+
 
 
 if __name__ == '__main__':

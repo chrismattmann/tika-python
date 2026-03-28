@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# encoding: utf-8
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -17,12 +16,13 @@
 #
 # To run:
 # python tika/tests/memory_benchmark.py
+import gzip
 import os
 import zlib
-import gzip
+
+from memory_profiler import profile
 
 import tika.parser
-from memory_profiler import profile
 
 
 @profile

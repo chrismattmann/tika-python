@@ -1,4 +1,3 @@
-# encoding: utf-8
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -17,6 +16,7 @@
 __version__ = "3.1.0"
 
 from pkgutil import extend_path
+
 __path__ = extend_path(__path__, __name__)
 
 def initVM():
