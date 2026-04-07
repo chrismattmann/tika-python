@@ -665,12 +665,7 @@ def startServer(tikaServerJar, java_path = TikaJava, java_args = TikaJavaArgs, s
     global TikaServerProcess
     # Patch for Windows support
     if Windows:
-        if sys.version.startswith("2"):
-            # Python 2.x
-            TikaServerProcess = Popen(cmd_string, stdout=logFile, stderr=STDOUT, shell=True)
-        elif sys.version.startswith("3"):
-            # Python 3.x
-            TikaServerProcess = Popen(cmd_string, stdout=logFile, stderr=STDOUT, shell=True, start_new_session=True)
+        TikaServerProcess = Popen(cmd_string, stdout=logFile, stderr=STDOUT, shell=True, start_new_session=True)
     else:
         TikaServerProcess = Popen(cmd_string, stdout=logFile, stderr=STDOUT, shell=True, preexec_fn=os.setsid)
 
@@ -706,17 +701,8 @@ def killServer():
         time.sleep(1)
         # patch to support subprocess killing for windows
         if Windows:
-            if sys.version.startswith("2"):
-                # Python 2.x
-                PROCESS_TERMINATE = 1
-                handle = ctypes.windll.kernel32.OpenProcess(PROCESS_TERMINATE, False, TikaServerProcess.pid)
-                ctypes.windll.kernel32.TerminateProcess(handle, -1)
-                ctypes.windll.kernel32.CloseHandle(handle)
-                time.sleep(1)
-            elif sys.version.startswith("3"):
-                # Python 3.x
-                os.kill(TikaServerProcess.pid, signal.SIGTERM)
-                time.sleep(1)
+            os.kill(TikaServerProcess.pid, signal.SIGTERM)
+            time.sleep(1)
         else:
             try:
                 os.killpg(os.getpgid(TikaServerProcess.pid), signal.SIGTERM)
@@ -920,12 +906,7 @@ if __name__ == '__main__':
     resp = main(sys.argv)
 
     # Set encoding of the terminal to UTF-8
-    if sys.version.startswith("2"):
-        # Python 2.x
-        out = codecs.getwriter("UTF-8")(sys.stdout)
-    elif sys.version.startswith("3"):
-        # Python 3.x
-        out = codecs.getwriter("UTF-8")(sys.stdout.buffer)
+    out = codecs.getwriter("UTF-8")(sys.stdout.buffer)
 
     if type(resp) == list:
         out.write('\n'.join([r[1] for r in resp]))
