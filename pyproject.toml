@@ -8,7 +8,7 @@ description = "Apache Tika Python library"
 readme = "README.md"
 keywords = [ "tika", "digital", "babel fish", "apache" ]
 license = "Apache-2.0"
-authors = [ { name = "Chris Mattmann", email = "chris.a.mattmann@jpl.nasa.gov" } ]
+authors = [ { name = "Chris Mattmann", email = "chris.mattmann@gmail.com" } ]
 requires-python = ">=3.10"
 classifiers = [
   "Development Status :: 3 - Alpha",
