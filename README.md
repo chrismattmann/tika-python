@@ -20,11 +20,6 @@ Installation (with pip)
 -----------------------
 1. `pip install tika`
 
-Installation (without pip)
---------------------------
-1. `python setup.py build`
-2. `python setup.py install`
-
 Airgap Environment Setup
 ------------------------
 To get this working in a disconnected environment, download a tika server file (both tika-server.jar and tika-server.jar.md5, which can be found [here](https://repo1.maven.org/maven2/org/apache/tika/tika-server-standard/)) and set the TIKA_SERVER_JAR environment variable to TIKA_SERVER_JAR="file:///<yourpath>/tika-server-standard.jar" which successfully tells `python-tika` to "download" this file and move it to `/tmp/tika-server-standard.jar` and run as background process.
