@@ -1,0 +1,17 @@
+# dependabot
+# Ref: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+# ------------------------------------------------------------------------------
+
+version: 2
+updates:
+- package-ecosystem: github-actions
+  directory: /
+  schedule:
+    interval: quarterly
+  groups:
+    # create a single pull request containing all updates for GitHub Actions
+    github-actions:
+      patterns:
+      - '*'
+  cooldown:
+    default-days: 7
