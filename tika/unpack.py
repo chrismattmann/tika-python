@@ -22,11 +22,7 @@ from sys import version_info
 
 from .tika import ServerEndpoint, callServer, parse1
 
-# Python 3 introduced .readable() to tarfile extracted files objects - this
-# is required to wrap a TextIOWrapper around the object. However, wrapping
-# with TextIOWrapper is only required for csv.reader() in Python 3, so the
-# tarfile returned object can be used as is in earlier versions.
-_text_wrapper = TextIOWrapper if version_info.major >= 3 else lambda x: x
+_text_wrapper = TextIOWrapper
 
 
 def from_file(filename, serverEndpoint=ServerEndpoint, requestOptions={}):
@@ -80,32 +76,18 @@ def _parse(tarOutput):
 
         metadataMember = tarFile.getmember("__METADATA__")
         if not metadataMember.issym() and metadataMember.isfile():
-            if version_info.major >= 3:
-                with closing(_text_wrapper(tarFile.extractfile(metadataMember), encoding=tarFile.encoding)) as metadataFile:
-                    metadataReader = csv.reader(_truncate_nulls(metadataFile))
-                    for metadataLine in metadataReader:
-                        # each metadata line comes as a key-value pair, with list values
-                        # returned as extra values in the line - convert single values
-                        # to non-list values to be consistent with parser metadata
-                        assert len(metadataLine) >= 2
+            with closing(_text_wrapper(tarFile.extractfile(metadataMember), encoding=tarFile.encoding)) as metadataFile:
+                metadataReader = csv.reader(_truncate_nulls(metadataFile))
+                for metadataLine in metadataReader:
+                    # each metadata line comes as a key-value pair, with list values
+                    # returned as extra values in the line - convert single values
+                    # to non-list values to be consistent with parser metadata
+                    assert len(metadataLine) >= 2
 
-                        if len(metadataLine) > 2:
-                            metadata[metadataLine[0]] = metadataLine[1:]
-                        else:
-                            metadata[metadataLine[0]] = metadataLine[1]
-            else:
-                with closing(_text_wrapper(tarFile.extractfile(metadataMember))) as metadataFile:
-                    metadataReader = csv.reader(_truncate_nulls(metadataFile))
-                    for metadataLine in metadataReader:
-                        # each metadata line comes as a key-value pair, with list values
-                        # returned as extra values in the line - convert single values
-                        # to non-list values to be consistent with parser metadata
-                        assert len(metadataLine) >= 2
-
-                        if len(metadataLine) > 2:
-                            metadata[metadataLine[0]] = metadataLine[1:]
-                        else:
-                            metadata[metadataLine[0]] = metadataLine[1]
+                    if len(metadataLine) > 2:
+                        metadata[metadataLine[0]] = metadataLine[1:]
+                    else:
+                        metadata[metadataLine[0]] = metadataLine[1]
 
 
         # get the content
@@ -115,12 +97,8 @@ def _parse(tarOutput):
 
             contentMember = tarFile.getmember("__TEXT__")
             if not contentMember.issym() and contentMember.isfile():
-                if version_info.major >= 3:
-                    with closing(_text_wrapper(tarFile.extractfile(contentMember), encoding='utf8')) as content_file:
-                        content = content_file.read()
-                else:
-                    with closing(tarFile.extractfile(contentMember)) as content_file:
-                        content = content_file.read().decode('utf8')
+                with closing(_text_wrapper(tarFile.extractfile(contentMember), encoding='utf8')) as content_file:
+                    content = content_file.read()
 
         # get the remaining files as attachments
         attachments = {}
