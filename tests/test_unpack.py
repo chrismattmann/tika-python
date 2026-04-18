@@ -1,5 +1,3 @@
-from tempfile import NamedTemporaryFile
-
 from tika import unpack
 
 # Test data
@@ -7,24 +5,20 @@ TEXT_UTF8 = "Hello, world!! 😎 👽"
 TEXT_ASCII = "Hello, world!!"
 
 
-def test_utf8():
+def test_utf8(tmp_path):
     """Test UTF-8 encoding"""
-    with NamedTemporaryFile("w+b", prefix="tika-python", suffix=".txt", dir="/tmp") as f:
-        f.write(TEXT_UTF8.encode("utf8"))
-        f.flush()
-        f.seek(0)
-        parsed = unpack.from_file(f.name)
-        assert parsed["content"].strip() == TEXT_UTF8
+    test_file = tmp_path / "test_utf8.txt"
+    test_file.write_bytes(TEXT_UTF8.encode("utf8"))
+    parsed = unpack.from_file(str(test_file))
+    assert parsed["content"].strip() == TEXT_UTF8
 
 
-def test_ascii():
+def test_ascii(tmp_path):
     """Test ASCII encoding"""
-    with NamedTemporaryFile("w+t", prefix="tika-python", suffix=".txt", dir="/tmp") as f:
-        f.write(TEXT_ASCII)
-        f.flush()
-        f.seek(0)
-        parsed = unpack.from_file(f.name)
-        assert parsed["content"].strip() == TEXT_ASCII
+    test_file = tmp_path / "test_ascii.txt"
+    test_file.write_text(TEXT_ASCII)
+    parsed = unpack.from_file(str(test_file))
+    assert parsed["content"].strip() == TEXT_ASCII
 
 
 def test_from_buffer():
