@@ -34,14 +34,16 @@ dependencies = [
   "requests",
 ]
 
-[project.optional-dependencies]
-all = [
-  "tika[tests]",
-]
+[dependency-groups]
 tests = [
   "memory-profiler",
   "pytest-benchmark",
   "pytest-cov",
+]
+docs = [
+  "furo>=2025.12.19",
+  "myst-parser>=5.0",
+  "sphinx>=9.1",
 ]
 
 [project.urls]
