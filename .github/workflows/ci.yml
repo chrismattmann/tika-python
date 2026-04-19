@@ -7,6 +7,16 @@ on:
   pull_request:
 
 jobs:
+  lint:
+    runs-on: ubuntu-slim
+    steps:
+    - uses: actions/checkout@v6
+    - uses: actions/setup-python@v6
+      with:
+        python-version: "3.14"
+    # Ref: https://github.com/tox-dev/action-pre-commit-uv
+    - uses: tox-dev/action-pre-commit-uv@246b66536e366bb885f52d61983bf32f7c95e8b1 # 1.0.3
+
   test:
     runs-on: ubuntu-latest
     strategy:
