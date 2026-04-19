@@ -18,7 +18,6 @@ import csv
 import tarfile
 from contextlib import closing
 from io import BytesIO, TextIOWrapper
-from sys import version_info
 
 from .tika import ServerEndpoint, callServer, parse1
 
