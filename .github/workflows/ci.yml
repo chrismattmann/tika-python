@@ -35,6 +35,7 @@ jobs:
       with:
         flag-name: coverage-python-${{ matrix.python-version }}
         parallel: true
+        base-path: tika
 
   finish-coverage:
     needs: test
@@ -45,3 +46,4 @@ jobs:
       uses: coverallsapp/github-action@v2
       with:
         parallel-finished: true
+        base-path: tika
