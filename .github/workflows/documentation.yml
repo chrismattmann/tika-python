@@ -1,19 +1,14 @@
-# Simple workflow for deploying static content to GitHub Pages
 name: Documentation
 
 on:
-  # Runs on pushes targeting the default branch
   push:
     branches: ["master"]
-
+  workflow_call:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
-  contents: write
-  pages: write
-  id-token: write
+# Set permissions at the job level.
+permissions: {}
 
 # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
@@ -22,32 +17,43 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Single deploy job since we're just deploying
+  build:
+    name: Build documentation with Sphinx
+    runs-on: ubuntu-slim
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+          cache: 'pip'
+
+      - run: |
+          python -m pip install --upgrade pip
+          python -m pip install . --group=docs
+          python -m pip list
+
+      - run: |
+          sphinx-build --builder html docs/source/ docs/build/html
+
+      - name: Upload artifact (only on push to master)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: './docs/build/html'
+
   deploy:
+    name: Deploy documentation to GitHub Pages
+    needs: build
+    # Deploy only on push to master
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install . --group=docs
-      - name: Sphinx APIDoc
-        run: |
-          sphinx-apidoc -f -o docs/source/ .
-      - name: Sphinx build
-        run: |
-          sphinx-build -b html docs/source/ docs/build/html
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          # Upload entire repository
-          path: './docs/build/html'
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
