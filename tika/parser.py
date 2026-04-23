@@ -114,9 +114,17 @@ def _parse(output, service='all'):
         for n in js:
             if n != "X-TIKA:content":
                 if n in parsed["metadata"]:
-                    if not isinstance(parsed["metadata"][n], list):
-                        parsed["metadata"][n] = [parsed["metadata"][n]]
-                    parsed["metadata"][n].append(js[n])
+                    existing = parsed["metadata"][n]
+                    new_val = js[n]
+                    if isinstance(new_val, list):
+                        if isinstance(existing, list):
+                            existing.extend(new_val)
+                        else:
+                            parsed["metadata"][n] = [existing] + new_val
+                    elif isinstance(existing, list):
+                        existing.append(new_val)
+                    else:
+                        parsed["metadata"][n] = [existing, new_val]
                 else:
                     parsed["metadata"][n] = js[n]
 
