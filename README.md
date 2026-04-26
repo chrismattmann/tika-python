@@ -1,4 +1,5 @@
 [![Build Status](https://github.com/chrismattmann/tika-python/actions/workflows/ci.yml/badge.svg)](https://github.com/chrismattmann/tika-python/actions/workflows/ci.yml)
+[![Docs Status](https://github.com/chrismattmann/tika-python/actions/workflows/documentation.yml/badge.svg)](https://github.com/chrismattmann/tika-python/actions/workflows/documentation.yml)
 [![Coverage Status](https://coveralls.io/repos/github/chrismattmann/tika-python/badge.svg?branch=master)](https://coveralls.io/github/chrismattmann/tika-python?branch=master)
 
 tika-python
