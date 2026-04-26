@@ -1,0 +1,20 @@
+# pre-commit
+# Ref: https://pre-commit.com/#usage
+# ------------------------------------------------------------------------------
+
+default_language_version:
+  python: '3.14'
+
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
+  hooks:
+  - id: check-merge-conflict
+  - id: check-case-conflict
+  - id: check-ast
+  - id: debug-statements
+  - id: check-toml
+  - id: check-yaml
+  - id: end-of-file-fixer
+    exclude_types: [csv]
+  - id: trailing-whitespace
