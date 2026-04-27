@@ -1,8 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
+import json
+
 from http import HTTPStatus
 
+import pytest
+
 from tika import parser
+from tika.parser import _parse
 
 
 def test_remote_pdf():
@@ -42,4 +47,26 @@ def test_local_buffer():
 def test_local_path(test_file_path):
     """parse file path"""
     assert parser.from_file(str(test_file_path))
+
+
+@pytest.mark.parametrize(
+    "first,second,expected",
+    [
+        ("a", "b", ["a", "b"]),
+        ("a", ["b", "c"], ["a", "b", "c"]),
+        (["a", "b"], "c", ["a", "b", "c"]),
+        (["a", "b"], ["c", "d"], ["a", "b", "c", "d"]),
+    ],
+    ids=["scalar+scalar", "scalar+list", "list+scalar", "list+list"],
+)
+def test_metadata_merge_across_embedded_objects(first, second, expected):
+    """When the same metadata key appears in multiple embedded objects (nested
+    PDFs, archives, ...), values must be merged into a single flat list rather
+    than appended as nested lists."""
+    rmeta = [
+        {"X-TIKA:content": "first", "key": first},
+        {"X-TIKA:content": "second", "key": second},
+    ]
+    result = _parse((HTTPStatus.OK, json.dumps(rmeta)))
+    assert result["metadata"]["key"] == expected
 
