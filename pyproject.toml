@@ -49,6 +49,7 @@ docs = [
 [project.urls]
 homepage = "http://github.com/chrismattmann/tika-python"
 repository = "http://github.com/chrismattmann/tika-python.git"
+documentation = "https://chrismattmann.github.io/tika-python"
 
 [project.scripts]
 tika-python = "tika.tika:main"
