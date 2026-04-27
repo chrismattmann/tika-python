@@ -770,12 +770,10 @@ def _urlretrieve(
         )
         response.raise_for_status()
 
-        bytes_downloaded = 0
         with open(filename, "wb") as f:
             for chunk in response.iter_content(chunk_size=chunk_size):
                 if chunk:  # Filter out keep-alive chunks
                     f.write(chunk)
-                    bytes_downloaded += len(chunk)
 
         return filename
 

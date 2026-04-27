@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import json
+
 from http import HTTPStatus
 
 import pytest

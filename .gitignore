@@ -1,14 +1,25 @@
-/.project
-/.pydevproject
-/tika.egg-info
-/build
-/dist
-*.log
-/.settings/
-/tika/*.pyc
-/tika/*/*.pyc
-.DS_Store
-/setup.cfg
+# IDE and project files
+.project
+.pydevproject
 .idea
+.settings/
+
+# Python build and distribution
+build/
+dist/
+*.pyc
 __pycache__/
+tika.egg-info
+
+# Logs and coverage
+*.log
 .coverage
+
+# macOS metadata
+.DS_Store
+
+# Configuration
+setup.cfg
+
+# Sphinx documentation
+docs/build/
