@@ -26,7 +26,7 @@ def text_from_pdf_pages(filename):
 
     # Read PDF file
     data = parser.from_file(filename, xmlContent=True)
-    xhtml_data = BeautifulSoup(data['content'])
+    xhtml_data = BeautifulSoup(data['content'], features="html.parser")
     for i, content in enumerate(xhtml_data.find_all('div', attrs={'class': 'page'})):
         # Parse PDF data using TIKA (xml/html)
         # It's faster and safer to create a new buffer than truncating it
