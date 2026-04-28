@@ -37,6 +37,7 @@ dependencies = [
 [dependency-groups]
 tests = [
   "memory-profiler",
+  "pytest>=9.0.3",
   "pytest-benchmark",
   "pytest-cov",
 ]
@@ -61,6 +62,15 @@ packages.find.include = [
 [tool.setuptools.dynamic]
 version = {attr = "tika.__version__"}
 
-[tool.coverage.run]
-source = [ "tika" ]
-branch = true
+[tool.pytest]
+minversion = "9.0"
+addopts = [ "-ra", "--showlocals", "--strict-config", "--strict-markers" ]
+log_level = "INFO"
+xfail_strict = true
+testpaths = [ "tests" ]
+
+[tool.coverage]
+run.source = [ "tika" ]
+run.branch = true
+report.skip_covered = true
+report.show_missing = true
