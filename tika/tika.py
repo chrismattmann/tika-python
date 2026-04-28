@@ -56,7 +56,6 @@ or:
     detected = detector.from_buffer('some buffered content', config_path='/path/to/configfile')
 
 '''
-import types
 
 USAGE = """
 tika.py [-v] [-e] [-o <outputDir>] [--server <TikaServerEndpoint>] [--install <UrlToTikaServerJar>] [--port <portNumber>] <command> <option> <urlOrPathToFile>
@@ -723,12 +722,7 @@ def toFilename(url):
 
 
 def _is_file_object(f):
-    try:
-        file_types = (types.FileType, io.IOBase)
-    except AttributeError:
-        file_types = (io.IOBase,)
-
-    return isinstance(f, file_types)
+    return isinstance(f, io.IOBase)
 
 
 def _urlretrieve(
