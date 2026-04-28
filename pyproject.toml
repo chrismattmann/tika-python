@@ -30,7 +30,7 @@ classifiers = [
 ]
 dynamic = [ "version" ]
 dependencies = [
-  "beautifulsoup4==4.13.3",
+  "beautifulsoup4>=4.13.3",
   "requests",
 ]
 
