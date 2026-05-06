@@ -1,7 +1,7 @@
 Tika
 Tika supports dozens of document types. Each should be tested when extended
 Client applications manage event streams, so test stream type/doc type combinations
- 
+
 Document types
 pdf - http://www.fns.usda.gov/sites/default/files/snap/2014-SNAP-Retailer-Management-Annual-Report.pdf
 pdf - http://dcra.dc.gov/sites/default/files/dc/sites/dcra/publication/attachments/ai_NuisanceAbatement.pdf
