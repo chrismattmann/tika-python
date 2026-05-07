@@ -1,9 +1,14 @@
-[![Build Status](https://github.com/chrismattmann/tika-python/actions/workflows/ci.yml/badge.svg)](https://github.com/chrismattmann/tika-python/actions/workflows/ci.yml)
-[![Docs Status](https://github.com/chrismattmann/tika-python/actions/workflows/documentation.yml/badge.svg)](https://github.com/chrismattmann/tika-python/actions/workflows/documentation.yml)
-[![Coverage Status](https://coveralls.io/repos/github/chrismattmann/tika-python/badge.svg?branch=master)](https://coveralls.io/github/chrismattmann/tika-python?branch=master)
-
 tika-python
 ===========
+
+[![PyPI Downloads](https://static.pepy.tech/badge/tika)](https://pepy.tech/projects/tika)
+[![Latest release](https://img.shields.io/pypi/v/tika.svg?style=flat)](https://pypi.python.org/pypi/tika/)
+[![License](https://img.shields.io/github/license/chrismattmann/tika-python?style=flat)](https://github.com/chrismattmann/tika-python/blob/master/LICENSE.txt)
+
+[![Build Status](https://github.com/chrismattmann/tika-python/actions/workflows/ci.yml/badge.svg)](https://github.com/chrismattmann/tika-python/actions/workflows/ci.yml)
+[![Coverage Status](https://coveralls.io/repos/github/chrismattmann/tika-python/badge.svg?branch=master)](https://coveralls.io/github/chrismattmann/tika-python?branch=master)
+[![Docs Status](https://github.com/chrismattmann/tika-python/actions/workflows/documentation.yml/badge.svg)](https://github.com/chrismattmann/tika-python/actions/workflows/documentation.yml)
+
 A Python port of the [Apache Tika](http://tika.apache.org/)
 library that makes Tika available using the
 [Tika REST Server](https://cwiki.apache.org/confluence/display/TIKA/TikaServer).
