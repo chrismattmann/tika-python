@@ -25,4 +25,3 @@ def getMimeTypes():
 
 def getDetectors():
     return getConfig('detectors')[1]
-

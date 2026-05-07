@@ -42,4 +42,3 @@ def test_local_buffer():
 def test_local_path(test_file_path):
     """parse file path"""
     assert parser.from_file(str(test_file_path))
-

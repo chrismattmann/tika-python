@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# 
+#
 
 from .tika import ServerEndpoint, Translator, callServer, doTranslate1
 
@@ -38,7 +38,7 @@ def from_buffer(string, srcLang, destLang, serverEndpoint=ServerEndpoint, reques
     :param serverEndpoint:
     :return:
     '''
-    status, response = callServer('put', ServerEndpoint, '/translate/all/'+Translator+'/'+srcLang+'/'+destLang, 
+    status, response = callServer('put', ServerEndpoint, '/translate/all/'+Translator+'/'+srcLang+'/'+destLang,
                                   string, {'Accept': 'text/plain'}, False, requestOptions=requestOptions)
     return response
 
@@ -51,7 +51,7 @@ def auto_from_file(filename, destLang, serverEndpoint=ServerEndpoint, requestOpt
     :return:
     '''
     jsonOutput = doTranslate1(destLang, filename, serverEndpoint, requestOptions=requestOptions)
-    return jsonOutput[1]    
+    return jsonOutput[1]
 
 def auto_from_buffer(string, destLang, serverEndpoint=ServerEndpoint, requestOptions={}):
     '''
@@ -61,7 +61,6 @@ def auto_from_buffer(string, destLang, serverEndpoint=ServerEndpoint, requestOpt
     :param serverEndpoint: Tika server end point (Optional)
     :return:
     '''
-    status, response = callServer('put', ServerEndpoint, '/translate/all/'+Translator+'/'+destLang, 
+    status, response = callServer('put', ServerEndpoint, '/translate/all/'+Translator+'/'+destLang,
                                   string, {'Accept': 'text/plain'}, False, requestOptions=requestOptions)
     return response
-
