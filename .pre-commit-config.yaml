@@ -18,3 +18,9 @@ repos:
   - id: end-of-file-fixer
     exclude_types: [csv]
   - id: trailing-whitespace
+
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: 6fec9b7edb08fd9989088709d864a7826dc74e80  # frozen: v0.15.12
+  hooks:
+  - id: ruff-check
+    args: [--fix, --show-fixes, --exit-non-zero-on-fix]
