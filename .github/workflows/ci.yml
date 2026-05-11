@@ -44,7 +44,7 @@ jobs:
 
     - name: Run tests
       run: |
-        coverage run -m pytest
+        coverage run -m pytest --benchmark-disable
         coverage report
 
     - name: Coveralls parallel
