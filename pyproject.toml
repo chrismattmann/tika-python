@@ -74,3 +74,13 @@ run.source = [ "tika" ]
 run.branch = true
 report.skip_covered = true
 report.show_missing = true
+
+[tool.ruff]
+src = [ "tika", "tests" ]
+lint.select = [
+  "E4",   # pycodestyle
+  "E7",   # pycodestyle
+  "E9",   # pycodestyle
+  "F",    # pyflakes
+  "I",    # isort
+]
