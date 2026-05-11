@@ -18,3 +18,9 @@ repos:
   - id: end-of-file-fixer
     exclude_types: [csv]
   - id: trailing-whitespace
+
+- repo: https://github.com/python-jsonschema/check-jsonschema
+  rev: f805888065fdb6162e1f800e50bb9460cbd223d6  # frozen: 0.37.2
+  hooks:
+  - id: check-dependabot
+  - id: check-github-workflows
