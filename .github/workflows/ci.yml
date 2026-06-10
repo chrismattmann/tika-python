@@ -64,3 +64,6 @@ jobs:
       with:
         parallel-finished: true
         base-path: tika
+
+  docs:
+    uses: ./.github/workflows/documentation.yml
