@@ -10,12 +10,12 @@ jobs:
   lint:
     runs-on: ubuntu-slim
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - uses: actions/setup-python@v6
       with:
         python-version: "3.14"
     # Ref: https://github.com/tox-dev/action-pre-commit-uv
-    - uses: tox-dev/action-pre-commit-uv@246b66536e366bb885f52d61983bf32f7c95e8b1 # 1.0.3
+    - uses: tox-dev/action-pre-commit-uv@41a04ab74d5ec7ca33c8db8a59b6e3291d576033 # 1.0.4
 
   test:
     runs-on: ${{ matrix.os }}
@@ -28,7 +28,7 @@ jobs:
             python-version: "3.14"
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v6
