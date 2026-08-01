@@ -5,27 +5,24 @@ from http import HTTPStatus
 from tika import parser
 
 
-def test_remote_pdf():
+def test_remote_pdf(remote_fixture_base_url):
     """parse remote PDF"""
-    assert parser.from_file(
-        "https://upload.wikimedia.org/wikipedia/commons/4/42/Article_feedback_flow_B_-_Thank_editors.pdf")
+    assert parser.from_file(f"{remote_fixture_base_url}/remote.pdf")
 
 
-def test_remote_html():
+def test_remote_html(remote_fixture_base_url):
     """parse remote HTML"""
-    assert parser.from_file("http://nossl.sh")
+    assert parser.from_file(f"{remote_fixture_base_url}/remote.html")
 
 
-def test_remote_mp3():
+def test_remote_mp3(remote_fixture_base_url):
     """parse remote mp3"""
-    assert parser.from_file(
-        "https://archive.org/download/Ainst-Spaceshipdemo.mp3/Ainst-Spaceshipdemo.mp3")
+    assert parser.from_file(f"{remote_fixture_base_url}/remote.mp3")
 
 
-def test_remote_jpg():
+def test_remote_jpg(remote_fixture_base_url):
     """parse remote jpg"""
-    assert parser.from_file(
-        "https://upload.wikimedia.org/wikipedia/commons/b/b7/X_logo.jpg")
+    assert parser.from_file(f"{remote_fixture_base_url}/remote.jpg")
 
 
 def test_local_binary(test_file_path):
