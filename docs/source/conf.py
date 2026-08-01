@@ -50,6 +50,7 @@ apidoc_modules = [
 REPO_URL = "https://github.com/chrismattmann/tika-python"
 
 html_theme = "furo"
+html_static_path = ["_static"]
 
 html_theme_options = {
     "source_repository": REPO_URL,
