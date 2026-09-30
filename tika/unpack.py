@@ -31,12 +31,14 @@ _CONTENT_KEY = 'tk:content'
 
 def from_file(filename, serverEndpoint=ServerEndpoint, requestOptions={}):
     '''
-    Parse from file
+    Parse from file and unpack the documents embedded in it.
+
+    Returns a dict with ``content`` and ``metadata`` of the document and ``attachments``
+    mapping the name of each embedded document to its bytes, or ``{}`` when the server
+    returned nothing.
+
     :param filename: file
     :param serverEndpoint: Tika server end point (optional)
-    :return: dict with ``content`` and ``metadata`` of the document and ``attachments``
-             mapping the name of each embedded document to its bytes; ``{}`` when the
-             server returned nothing
     '''
     zipOutput = parse1('unpack', filename, serverEndpoint,
                        responseMimeType='application/zip',

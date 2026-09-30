@@ -38,14 +38,14 @@ Visit https://github.com/chrismattmann/tika-python to learn more about it.
     from tika import language
     print(language.from_file('/path/to/file'))
 
-***Tika-Python Configuration***
-You can now use custom configuration files. See https://tika.apache.org/1.18/configuring.html
-for details on writing configuration files. Configuration is set the first time the server is started.
-To use a configuration file with a parser, or detector:
+**Tika-Python Configuration**
+
+You can use a custom server configuration file: a JSON file with a ``server`` element since
+Apache Tika 4 (see https://tika.apache.org/docs/4.1.x/ for the format). Configuration is set
+the first time the server is started. To use a configuration file with a parser or detector::
+
     parsed = parser.from_file('/path/to/file', config_path='/path/to/configfile')
-or:
     detected = detector.from_file('/path/to/file', config_path='/path/to/configfile')
-or:
     detected = detector.from_buffer('some buffered content', config_path='/path/to/configfile')
 
 '''
@@ -533,7 +533,8 @@ def callServer(verb, serverEndpoint, service, data, headers, verbose=Verbose, ti
 
 def checkTikaServer(scheme="http", serverHost=ServerHost, port=Port, tikaServerJar=TikaServerJar, classpath=None, config_path=None):
     '''
-    Check that tika-server is running.  If not, download JAR file and start it up.
+    Check that tika-server is running.  If not, fetch the server distribution (see
+    ``ensureTikaServerJar``) and start it up.
     :param scheme: e.g. http or https
     :param serverHost:
     :param port:
