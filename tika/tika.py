@@ -38,13 +38,6 @@ Visit https://github.com/chrismattmann/tika-python to learn more about it.
     from tika import language
     print(language.from_file('/path/to/file'))
 
-**Use Tika Translate**::
-
-   from tika import translate
-   print(translate.from_file('/path/to/file', 'srcLang', 'destLang')
-   # Use auto Language detection feature
-   print(translate.from_file('/path/to/file', 'destLang')
-
 ***Tika-Python Configuration***
 You can now use custom configuration files. See https://tika.apache.org/1.18/configuring.html
 for details on writing configuration files. Configuration is set the first time the server is started.
@@ -58,15 +51,14 @@ or:
 '''
 
 USAGE = """
-tika.py [-v] [-e] [-o <outputDir>] [--server <TikaServerEndpoint>] [--install <UrlToTikaServerJar>] [--port <portNumber>] <command> <option> <urlOrPathToFile>
+tika.py [-v] [-e] [-o <outputDir>] [--server <TikaServerEndpoint>] [--install <UrlToTikaServerZip>] [--port <portNumber>] <command> <option> <urlOrPathToFile>
 
 tika.py parse all test.pdf test2.pdf                   (write output JSON metadata files for test1.pdf_meta.json and test2.pdf_meta.json)
 tika.py detect type test.pdf                           (returns mime-type as text/plain)
 tika.py language file french.txt                       (returns language e.g., fr as text/plain)
-tika.py translate fr:en french.txt                     (translates the file french.txt from french to english)
 tika.py config mime-types                              (see what mime-types the Tika Server can handle)
 
-A simple python and command-line client for Tika using the standalone Tika server (JAR file).
+A simple python and command-line client for Tika using the standalone Tika server (zip distribution).
 All commands return results in JSON format by default (except text in text/plain).
 
 To parse docs, use:
@@ -79,7 +71,6 @@ Commands:
   parse  = parse the input file and write a JSON doc file.ext_meta.json containing the extracted metadata, text, or both
   detect type = parse the stream and 'detect' the MIME/media type, return in text/plain
   language file = parse the file stream and identify the language of the text, return its 2 character code in text/plain
-  translate src:dest = parse and extract text and then translate the text from source language to destination language
   config = return a JSON doc describing the configuration of the Tika server (i.e. mime-types it
              can handle, or installed detectors or parsers)
 
@@ -91,7 +82,7 @@ Switches:
   --encode, -e           = encode response in UTF-8
   --csv, -c    = report detect output in comma-delimited format
   --server <TikaServerEndpoint>  = use a remote Tika Server at this endpoint, otherwise use local server
-  --install <UrlToTikaServerJar> = download and exec Tika Server (JAR file), starting server on default port 9998
+  --install <UrlToTikaServerZip> = download, unpack and exec the Tika Server distribution, starting server on default port 9998
 
 Example usage as python client:
 -- from tika import runCommand, parse1
@@ -183,9 +174,6 @@ ServerHost = "localhost"
 Port = "9998"
 ServerEndpoint = os.getenv(
     'TIKA_SERVER_ENDPOINT', 'http://' + ServerHost + ':' + Port)
-Translator = os.getenv(
-    'TIKA_TRANSLATOR',
-    "org.apache.tika.language.translate.Lingo24Translator")
 TikaClientOnly = os.getenv('TIKA_CLIENT_ONLY', False)
 TikaServerClasspath = os.getenv('TIKA_SERVER_CLASSPATH', '')
 TikaStartupSleep = float(os.getenv('TIKA_STARTUP_SLEEP', 5))
@@ -232,7 +220,7 @@ def runCommand(cmd, option, urlOrPaths, port, outDir=None,
                verbose=Verbose, encode=EncodeUtf8):
     '''
     Run the Tika command by calling the Tika server and return results in JSON format (or plain text).
-    :param cmd: a command from set ``{'parse', 'detect', 'language', 'translate', 'config'}``
+    :param cmd: a command from set ``{'parse', 'detect', 'language', 'config'}``
     :param option:
     :param urlOrPaths:
     :param port:
@@ -255,7 +243,8 @@ def runCommand(cmd, option, urlOrPaths, port, outDir=None,
     elif cmd == "language":
         return detectLang(option, urlOrPaths, serverEndpoint, verbose, tikaServerJar)
     elif cmd == "translate":
-        return doTranslate(option, urlOrPaths, serverEndpoint, verbose, tikaServerJar)
+        log.error('The translate command was removed: Apache Tika 4 no longer offers /translate endpoints.')
+        raise TikaException('translate was removed with Apache Tika 4; use tika-python 3.x against a Tika 3 server')
     elif cmd == "config":
         status, resp = getConfig(option, serverEndpoint, verbose, tikaServerJar)
         return resp
@@ -410,61 +399,6 @@ def detectLang1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbos
         return (status, text)
     status, response = callServer('put', serverEndpoint, service, text,
             {'Accept': responseMimeType}, verbose, tikaServerJar, requestOptions=requestOptions)
-    return (status, response)
-
-def doTranslate(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar,
-                responseMimeType='text/plain',
-                services={'all': '/translate/all'}):
-    '''
-    Translate the file from source language to destination language.
-    :param option:
-    :param urlOrPaths:
-    :param serverEndpoint:
-    :param verbose:
-    :param tikaServerJar:
-    :param responseMimeType:
-    :param services:
-    :return:
-    '''
-    paths = getPaths(urlOrPaths)
-    return [doTranslate1(option, path, serverEndpoint, verbose, tikaServerJar, responseMimeType, services)
-            for path in paths]
-
-def doTranslate1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar,
-                 responseMimeType='text/plain',
-                 services={'all': '/translate/all'}, requestOptions={}):
-    '''
-
-    :param option:
-    :param urlOrPath:
-    :param serverEndpoint:
-    :param verbose:
-    :param tikaServerJar:
-    :param responseMimeType:
-    :param services:
-    :return:
-    '''
-    path, mode = getRemoteFile(urlOrPath, TikaFilesPath)
-    srcLang = ""
-    destLang = ""
-
-    if ":" in option:
-        options = option.rsplit(':')
-        srcLang = options[0]
-        destLang = options[1]
-        if len(options) != 2:
-            log.exception('Translate options are specified as srcLang:destLang or as destLang')
-            raise TikaException('Translate options are specified as srcLang:destLang or as destLang')
-    else:
-        destLang = option
-
-    if srcLang != "" and destLang != "":
-        service = services["all"] + "/" + Translator + "/" + srcLang + "/" + destLang
-    else:
-        service = services["all"] + "/" + Translator + "/" + destLang
-    status, response = callServer('put', serverEndpoint, service, open(path, 'rb'),
-                                  {'Accept' : responseMimeType},
-                                  verbose, tikaServerJar, requestOptions=requestOptions)
     return (status, response)
 
 def detectType(option, urlOrPaths, serverEndpoint=ServerEndpoint, verbose=Verbose, tikaServerJar=TikaServerJar,

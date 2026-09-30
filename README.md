@@ -43,7 +43,6 @@ These are read once, when tika/tika.py is initially loaded and used throughout a
 3. `TIKA_JAR_HASH_ALGO` - set to `sha1` when running on FIPS-compliant systems; default value is `md5`.
 4. `TIKA_SERVER_ENDPOINT` - set to the host (local or remote) for the running Tika server jar.
 5. `TIKA_CLIENT_ONLY` - if set to True, then `TIKA_SERVER_JAR` is ignored, and relies on the value for `TIKA_SERVER_ENDPOINT` and treats Tika like a REST client.
-6. `TIKA_TRANSLATOR` - set to the fully qualified class name (defaults to Lingo24) for the Tika translator implementation.
 7. `TIKA_SERVER_CLASSPATH` - set to a string (delimited by ':' for each additional path) to prepend to the Tika server jar path.
 8. `TIKA_LOG_PATH` - set to a directory with write permissions and the `tika.log` and `tika-server.log` files will be placed in this directory.
 9. `TIKA_PATH` - set to a directory with write permissions and the `tika_server.jar` file will be placed in this directory.
@@ -187,16 +186,6 @@ from tika import language
 print(language.from_file('/path/to/file'))
 ```
 
-Translate Interface
-------------------------
-The translate interface translates the text automatically extracted
-by Tika from the source language to the destination language.
-
-```python
-from tika import translate
-print(translate.from_file('/path/to/spanish', 'es', 'en'))
-```
-
 Using a Buffer
 --------------
 Note you can also use a Parser and Detector
@@ -253,7 +242,7 @@ print parsed["metadata"]
 
 Customizing the Tika Server Request
 ---------------------------
-You may customize the outgoing HTTP request to Tika server by setting `requestOptions` on the `.from_file` and `.from_buffer` methods (Parser, Unpack , Detect, Config, Language, Translate). It should be a dictionary of arguments that will be passed to the request method. The [request method documentation](https://requests.kennethreitz.org/en/master/api/#requests.request) specifies valid arguments. This will override any defaults except for `url` and `params `/`data`.
+You may customize the outgoing HTTP request to Tika server by setting `requestOptions` on the `.from_file` and `.from_buffer` methods (Parser, Unpack, Detect, Config, Language). It should be a dictionary of arguments that will be passed to the request method. The [request method documentation](https://requests.kennethreitz.org/en/master/api/#requests.request) specifies valid arguments. This will override any defaults except for `url` and `params `/`data`.
 
 ```python
 from tika import parser
@@ -276,7 +265,6 @@ tika.py [-v] [-o <outputDir>] [--server <TikaServerEndpoint>] [--install <UrlToT
 tika.py parse all test.pdf test2.pdf                   (write output JSON metadata files for test1.pdf_meta.json and test2.pdf_meta.json)
 tika.py detect type test.pdf                           (returns mime-type as text/plain)
 tika.py language file french.txt                       (returns language e.g., fr as text/plain)
-tika.py translate fr:en french.txt                     (translates the file french.txt from french to english)
 tika.py config mime-types                              (see what mime-types the Tika Server can handle)
 
 A simple python and command-line client for Tika using the standalone Tika server (JAR file).
@@ -292,7 +280,6 @@ Commands:
   parse  = parse the input file and write a JSON doc file.ext_meta.json containing the extracted metadata, text, or both
   detect type = parse the stream and 'detect' the MIME/media type, return in text/plain
   language file = parse the file stream and identify the language of the text, return its 2 character code in text/plain
-  translate src:dest = parse and extract text and then translate the text from source language to destination language
   config = return a JSON doc describing the configuration of the Tika server (i.e. mime-types it
              can handle, or installed detectors or parsers)
 
