@@ -14,31 +14,62 @@
 # limitations under the License.
 #
 
-import csv
 import json
 import re
-import tarfile
 import zipfile
-from contextlib import closing
-from io import BytesIO, TextIOWrapper
+from io import BytesIO
 
 from .tika import ServerEndpoint, callServer, parse1
 
-_text_wrapper = TextIOWrapper
-
 # Tika 4 /unpack/all output: a zip holding the original document as ``0.<ext>``, embedded
 # documents as ``1.<ext>``, ``2.<ext>``, ... and one ``<name>.metadata.json`` sidecar per entry.
+# The trailing handler name selects plain text for the extracted content (default: Markdown).
 UNPACK_SERVICE = '/unpack/all/text'
 _SIDECAR_SUFFIX = '.metadata.json'
 _CONTENT_KEY = 'tk:content'
 
 
-def _parse_zip(zipOutput):
+def from_file(filename, serverEndpoint=ServerEndpoint, requestOptions={}):
     '''
-    Turns a Tika 4 ``/unpack/all`` zip response into the same shape ``_parse`` produced for
-    the pre-4.0 tar output: ``content`` and ``metadata`` of the container document (taken
-    from its ``.metadata.json`` sidecar) and ``attachments`` mapping the name of each
-    embedded document to its bytes. Sidecars and the container itself are not attachments.
+    Parse from file
+    :param filename: file
+    :param serverEndpoint: Tika server end point (optional)
+    :return: dict with ``content`` and ``metadata`` of the document and ``attachments``
+             mapping the name of each embedded document to its bytes; ``{}`` when the
+             server returned nothing
+    '''
+    zipOutput = parse1('unpack', filename, serverEndpoint,
+                       responseMimeType='application/zip',
+                       services={'meta': '/meta', 'text': '/tika/text',
+                                 'all': '/rmeta/xml', 'unpack': UNPACK_SERVICE},
+                       rawResponse=True, requestOptions=requestOptions)
+    return _parse(zipOutput)
+
+
+def from_buffer(string, serverEndpoint=ServerEndpoint, headers=None, requestOptions={}):
+    '''
+    Parse from buffered content
+    :param string:  buffered content
+    :param serverEndpoint: Tika server URL (Optional)
+    :return: parsed content, see ``from_file``
+    '''
+
+    headers = headers or {}
+    headers.update({'Accept': 'application/zip'})
+
+    status, response = callServer('put', serverEndpoint, UNPACK_SERVICE, string,
+                                  headers, False,
+                                  rawResponse=True, requestOptions=requestOptions)
+
+    return _parse((status, response))
+
+
+def _parse(zipOutput):
+    '''
+    Turns a ``/unpack/all`` zip response into ``content`` and ``metadata`` of the container
+    document (taken from its ``.metadata.json`` sidecar) and ``attachments`` mapping the
+    name of each embedded document to its bytes. Sidecars and the container itself are
+    not attachments.
     :param zipOutput: ``(status, bytes)`` tuple as returned by ``callServer(rawResponse=True)``
     :return: ``{}`` for an empty response, else a dict with ``content``, ``metadata``, ``attachments``
     '''
@@ -80,99 +111,3 @@ def _sidecar_candidates(container, sidecars):
         candidates.append(stem + _SIDECAR_SUFFIX)
     candidates.append('0' + _SIDECAR_SUFFIX)
     return [c for c in candidates if c in sidecars]
-
-
-def from_file(filename, serverEndpoint=ServerEndpoint, requestOptions={}):
-    '''
-    Parse from file
-    :param filename: file
-    :param serverEndpoint: Tika server end point (optional)
-    :return:
-    '''
-    tarOutput = parse1('unpack', filename, serverEndpoint,
-                       responseMimeType='application/x-tar',
-                       services={'meta': '/meta', 'text': '/tika',
-                                 'all': '/rmeta/xml', 'unpack': '/unpack/all'},
-                       rawResponse=True, requestOptions=requestOptions)
-    return _parse(tarOutput)
-
-
-def from_buffer(string, serverEndpoint=ServerEndpoint, headers=None, requestOptions={}):
-    '''
-    Parse from buffered content
-    :param string:  buffered content
-    :param serverEndpoint: Tika server URL (Optional)
-    :return: parsed content
-    '''
-
-    headers = headers or {}
-    headers.update({'Accept': 'application/x-tar'})
-
-    status, response = callServer('put', serverEndpoint, '/unpack/all', string,
-                                  headers, False,
-                                  rawResponse=True, requestOptions=requestOptions)
-
-    return _parse((status, response))
-
-
-def _parse(tarOutput):
-    parsed = {}
-    if not tarOutput:
-        return parsed
-    elif tarOutput[1] is None or tarOutput[1] == b"":
-        return parsed
-
-    with tarfile.open(fileobj=BytesIO(tarOutput[1])) as tarFile:
-        # get the member names
-        memberNames = list(tarFile.getnames())
-
-        # extract the metadata
-        metadata = {}
-        if "__METADATA__" in memberNames:
-            memberNames.remove("__METADATA__")
-
-        metadataMember = tarFile.getmember("__METADATA__")
-        if not metadataMember.issym() and metadataMember.isfile():
-            with closing(_text_wrapper(tarFile.extractfile(metadataMember), encoding=tarFile.encoding)) as metadataFile:
-                metadataReader = csv.reader(_truncate_nulls(metadataFile))
-                for metadataLine in metadataReader:
-                    # each metadata line comes as a key-value pair, with list values
-                    # returned as extra values in the line - convert single values
-                    # to non-list values to be consistent with parser metadata
-                    assert len(metadataLine) >= 2
-
-                    if len(metadataLine) > 2:
-                        metadata[metadataLine[0]] = metadataLine[1:]
-                    else:
-                        metadata[metadataLine[0]] = metadataLine[1]
-
-
-        # get the content
-        content = ""
-        if "__TEXT__" in memberNames:
-            memberNames.remove("__TEXT__")
-
-            contentMember = tarFile.getmember("__TEXT__")
-            if not contentMember.issym() and contentMember.isfile():
-                with closing(_text_wrapper(tarFile.extractfile(contentMember), encoding='utf8')) as content_file:
-                    content = content_file.read()
-
-        # get the remaining files as attachments
-        attachments = {}
-        for attachment in memberNames:
-            attachmentMember = tarFile.getmember(attachment)
-            if not attachmentMember.issym() and attachmentMember.isfile():
-                with closing(tarFile.extractfile(attachmentMember)) as attachment_file:
-                    attachments[attachment] = attachment_file.read()
-
-        parsed["content"] = content
-        parsed["metadata"] = metadata
-        parsed["attachments"] = attachments
-
-        return parsed
-
-
-# TODO: Remove if/when fixed. https://issues.apache.org/jira/browse/TIKA-3070
-def _truncate_nulls(s):
-    for line in s:
-        yield line.replace('\0', '')

@@ -19,7 +19,8 @@ import json
 from .tika import ServerEndpoint, callServer, parse1
 
 # metadata key under which the /rmeta endpoint returns the extracted text of each document
-_CONTENT_KEY = 'X-TIKA:content'
+# (X-TIKA:content before Tika 4.0)
+_CONTENT_KEY = 'tk:content'
 
 
 def from_file(filename, serverEndpoint=ServerEndpoint, service='all', xmlContent=False, headers=None, config_path=None, requestOptions={}, raw_response=False):
@@ -41,7 +42,7 @@ def from_file(filename, serverEndpoint=ServerEndpoint, service='all', xmlContent
     if not xmlContent:
         output = parse1(service, filename, serverEndpoint, headers=headers, config_path=config_path, requestOptions=requestOptions)
     else:
-        output = parse1(service, filename, serverEndpoint, services={'meta': '/meta', 'text': '/tika', 'all': '/rmeta/xml'},
+        output = parse1(service, filename, serverEndpoint, services={'meta': '/meta', 'text': '/tika/xml', 'all': '/rmeta/xml'},
                             headers=headers, config_path=config_path, requestOptions=requestOptions)
     if raw_response:
         return output

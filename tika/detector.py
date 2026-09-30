@@ -32,6 +32,6 @@ def from_buffer(string, config_path=None, requestOptions={}):
     :param string: buffered content whose type needs to be detected
     :return:
     '''
-    status, response = callServer('put', ServerEndpoint, '/detect/stream', string,
+    status, response = callServer('put', ServerEndpoint, '/detect', string,
                                   {'Accept': 'text/plain'}, False, config_path=config_path, requestOptions=requestOptions)
     return response

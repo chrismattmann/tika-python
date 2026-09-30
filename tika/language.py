@@ -32,6 +32,6 @@ def from_buffer(string, requestOptions={}):
     :param string: buffered data
     :return:
     '''
-    status, response = callServer('put', ServerEndpoint, '/language/string', string,
+    status, response = callServer('put', ServerEndpoint, '/language', string,
                                   {'Accept': 'text/plain'}, False, requestOptions=requestOptions)
     return response

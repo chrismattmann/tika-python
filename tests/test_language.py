@@ -13,4 +13,9 @@ def test_local_path(test_file_path):
 
 
 def test_local_buffer():
-    assert language.from_buffer("Good evening, David. How are you?") == "en"
+    assert (
+        language.from_buffer(
+            "Good evening, David. How are you? The weather has been lovely this week and the garden is finally in bloom."
+        )
+        == "en"
+    )
