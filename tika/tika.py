@@ -123,11 +123,15 @@ import hashlib
 import io
 import logging
 import platform
+import shutil
 import signal
 import socket
+import subprocess
 import tempfile
+import zipfile
 from os import walk
 from subprocess import STDOUT, Popen
+from urllib.request import url2pathname
 
 import requests
 
@@ -156,6 +160,11 @@ TikaVersion = os.getenv('TIKA_VERSION', '3.3.2')
 TikaJarPath = os.getenv('TIKA_PATH', tempfile.gettempdir())
 TikaFilesPath = tempfile.gettempdir()
 TikaServerLogFilePath = log_path
+# Apache Tika 4 ships the runnable server as a zip distribution in the Apache dist area;
+# current releases live on the CDN, every release stays on the archive.
+TikaDistBaseUrl = 'https://dlcdn.apache.org/tika/'
+TikaArchiveBaseUrl = 'https://archive.apache.org/dist/tika/'
+TikaMinJavaVersion = 17
 TikaServerJar = os.getenv(
     'TIKA_SERVER_JAR',
     "http://search.maven.org/remotecontent?filepath=org/apache/tika/tika-server-standard/"+TikaVersion+"/tika-server-standard-"+TikaVersion+".jar")
@@ -183,6 +192,15 @@ TikaServerProcess = False
 
 class TikaException(Exception):
     pass
+
+class TikaDownloadError(RuntimeError):
+    '''
+    Raised when a download fails. ``status_code`` holds the HTTP status when the
+    server answered, ``None`` for connection level failures.
+    '''
+    def __init__(self, message, status_code=None):
+        super().__init__(message)
+        self.status_code = status_code
 
 def echo2(*s): sys.stderr.write(str('tika.py: %s\n') % str(' ').join(map(str, s)))
 def warn(*s):  echo2('Warn:', *s)
@@ -591,22 +609,33 @@ def checkTikaServer(scheme="http", serverHost=ServerHost, port=Port, tikaServerJ
 
 def checkJarSig(tikaServerJar, jarPath):
     '''
-    Checks the signature of Jar
-    :param tikaServerJar:
-    :param jarPath:
-    :return: ``True`` if the signature of the jar matches
+    Verifies a downloaded server archive (or jar) against its ``.<TIKA_JAR_HASH_ALGO>``
+    checksum sidecar. For a remote source the sidecar is downloaded next to ``jarPath``
+    when it is missing. For a local source (plain path or ``file://`` URL) the sidecar is
+    looked up next to the source; when there is none the check is skipped with a warning
+    so that air-gapped installs keep working.
+    :param tikaServerJar: URL or local path the archive came from
+    :param jarPath: local path of the archive to verify
+    :return: ``True`` if the digest matches (or no sidecar is available for a local source)
     '''
     localChecksumPath = '.'.join([jarPath, TikaJarHashAlgo])
     if not os.path.isfile(localChecksumPath):
-        remoteChecksum = '.'.join([tikaServerJar, TikaJarHashAlgo])
-        getRemoteJar(remoteChecksum, localChecksumPath)
-    m = hashlib.new(TikaJarHashAlgo)
-    with open(jarPath, 'rb') as f:
-        binContents = f.read()
-        m.update(binContents)
-        with open(f"{jarPath}.{TikaJarHashAlgo}", "r") as em:
-            existingContents = em.read()
-            return existingContents == m.hexdigest()
+        sourcePath = _localPathFromUrlOrPath(tikaServerJar)
+        if sourcePath is None:
+            remoteChecksum = '.'.join([tikaServerJar, TikaJarHashAlgo])
+            getRemoteJar(remoteChecksum, localChecksumPath)
+        else:
+            localChecksumPath = '.'.join([sourcePath, TikaJarHashAlgo])
+            if not os.path.isfile(localChecksumPath):
+                log.warning('No %s checksum found next to %s; skipping verification.', TikaJarHashAlgo, sourcePath)
+                return True
+    with open(localChecksumPath, 'r') as em:
+        try:
+            expected = _parseChecksumFile(em.read(), TikaJarHashAlgo)
+        except TikaException as e:
+            log.warning('%s: %s', localChecksumPath, e)
+            return False
+    return expected == _fileDigest(jarPath, TikaJarHashAlgo)
 
 
 def startServer(tikaServerJar, java_path = TikaJava, java_args = TikaJavaArgs, serverHost = ServerHost, port = Port, classpath=None, config_path=None):
@@ -746,7 +775,7 @@ def _urlretrieve(
         The filepath where the file was saved.
 
     Raises:
-        requests.RequestException: If the download fails.
+        TikaDownloadError: If the download fails (``status_code`` set for HTTP errors).
         IOError: If there's an issue writing to the file.
     """
     headers = {"user-agent": "tika-python"}
@@ -775,7 +804,8 @@ def _urlretrieve(
         # Clean up partial file on error
         if os.path.exists(filename):
             os.remove(filename)
-        raise RuntimeError(f"Failed to download {url}: {e}") from e
+        status_code = getattr(getattr(e, 'response', None), 'status_code', None)
+        raise TikaDownloadError(f"Failed to download {url}: {e}", status_code) from e
 
 
 def getRemoteFile(urlOrPath, destPath):
@@ -803,18 +833,242 @@ def getRemoteFile(urlOrPath, destPath):
 
 def getRemoteJar(urlOrPath, destPath):
     '''
-    Fetches URL to local path or just return absolute path.
-    :param urlOrPath: remote resource locator
+    Fetches URL to local path or just return the local path.
+    :param urlOrPath: remote resource locator, ``file://`` URL or local path
     :param destPath: Path to store the resource, usually a path on file system
     :return: tuple having (path, 'local'/'remote')
     '''
+    localPath = _localPathFromUrlOrPath(urlOrPath)
+    if localPath is not None:
+        return (localPath, 'local')
+    log.info('Retrieving %s to %s.' % (urlOrPath, destPath))
+    _downloadWithFallback(urlOrPath, destPath)
+    return (destPath, 'remote')
+
+
+def _localPathFromUrlOrPath(urlOrPath):
+    '''
+    Returns the local filesystem path for a plain path or a ``file://`` URL, or ``None``
+    when ``urlOrPath`` points at a remote resource.
+    '''
     urlp = urlparse(urlOrPath)
-    if urlp.scheme == '':
-        return (os.path.abspath(urlOrPath), 'local')
+    if urlp.scheme == 'file':
+        return os.path.abspath(url2pathname(urlp.path))
+    if len(urlp.scheme) <= 1:
+        # no scheme, or a single letter which is a Windows drive such as C:\...
+        return os.path.abspath(urlOrPath)
+    return None
+
+
+def _fallbackDistributionUrl(url):
+    '''
+    Maps a URL on the Apache dist mirrors (which only carry current releases) to the
+    permanent copy on archive.apache.org. Returns ``None`` for any other URL.
+    '''
+    urlp = urlparse(url)
+    if urlp.scheme in ('http', 'https') and urlp.hostname in ('dlcdn.apache.org', 'downloads.apache.org') \
+            and urlp.path.startswith('/tika/'):
+        return TikaArchiveBaseUrl + urlp.path[len('/tika/'):]
+    return None
+
+
+def _downloadWithFallback(url, filename):
+    '''
+    Downloads ``url`` to ``filename``. When an Apache dist mirror no longer carries the
+    requested release (404) the download is retried once from archive.apache.org.
+    '''
+    try:
+        return _urlretrieve(url, filename)
+    except TikaDownloadError as e:
+        fallback = _fallbackDistributionUrl(url)
+        if e.status_code != 404 or fallback is None:
+            raise
+        log.warning('%s not found (404); retrying from %s', url, fallback)
+        return _urlretrieve(fallback, filename)
+
+
+def _parseChecksumFile(text, algo):
+    '''
+    Extracts the hex digest from a checksum sidecar. Accepts a bare digest, the
+    ``<digest>  <filename>`` form and the ``gpg --print-md`` block form.
+    :return: lowercase hex digest
+    '''
+    expected = hashlib.new(algo).digest_size * 2
+    for token in text.split():
+        if len(token) == expected and re.fullmatch(r'[0-9a-fA-F]+', token):
+            return token.lower()
+    # gpg --print-md style: "<filename>: AB12 CD34 ..." possibly wrapped over several lines
+    compact = re.sub(r'[^0-9a-fA-F]', '', text.split(':', 1)[-1])
+    if len(compact) == expected:
+        return compact.lower()
+    raise TikaException('No %s digest found in checksum file' % algo)
+
+
+def _fileDigest(path, algo, chunk_size=1 << 20):
+    '''
+    Hex digest of a file, computed in chunks.
+    '''
+    m = hashlib.new(algo)
+    with open(path, 'rb') as f:
+        for chunk in iter(lambda: f.read(chunk_size), b''):
+            m.update(chunk)
+    return m.hexdigest()
+
+
+def _findServerJar(installDir):
+    '''
+    Returns the path of the Tika server launcher jar inside an extracted distribution,
+    or ``None`` if ``installDir`` does not hold a complete distribution (jar plus ``lib/``).
+    '''
+    if not os.path.isdir(os.path.join(installDir, 'lib')):
+        return None
+    jars = [n for n in os.listdir(installDir) if n.lower().endswith('.jar')]
+    preferred = sorted(n for n in jars if n.startswith('tika-server-standard-'))
+    if preferred:
+        return os.path.join(installDir, preferred[0])
+    if len(jars) == 1:
+        return os.path.join(installDir, jars[0])
+    return None
+
+
+def _extractServerDistribution(archivePath, installDir):
+    '''
+    Extracts the Tika server zip distribution into ``installDir``. The archive is unpacked
+    into a temporary sibling directory that is renamed into place at the end, so
+    ``installDir`` only ever exists once it is complete.
+    :return: ``installDir``
+    '''
+    installDir = os.path.abspath(installDir)
+    parent = os.path.dirname(installDir)
+    os.makedirs(parent, exist_ok=True)
+    tmpDir = tempfile.mkdtemp(prefix=os.path.basename(installDir) + '.', dir=parent)
+    try:
+        with zipfile.ZipFile(archivePath) as archive:
+            archive.extractall(tmpDir)
+        # tolerate a distribution wrapped in a single top-level directory
+        source = tmpDir
+        entries = os.listdir(tmpDir)
+        if len(entries) == 1 and _findServerJar(os.path.join(tmpDir, entries[0])):
+            source = os.path.join(tmpDir, entries[0])
+        try:
+            os.rename(source, installDir)
+        except OSError:
+            if not _findServerJar(installDir):
+                raise
+            # another process extracted the same distribution first; keep theirs
+    finally:
+        shutil.rmtree(tmpDir, ignore_errors=True)
+    return installDir
+
+
+def _javaMajorVersion(java_path=TikaJava):
+    '''
+    Major version of the given Java runtime (8 for 1.8.x, 17 for 17.x), or ``None`` when
+    the binary cannot be run or its version output cannot be parsed.
+    '''
+    try:
+        proc = subprocess.run([java_path, '-version'], capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    match = re.search(r'version "(\d+)(?:\.(\d+))?', proc.stderr + proc.stdout)
+    if not match:
+        return None
+    major = int(match.group(1))
+    if major == 1 and match.group(2):
+        return int(match.group(2))
+    return major
+
+
+def _jarNeedsLibDir(jarPath):
+    '''
+    ``True`` when the jar's manifest references a ``lib/`` class path, i.e. it is a thin
+    launcher that only runs next to the ``lib/`` directory of its distribution.
+    '''
+    try:
+        with zipfile.ZipFile(jarPath) as jar:
+            manifest = jar.read('META-INF/MANIFEST.MF').decode('utf-8', 'replace')
+    except (OSError, KeyError, zipfile.BadZipFile):
+        return False
+    manifest = manifest.replace('\r\n ', '').replace('\n ', '')  # unwrap continuation lines
+    return bool(re.search(r'^Class-Path:.*\blib/', manifest, re.MULTILINE))
+
+
+def _removeQuietly(*paths):
+    for path in paths:
+        try:
+            os.remove(path)
+        except OSError:
+            pass
+
+
+def ensureTikaServerJar(tikaServerJar=TikaServerJar):
+    '''
+    Makes sure a runnable Tika server is available locally and returns the path of its
+    launcher jar.
+
+    ``tikaServerJar`` is normally the URL of the ``tika-server-standard-<version>.zip``
+    distribution. It may also be a ``file://`` URL or plain path to a local copy of that
+    zip, or a URL/path ending in ``.jar`` for a jar that already sits next to its ``lib/``
+    directory (or a self-contained pre-4.0 jar). Remote downloads are verified against
+    their ``.<TIKA_JAR_HASH_ALGO>`` sidecar; a zip is extracted once into
+    ``<TIKA_PATH>/<zip name without extension>/`` and reused on later runs.
+    :return: path of the server jar to launch
+    '''
+    sourcePath = _localPathFromUrlOrPath(tikaServerJar)
+    name = os.path.basename(sourcePath if sourcePath is not None else urlparse(tikaServerJar).path)
+    if not name:
+        raise TikaException('Cannot determine the file name of the Tika server distribution from %r' % (tikaServerJar,))
+    checksumSuffix = '.' + TikaJarHashAlgo
+
+    if name.lower().endswith('.jar'):
+        if sourcePath is not None:
+            if not os.path.isfile(sourcePath):
+                raise TikaException('Tika server jar %s does not exist' % sourcePath)
+            jarPath = sourcePath
+        else:
+            jarPath = os.path.join(TikaJarPath, name)
+            if not os.path.isfile(jarPath):
+                getRemoteJar(tikaServerJar, jarPath)
+            if not checkJarSig(tikaServerJar, jarPath):
+                log.warning('Checksum mismatch for %s; downloading again.', jarPath)
+                _removeQuietly(jarPath, jarPath + checksumSuffix)
+                getRemoteJar(tikaServerJar, jarPath)
+                if not checkJarSig(tikaServerJar, jarPath):
+                    raise TikaException('Checksum mismatch for %s after re-download' % jarPath)
+        if _jarNeedsLibDir(jarPath) and not os.path.isdir(os.path.join(os.path.dirname(jarPath), 'lib')):
+            log.warning('%s is a thin launcher without a lib/ directory next to it; since Apache Tika 4 '
+                        'the server only runs from inside the unzipped tika-server-standard distribution.', jarPath)
+        return jarPath
+
+    stem = name[:-4] if name.lower().endswith('.zip') else name
+    installDir = os.path.join(TikaJarPath, stem)
+    jarPath = _findServerJar(installDir)
+    if jarPath:
+        return jarPath
+
+    if sourcePath is not None:
+        archivePath = sourcePath
+        if not os.path.isfile(archivePath):
+            raise TikaException('Tika server distribution %s does not exist' % archivePath)
+        if not checkJarSig(tikaServerJar, archivePath):
+            raise TikaException('Checksum mismatch for %s' % archivePath)
     else:
-        log.info('Retrieving %s to %s.' % (urlOrPath, destPath))
-        _urlretrieve(urlOrPath, destPath)
-        return (destPath, 'remote')
+        archivePath = os.path.join(TikaJarPath, name)
+        if not os.path.isfile(archivePath):
+            getRemoteJar(tikaServerJar, archivePath)
+        if not checkJarSig(tikaServerJar, archivePath):
+            log.warning('Checksum mismatch for %s; downloading again.', archivePath)
+            _removeQuietly(archivePath, archivePath + checksumSuffix)
+            getRemoteJar(tikaServerJar, archivePath)
+            if not checkJarSig(tikaServerJar, archivePath):
+                raise TikaException('Checksum mismatch for %s after re-download' % archivePath)
+
+    log.info('Extracting %s to %s.', archivePath, installDir)
+    _extractServerDistribution(archivePath, installDir)
+    jarPath = _findServerJar(installDir)
+    if not jarPath:
+        raise TikaException('No tika-server-standard-*.jar with a lib/ directory found in %s' % installDir)
+    return jarPath
 
 def checkPortIsOpen(remoteServerHost=ServerHost, port = Port):
     '''

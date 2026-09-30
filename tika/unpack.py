@@ -15,13 +15,71 @@
 #
 
 import csv
+import json
+import re
 import tarfile
+import zipfile
 from contextlib import closing
 from io import BytesIO, TextIOWrapper
 
 from .tika import ServerEndpoint, callServer, parse1
 
 _text_wrapper = TextIOWrapper
+
+# Tika 4 /unpack/all output: a zip holding the original document as ``0.<ext>``, embedded
+# documents as ``1.<ext>``, ``2.<ext>``, ... and one ``<name>.metadata.json`` sidecar per entry.
+UNPACK_SERVICE = '/unpack/all/text'
+_SIDECAR_SUFFIX = '.metadata.json'
+_CONTENT_KEY = 'tk:content'
+
+
+def _parse_zip(zipOutput):
+    '''
+    Turns a Tika 4 ``/unpack/all`` zip response into the same shape ``_parse`` produced for
+    the pre-4.0 tar output: ``content`` and ``metadata`` of the container document (taken
+    from its ``.metadata.json`` sidecar) and ``attachments`` mapping the name of each
+    embedded document to its bytes. Sidecars and the container itself are not attachments.
+    :param zipOutput: ``(status, bytes)`` tuple as returned by ``callServer(rawResponse=True)``
+    :return: ``{}`` for an empty response, else a dict with ``content``, ``metadata``, ``attachments``
+    '''
+    if not zipOutput or not zipOutput[1]:
+        return {}
+
+    with zipfile.ZipFile(BytesIO(zipOutput[1])) as archive:
+        names = [info.filename for info in archive.infolist() if not info.is_dir()]
+        sidecars = {n for n in names if n.endswith(_SIDECAR_SUFFIX)}
+        files = sorted(n for n in names if n not in sidecars)
+
+        container = next((n for n in files if re.match(r'0(\.|$)', n)), files[0] if files else None)
+
+        metadata = {}
+        for candidate in _sidecar_candidates(container, sidecars):
+            metadata = json.loads(archive.read(candidate).decode('utf-8'))
+            break
+        if isinstance(metadata, list):  # tolerate an rmeta style list; the container comes first
+            metadata = metadata[0] if metadata else {}
+
+        content = metadata.pop(_CONTENT_KEY, '')
+        if isinstance(content, list):
+            content = ''.join(content)
+
+        attachments = {n: archive.read(n) for n in files if n != container}
+
+    return {'content': content, 'metadata': metadata, 'attachments': attachments}
+
+
+def _sidecar_candidates(container, sidecars):
+    '''
+    Sidecar names that may describe the container document, most specific first:
+    ``0.pdf.metadata.json``, then ``0.metadata.json``.
+    '''
+    candidates = []
+    if container is not None:
+        candidates.append(container + _SIDECAR_SUFFIX)
+        stem = container.rsplit('.', 1)[0]
+        candidates.append(stem + _SIDECAR_SUFFIX)
+    candidates.append('0' + _SIDECAR_SUFFIX)
+    return [c for c in candidates if c in sidecars]
 
 
 def from_file(filename, serverEndpoint=ServerEndpoint, requestOptions={}):

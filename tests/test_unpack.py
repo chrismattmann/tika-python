@@ -1,10 +1,60 @@
 # SPDX-License-Identifier: Apache-2.0
 
+import io
+import json
+import zipfile
+
 from tika import unpack
 
 # Test data
 TEXT_UTF8 = "Hello, world!! 😎 👽"
 TEXT_ASCII = "Hello, world!!"
+
+
+# --- zip response parsing, no server needed ---------------------------------------
+
+
+def make_unpack_zip(entries):
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        for name, data in entries.items():
+            archive.writestr(name, json.dumps(data) if isinstance(data, dict) else data)
+    return buffer.getvalue()
+
+
+def test_parse_zip_splits_container_and_attachments():
+    body = make_unpack_zip(
+        {
+            "0.pdf": b"%PDF-original",
+            "0.pdf.metadata.json": {"tk:content": "hello", "Content-Type": "application/pdf"},
+            "1.png": b"\x89PNG",
+            "1.png.metadata.json": {"Content-Type": "image/png"},
+            "2.docx": b"PK",
+        }
+    )
+    parsed = unpack._parse_zip((200, body))
+    assert parsed["content"] == "hello"
+    assert parsed["metadata"] == {"Content-Type": "application/pdf"}
+    assert parsed["attachments"] == {"1.png": b"\x89PNG", "2.docx": b"PK"}
+
+
+def test_parse_zip_accepts_stem_named_sidecar():
+    body = make_unpack_zip({"0.txt": b"hi", "0.metadata.json": {"tk:content": "hi", "Content-Type": "text/plain"}})
+    parsed = unpack._parse_zip((200, body))
+    assert parsed["content"] == "hi"
+    assert parsed["metadata"]["Content-Type"] == "text/plain"
+    assert parsed["attachments"] == {}
+
+
+def test_parse_zip_without_sidecar():
+    parsed = unpack._parse_zip((200, make_unpack_zip({"0.txt": b"hi"})))
+    assert parsed == {"content": "", "metadata": {}, "attachments": {}}
+
+
+def test_parse_zip_empty_response():
+    assert unpack._parse_zip((204, b"")) == {}
+    assert unpack._parse_zip((200, None)) == {}
+    assert unpack._parse_zip(None) == {}
 
 
 def test_utf8(tmp_path):
