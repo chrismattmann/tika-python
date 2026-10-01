@@ -11,11 +11,11 @@ jobs:
     runs-on: ubuntu-slim
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v6
+    - uses: actions/setup-python@v7
       with:
         python-version: "3.14"
     # Ref: https://github.com/tox-dev/action-pre-commit-uv
-    - uses: tox-dev/action-pre-commit-uv@41a04ab74d5ec7ca33c8db8a59b6e3291d576033 # 1.0.4
+    - uses: tox-dev/action-pre-commit-uv@e09b8958484dfe71f4ac3bc7afb230ba506402ec # 1.0.5
 
   test:
     runs-on: ${{ matrix.os }}
@@ -31,7 +31,7 @@ jobs:
     - uses: actions/checkout@v7
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: ${{ matrix.python-version }}
         cache: pip
