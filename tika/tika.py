@@ -195,28 +195,41 @@ def _assertNotSomebodyElses(fd, path):
             % (path, stat.S_IMODE(st.st_mode)))
 
 
-def _openPrivate(path, mode):
-    """Open a cache file, never following a symlink at the final component.
+def _openPrivate(path, mode, checkOwner=True, encoding=None, perm=0o600):
+    """Open a file, never following a symlink at the final component.
 
-    ``mode`` is 'rb', 'wb' (truncate), 'xb' (must not exist) or 'a' (append).
-    A symlink where the file should be raises OSError, which is the point: it
-    is how /tmp/tika.log pointing at somebody's ~/.profile stops being an
-    append primitive.
+    ``mode`` is 'rb', 'wb' (truncate), 'xb' (must not exist), 'w' (truncate,
+    text) or 'a' (append, text). A symlink where the file should be raises
+    OSError, which is the point: it is how /tmp/tika.log pointing at
+    somebody's ~/.profile stops being an append primitive.
+
+    ``checkOwner`` is False for a path the caller named rather than one this
+    module chose. An output directory somebody passed in may legitimately be
+    group-writable or shared, and refusing it would break ordinary use; the
+    symlink refusal is the part that matters there. ``perm`` is 0o666 for
+    those, so the umask decides, as plain open() would.
     """
+    text = mode in ('w', 'a')
     flags = {
         'rb': os.O_RDONLY,
         'wb': os.O_WRONLY | os.O_CREAT | os.O_TRUNC,
         'xb': os.O_WRONLY | os.O_CREAT | os.O_EXCL,
+        'w': os.O_WRONLY | os.O_CREAT | os.O_TRUNC,
         'a': os.O_WRONLY | os.O_CREAT | os.O_APPEND,
-    }[mode] | _O_NOFOLLOW | getattr(os, 'O_BINARY', 0)
-    fd = os.open(path, flags, 0o600)
+    }[mode] | _O_NOFOLLOW
+    if not text:
+        flags |= getattr(os, 'O_BINARY', 0)
+    fd = os.open(path, flags, perm)
     try:
-        _assertNotSomebodyElses(fd, path)
+        if checkOwner:
+            _assertNotSomebodyElses(fd, path)
     except BaseException:
         os.close(fd)
         raise
     if mode == 'a':
-        return os.fdopen(fd, 'a', buffering=1)
+        return os.fdopen(fd, 'a', buffering=1, encoding=encoding)
+    if mode == 'w':
+        return os.fdopen(fd, 'w', encoding=encoding)
     return os.fdopen(fd, 'rb' if mode == 'rb' else 'wb')
 
 
@@ -432,10 +445,21 @@ def parseAndSave(option, urlOrPaths, outDir=None, serverEndpoint=ServerEndpoint,
             metaPath = path + metaExtension
         else:
             metaPath = os.path.join(outDir, os.path.split(path)[1] + metaExtension)
-            log.info('Writing %s' % metaPath)
-            with open(metaPath, 'w', encoding='utf-8') as f:
-                f.write(parse1(option, path, serverEndpoint, verbose, tikaServerJar, \
-                                    responseMimeType, services)[1] + u"\n")
+        log.info('Writing %s' % metaPath)
+        # The write used to sit inside the else, so parseAndSave with no outDir
+        # computed a path, saved nothing, and returned the name of a file that
+        # did not exist.
+        #
+        # Opened without following a symlink. The destination name is derived
+        # from the input name, so it is predictable, and a link planted at it
+        # would be written through as whoever runs this. Ownership is not
+        # checked, because the directory is the caller's to choose and may
+        # legitimately be shared; perm is 0o666 so the umask still decides,
+        # exactly as the plain open() here did.
+        with _openPrivate(metaPath, 'w', checkOwner=False,
+                          encoding='utf-8', perm=0o666) as f:
+            f.write(parse1(option, path, serverEndpoint, verbose, tikaServerJar, \
+                                responseMimeType, services)[1] + u"\n")
         metaPaths.append(metaPath)
     return metaPaths
 
