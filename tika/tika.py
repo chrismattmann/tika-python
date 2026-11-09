@@ -120,28 +120,165 @@ except ImportError:
 
 import ctypes
 import hashlib
+import hmac
 import io
 import logging
 import platform
 import signal
 import socket
+import stat
 import tempfile
 from os import walk
 from subprocess import STDOUT, Popen
 
 import requests
 
-log_path = os.getenv('TIKA_LOG_PATH', tempfile.gettempdir())
-log_file = os.path.join(log_path, os.getenv('TIKA_LOG_FILE', 'tika.log'))
-
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
 log = logging.getLogger('tika.tika')
 
+Windows = True if platform.system() == "Windows" else False
+TikaVersion = os.getenv('TIKA_VERSION', '3.3.2')
+
+
+# --------------------------------------------------------------- caching ---
+#
+# Where the server jar, the logs and downloaded documents live.
+#
+# All of these used to default to tempfile.gettempdir(). On a multi-user host
+# that is a shared, world-writable directory, the names are predictable, and
+# one of the files is a jar this module executes. A local user who creates
+# /tmp/tika-server.jar before another user's first parse gets code execution
+# as that user. The sticky bit on /tmp does not prevent it: the attacker never
+# overwrites anybody's file, they create it first.
+#
+# The default is now a per-user cache directory created 0700, and every file
+# this module opens inside it is opened without following symlinks and checked
+# to be owned by this user. TIKA_PATH and TIKA_LOG_PATH still override, and the
+# per-file checks still apply if either is pointed back at a shared directory.
+
+def _defaultCacheDir():
+    """A directory only this user can write to."""
+    home = os.path.expanduser('~')
+    if Windows:
+        base = os.getenv('LOCALAPPDATA') or os.path.join(home, 'AppData', 'Local')
+    elif sys.platform == 'darwin':
+        base = os.path.join(home, 'Library', 'Caches')
+    else:
+        base = os.getenv('XDG_CACHE_HOME') or os.path.join(home, '.cache')
+    if not os.path.isabs(base):
+        # No home directory to speak of: fall back to a private directory of
+        # our own under the shared one, rather than to the shared one itself.
+        uid = os.getuid() if hasattr(os, 'getuid') else 0
+        base = os.path.join(tempfile.gettempdir(), 'tika-%d' % uid)
+    return os.path.join(base, 'tika')
+
+
+_O_NOFOLLOW = getattr(os, 'O_NOFOLLOW', 0)
+
+
+def _assertNotSomebodyElses(fd, path):
+    """Refuse a file this user does not own, or that others can write to."""
+    if Windows:
+        # No POSIX ownership to check, and no O_NOFOLLOW either. Windows puts
+        # per-user temp directories under the profile, so the shared-directory
+        # problem this guards against does not arise the same way.
+        return
+    st = os.fstat(fd)
+    if st.st_uid != os.geteuid():
+        raise RuntimeError(
+            "%s is owned by uid %d, not by this process (uid %d); refusing to "
+            "use it. Another user may have created it first." % (
+                path, st.st_uid, os.geteuid()))
+    if st.st_mode & (stat.S_IWGRP | stat.S_IWOTH):
+        raise RuntimeError(
+            "%s is writable by other users (mode %o); refusing to use it."
+            % (path, stat.S_IMODE(st.st_mode)))
+
+
+def _openPrivate(path, mode):
+    """Open a cache file, never following a symlink at the final component.
+
+    ``mode`` is 'rb', 'wb' (truncate), 'xb' (must not exist) or 'a' (append).
+    A symlink where the file should be raises OSError, which is the point: it
+    is how /tmp/tika.log pointing at somebody's ~/.profile stops being an
+    append primitive.
+    """
+    flags = {
+        'rb': os.O_RDONLY,
+        'wb': os.O_WRONLY | os.O_CREAT | os.O_TRUNC,
+        'xb': os.O_WRONLY | os.O_CREAT | os.O_EXCL,
+        'a': os.O_WRONLY | os.O_CREAT | os.O_APPEND,
+    }[mode] | _O_NOFOLLOW | getattr(os, 'O_BINARY', 0)
+    fd = os.open(path, flags, 0o600)
+    try:
+        _assertNotSomebodyElses(fd, path)
+    except BaseException:
+        os.close(fd)
+        raise
+    if mode == 'a':
+        return os.fdopen(fd, 'a', buffering=1)
+    return os.fdopen(fd, 'rb' if mode == 'rb' else 'wb')
+
+
+def _prepareCacheDir(path, ours):
+    """Make sure `path` exists. Check it, if it is a directory we chose.
+
+    A directory the caller named through TIKA_PATH is their business, and on
+    macOS /tmp is itself a symlink, so refusing symlinked or foreign-owned
+    directories there would break ordinary setups. Safety for those comes from
+    the per-file checks instead.
+    """
+    try:
+        os.makedirs(path, mode=0o700, exist_ok=True)
+    except OSError as e:
+        raise RuntimeError("unable to create the tika directory %s: %s" % (path, e))
+    if not ours or Windows:
+        return path
+    st = os.lstat(path)
+    if stat.S_ISLNK(st.st_mode):
+        raise RuntimeError("%s is a symlink; refusing to use it as a cache" % path)
+    if st.st_uid != os.geteuid():
+        raise RuntimeError(
+            "the tika cache directory %s is owned by uid %d, not %d"
+            % (path, st.st_uid, os.geteuid()))
+    if st.st_mode & 0o077:
+        try:
+            os.chmod(path, 0o700)
+        except OSError:
+            log.warning("could not restrict permissions on %s", path)
+    return path
+
+
+TikaCacheDir = _defaultCacheDir()
+TikaJarPath = os.getenv('TIKA_PATH', TikaCacheDir)
+TikaFilesPath = os.getenv('TIKA_FILES_PATH', TikaCacheDir)
+log_path = os.getenv('TIKA_LOG_PATH', TikaCacheDir)
+log_file = os.path.join(log_path, os.getenv('TIKA_LOG_FILE', 'tika.log'))
+TikaServerLogFilePath = log_path
+
+
+def _safeFileHandler(path):
+    """A log handler on `path`, or None if `path` cannot be trusted.
+
+    Import must not fail because somebody planted a symlink, so a refusal here
+    is a warning and console-only logging rather than an exception.
+    """
+    try:
+        _prepareCacheDir(os.path.dirname(path) or '.', ours=False)
+        handler = logging.StreamHandler(_openPrivate(path, 'a'))
+        handler.setFormatter(logFormatter)
+        return handler
+    except (OSError, RuntimeError) as e:
+        sys.stderr.write(
+            "tika: not logging to %s: %s\n" % (path, e))
+        return None
+
+
 if os.getenv('TIKA_LOG_FILE', 'tika.log'):
     # File logs
-    fileHandler = logging.FileHandler(log_file)
-    fileHandler.setFormatter(logFormatter)
-    log.addHandler(fileHandler)
+    fileHandler = _safeFileHandler(log_file)
+    if fileHandler is not None:
+        log.addHandler(fileHandler)
 
     # Stdout logs
     consoleHandler = logging.StreamHandler()
@@ -151,15 +288,41 @@ if os.getenv('TIKA_LOG_FILE', 'tika.log'):
 # Log level
 log.setLevel(logging.INFO)
 
-Windows = True if platform.system() == "Windows" else False
-TikaVersion = os.getenv('TIKA_VERSION', '3.3.2')
-TikaJarPath = os.getenv('TIKA_PATH', tempfile.gettempdir())
-TikaFilesPath = tempfile.gettempdir()
-TikaServerLogFilePath = log_path
-TikaServerJar = os.getenv(
-    'TIKA_SERVER_JAR',
-    "http://search.maven.org/remotecontent?filepath=org/apache/tika/tika-server-standard/"+TikaVersion+"/tika-server-standard-"+TikaVersion+".jar")
-TikaJarHashAlgo=os.getenv('TIKA_JAR_HASH_ALGO', 'md5')
+
+# ------------------------------------------------- which jar to trust ---
+#
+# The SHA-512 of the tika-server jar each version expects. The digest ships
+# in this package rather than being fetched, so verifying the jar depends on
+# neither the network nor anything in a shared directory.
+#
+# The 3.3.2 entry is the artifact signed by ASF release key
+# 184454FAD8697760F3E00D2E4A51A45B944FFD51 (Tim Allison), checked against
+# https://downloads.apache.org/tika/KEYS. To add a version: fetch the jar from
+# repo1 over https, verify its .asc against KEYS, then
+#   shasum -a 512 tika-server-standard-<version>.jar
+TikaServerJarDigests = {
+    '3.3.2': ('fb1f2fe57ac458b09d44d41d816f582e1d2fc93488acff6275caf414d8d5ef94'
+              'e42166edc0b488dc2fb6ef3aa21fab62b107c43b9060385ff6d675e393c2c9e9'),
+}
+
+# repo1 over https, not search.maven.org over http. The old default fetched
+# the jar -- and the checksum next to it -- in plaintext, so anyone on the
+# path could substitute both and did not need a local account to do it.
+DefaultTikaServerJar = (
+    "https://repo1.maven.org/maven2/org/apache/tika/tika-server-standard/"
+    + TikaVersion + "/tika-server-standard-" + TikaVersion + ".jar")
+TikaServerJar = os.getenv('TIKA_SERVER_JAR', DefaultTikaServerJar)
+
+# For a jar this package has no pinned digest for -- a private build, or a
+# TIKA_VERSION this release predates.
+TikaServerJarSha512 = os.getenv('TIKA_SERVER_JAR_SHA512')
+
+if os.getenv('TIKA_JAR_HASH_ALGO'):
+    log.warning(
+        "TIKA_JAR_HASH_ALGO is ignored. The jar is verified against a digest "
+        "pinned in this package or published by the repository; it is no "
+        "longer compared against a checksum file sitting next to the jar, "
+        "because a local user could write both.")
 ServerHost = "localhost"
 Port = "9998"
 ServerEndpoint = os.getenv(
@@ -569,19 +732,16 @@ def checkTikaServer(scheme="http", serverHost=ServerHost, port=Port, tikaServerJ
     if port is None:
         port = '443' if scheme == 'https' else '80'
 
-    urlp = urlparse(tikaServerJar)
     serverEndpoint = '%s://%s:%s' % (scheme, serverHost, port)
-    jarPath = os.path.join(TikaJarPath, 'tika-server.jar')
     if 'localhost' in serverEndpoint or '127.0.0.1' in serverEndpoint:
         alreadyRunning = checkPortIsOpen(serverHost, port)
 
         if not alreadyRunning:
-            if not os.path.isfile(jarPath) and urlp.scheme != '':
-                getRemoteJar(tikaServerJar, jarPath)
-
-            if not checkJarSig(tikaServerJar, jarPath):
-                os.remove(jarPath)
-                tikaServerJar = getRemoteJar(tikaServerJar, jarPath)
+            # Verification used to happen here and then be ignored: on a
+            # mismatch the old code deleted the jar, downloaded it again, and
+            # started it without checking the second copy. A check whose
+            # failure branch runs the file anyway is not a check.
+            jarPath = cachedServerJar(tikaServerJar)
 
             status = startServer(jarPath, TikaJava, TikaJavaArgs, serverHost, port, classpath, config_path)
             if not status:
@@ -589,24 +749,182 @@ def checkTikaServer(scheme="http", serverHost=ServerHost, port=Port, tikaServerJ
                 raise RuntimeError("Unable to start Tika server.")
     return serverEndpoint
 
+def fileDigest(path, algo='sha512'):
+    '''
+    Digest of a file on disk, read in chunks so a 76MB jar is not held in memory.
+    :param path: file to digest
+    :param algo: any hashlib algorithm name
+    :return: lowercase hex digest
+    '''
+    h = hashlib.new(algo)
+    with _openPrivate(path, 'rb') as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b''):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def publishedJarDigest(tikaServerJar):
+    '''
+    Digest published next to a remote jar, fetched over https into memory.
+
+    Deliberately never written to disk. A digest file in a shared directory is
+    exactly what made the old check worthless: whoever could write the jar
+    could write the digest beside it, and the two agreed.
+
+    :param tikaServerJar: https URL of the jar
+    :return: ``(algo, hexdigest)``, or ``(None, None)``
+    '''
+    if urlparse(tikaServerJar).scheme != 'https':
+        # Over plaintext, a published digest proves nothing: whoever can change
+        # the jar in flight can change the digest in flight.
+        return (None, None)
+    for algo in ('sha512', 'sha256', 'sha1'):
+        try:
+            response = requests.get('%s.%s' % (tikaServerJar, algo),
+                                    headers={"user-agent": "tika-python"},
+                                    timeout=30)
+            if response.status_code != 200:
+                continue
+            candidate = (response.text or '').strip().split()
+            if not candidate:
+                continue
+            candidate = candidate[0].lower()
+        except requests.RequestException:
+            continue
+        if re.fullmatch('[0-9a-f]{%d}' % (hashlib.new(algo).digest_size * 2),
+                        candidate):
+            return (algo, candidate)
+    return (None, None)
+
+
+def expectedJarDigest(tikaServerJar):
+    '''
+    What `tikaServerJar` should hash to, and where that expectation came from.
+
+    In order of how much it is worth: an operator saying so outright, a digest
+    pinned in this package, then one published beside the jar over https.
+
+    :param tikaServerJar: URL or path the jar came from
+    :return: ``(algo, hexdigest, source)``; all three None if unknowable
+    '''
+    if TikaServerJarSha512:
+        return ('sha512', TikaServerJarSha512.strip().lower(),
+                'TIKA_SERVER_JAR_SHA512')
+    if tikaServerJar == DefaultTikaServerJar:
+        pinned = TikaServerJarDigests.get(TikaVersion)
+        if pinned:
+            return ('sha512', pinned, 'pinned in tika-python')
+        # Bumping TikaVersion without pinning its digest should be loud, not
+        # a silent downgrade to whatever the network offers.
+        log.warning(
+            "tika-python has no pinned digest for tika-server %s; falling back "
+            "to the digest published beside the jar. Add one to "
+            "TikaServerJarDigests.", TikaVersion)
+    algo, digest = publishedJarDigest(tikaServerJar)
+    if digest:
+        return (algo, digest, 'published at %s.%s' % (tikaServerJar, algo))
+    return (None, None, None)
+
+
 def checkJarSig(tikaServerJar, jarPath):
     '''
-    Checks the signature of Jar
-    :param tikaServerJar:
-    :param jarPath:
-    :return: ``True`` if the signature of the jar matches
+    Checks that `jarPath` really is the jar `tikaServerJar` names.
+
+    This no longer reads a checksum file next to the jar. It used to, and only
+    fetched the real one when that file was absent, so a local user who
+    created both /tmp/tika-server.jar and /tmp/tika-server.jar.md5 had their
+    jar validated against their own checksum and then executed. The hash
+    algorithm was never the problem; sha512 read from the same directory would
+    have been just as bypassable.
+
+    :param tikaServerJar: URL or path the jar came from
+    :param jarPath: local file to check
+    :return: ``True`` if it matches, or if there is no expectation to check
     '''
-    localChecksumPath = '.'.join([jarPath, TikaJarHashAlgo])
-    if not os.path.isfile(localChecksumPath):
-        remoteChecksum = '.'.join([tikaServerJar, TikaJarHashAlgo])
-        getRemoteJar(remoteChecksum, localChecksumPath)
-    m = hashlib.new(TikaJarHashAlgo)
-    with open(jarPath, 'rb') as f:
-        binContents = f.read()
-        m.update(binContents)
-        with open(f"{jarPath}.{TikaJarHashAlgo}", "r") as em:
-            existingContents = em.read()
-            return existingContents == m.hexdigest()
+    algo, expected, source = expectedJarDigest(tikaServerJar)
+    if expected is None:
+        log.warning(
+            "cannot verify %s: no digest is pinned for it and none is "
+            "published beside it. Set TIKA_SERVER_JAR_SHA512 to check it.",
+            tikaServerJar)
+        return True
+    actual = fileDigest(jarPath, algo)
+    if hmac.compare_digest(actual, expected):
+        return True
+    log.error("%s does not match the %s %s: expected %s, got %s",
+              jarPath, algo, source, expected, actual)
+    return False
+
+
+def cachedServerJar(tikaServerJar):
+    '''
+    Path to a verified server jar, downloading it if it is not cached yet.
+
+    :param tikaServerJar: URL or path to the jar
+    :return: path to a jar that has been checked
+    :raises RuntimeError: if it cannot be verified; nothing is started
+    '''
+    if urlparse(tikaServerJar).scheme == '':
+        # A jar the caller supplied by path. Not ours, so not cached or moved.
+        path = os.path.abspath(tikaServerJar)
+        if not checkJarSig(tikaServerJar, path):
+            raise RuntimeError(
+                "the tika server jar at %s is not the one it should be; "
+                "refusing to run it" % path)
+        return path
+
+    cacheDir = _prepareCacheDir(TikaJarPath, ours=TikaJarPath == TikaCacheDir)
+    jarPath = os.path.join(cacheDir, 'tika-server.jar')
+    _warnAboutLegacyCache()
+
+    if os.path.lexists(jarPath):
+        if checkJarSig(tikaServerJar, jarPath):
+            return jarPath
+        log.warning("replacing the cached jar at %s", jarPath)
+        os.remove(jarPath)
+
+    # Download somewhere else, verify, and only then put it where it will be
+    # executed, so a half-written or wrong jar is never at the path that runs.
+    partial = '%s.%d.part' % (jarPath, os.getpid())
+    if os.path.lexists(partial):
+        os.remove(partial)
+    log.info('Retrieving %s to %s.' % (tikaServerJar, jarPath))
+    try:
+        _urlretrieve(tikaServerJar, partial, exclusive=True)
+        if not checkJarSig(tikaServerJar, partial):
+            raise RuntimeError(
+                "the jar downloaded from %s is not the one it should be; "
+                "refusing to run it" % tikaServerJar)
+        os.replace(partial, jarPath)
+    except BaseException:
+        if os.path.lexists(partial):
+            try:
+                os.remove(partial)
+            except OSError:
+                pass
+        raise
+    return jarPath
+
+
+_legacyCacheWarned = False
+
+
+def _warnAboutLegacyCache():
+    '''
+    Mention a jar left in the shared temp directory by an older release.
+
+    Not deleted: on a shared host it may not be ours to delete, and the sticky
+    bit means the attempt would fail anyway.
+    '''
+    global _legacyCacheWarned
+    if _legacyCacheWarned:
+        return
+    _legacyCacheWarned = True
+    legacy = os.path.join(tempfile.gettempdir(), 'tika-server.jar')
+    if legacy != os.path.join(TikaJarPath, 'tika-server.jar') and os.path.lexists(legacy):
+        log.warning(
+            "%s is left over from an older tika-python and is no longer used; "
+            "it and its .md5 can be deleted.", legacy)
 
 
 def startServer(tikaServerJar, java_path = TikaJava, java_args = TikaJavaArgs, serverHost = ServerHost, port = Port, classpath=None, config_path=None):
@@ -643,12 +961,21 @@ def startServer(tikaServerJar, java_path = TikaJava, java_args = TikaJavaArgs, s
         cmd_string = '%s %s -cp "%s" org.apache.tika.server.core.TikaServerCli --port %s --host %s --config %s &' \
                      % (java_path, java_args, classpath, port, host, config_path)
 
-    # Check that we can write to log path
+    # Check that we can write to log path.
+    #
+    # Opened with O_NOFOLLOW rather than open(path, 'w'): this truncates, so a
+    # symlink planted here was a way to blank any file the user running tika
+    # could write.
     try:
+        _prepareCacheDir(TikaServerLogFilePath,
+                         ours=TikaServerLogFilePath == TikaCacheDir)
         tika_log_file_path = os.path.join(TikaServerLogFilePath, 'tika-server.log')
-        logFile = open(tika_log_file_path, 'w')
-    except PermissionError as e:
+        logFile = _openPrivate(tika_log_file_path, 'wb')
+    except PermissionError:
         log.error("Unable to create tika-server.log at %s due to permission error." % (TikaServerLogFilePath))
+        return False
+    except (OSError, RuntimeError) as e:
+        log.error("Unable to create tika-server.log at %s: %s" % (TikaServerLogFilePath, e))
         return False
 
     # Check that specified java binary is available on path
@@ -670,9 +997,10 @@ def startServer(tikaServerJar, java_path = TikaJava, java_args = TikaJavaArgs, s
     try_count = 0
     is_started = False
     while try_count < TikaStartupMaxRetry:
-        with open(tika_log_file_path, "r") as tika_log_file_tmp:
+        with _openPrivate(tika_log_file_path, 'rb') as tika_log_file_tmp:
             # check for INFO string to confirm listening endpoint
-            if "Started Apache Tika server" in tika_log_file_tmp.read():
+            started = tika_log_file_tmp.read().decode('utf-8', 'replace')
+            if "Started Apache Tika server" in started:
                 is_started = True
                 break
             else:
@@ -731,6 +1059,7 @@ def _urlretrieve(
     chunk_size: int = 8192,
     timeout: int = 30,
     verify_ssl: bool = True,
+    exclusive: bool = False,
 ) -> str:
     """
     Download a file from a URL using requests with streaming support.
@@ -741,6 +1070,7 @@ def _urlretrieve(
         chunk_size: Size of chunks to download at a time in bytes (default: 8192).
         timeout: Request timeout in seconds (default: 30).
         verify_ssl: Whether to verify SSL certificates (default: True).
+        exclusive: Fail if the destination already exists (default: False).
 
     Returns:
         The filepath where the file was saved.
@@ -764,7 +1094,10 @@ def _urlretrieve(
         )
         response.raise_for_status()
 
-        with open(filename, "wb") as f:
+        # Not plain open(): the destination is in a cache directory, and a
+        # symlink planted at that name would otherwise be followed and the
+        # download written through it, as whatever user is running this.
+        with _openPrivate(filename, 'xb' if exclusive else 'wb') as f:
             for chunk in response.iter_content(chunk_size=chunk_size):
                 if chunk:  # Filter out keep-alive chunks
                     f.write(chunk)
@@ -796,7 +1129,8 @@ def getRemoteFile(urlOrPath, destPath):
         return (urlOrPath, 'local')
     else:
         filename = toFilename(urlOrPath)
-        destPath = destPath + '/' + filename
+        _prepareCacheDir(destPath, ours=destPath == TikaCacheDir)
+        destPath = os.path.join(destPath, filename)
         log.info('Retrieving %s to %s.' % (urlOrPath, destPath))
         _urlretrieve(urlOrPath, destPath)
         return (destPath, 'remote')
