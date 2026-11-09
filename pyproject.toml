@@ -41,10 +41,15 @@ tests = [
   "pytest-benchmark",
   "pytest-cov",
 ]
+# Marked for 3.12 and up because that is what these versions actually need:
+# sphinx 9.1 requires >=3.12, and furo pulls sphinx. requires-python here is
+# >=3.10 for the library itself, and uv resolves every supported version at
+# once, so without these markers `uv run --group tests` fails to resolve on
+# 3.10 and 3.11 over a documentation dependency. CI builds the docs on 3.14.
 docs = [
-  "furo>=2025.12.19",
-  "myst-parser>=5.0",
-  "sphinx>=9.1",
+  "furo>=2025.12.19; python_version>='3.12'",
+  "myst-parser>=5.0; python_version>='3.12'",
+  "sphinx>=9.1; python_version>='3.12'",
 ]
 
 [project.urls]
