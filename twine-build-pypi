@@ -1,0 +1,18 @@
+#!/bin/sh
+# Build and upload a release to PyPI.
+#
+# dist/ is cleared first. It is gitignored, so it keeps whatever was built
+# last time, and `twine upload dist/*` would then try to re-upload a version
+# PyPI already has. PyPI refuses that, twine stops at the first failure, and
+# the release ends up half done -- with the wheel for the new version possibly
+# not uploaded at all, depending on the order it walked the glob.
+set -eu
+
+rm -rf dist build
+python3 -m build
+
+# Check the metadata renders before anything is published; a bad long
+# description is rejected at upload time, after the sdist is already live.
+twine check dist/*
+
+twine upload --verbose dist/*
