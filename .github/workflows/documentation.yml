@@ -3,18 +3,17 @@ name: Documentation
 on:
   push:
     branches: ["master"]
-  workflow_call:
+  # Pull requests build the docs but do not deploy them; the deploy job is
+  # gated on a push to master. This replaces the `docs` job that ci.yml used
+  # to run, which called this workflow on the same push that already
+  # triggered it -- two runs, one pages concurrency group, and the loser was
+  # cancelled. A cancelled run renders as a failing badge.
+  pull_request:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 # Set permissions at the job level.
 permissions: {}
-
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
 
 jobs:
   build:
@@ -53,6 +52,13 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-slim
+    # Only the deployment is serialised. Putting this at workflow level meant a
+    # queued *build* could be cancelled too, which turned an ordinary pair of
+    # merges into a failing documentation badge even though the docs built
+    # fine. In-progress deployments are still allowed to finish.
+    concurrency:
+      group: "pages"
+      cancel-in-progress: false
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
